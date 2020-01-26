@@ -53,6 +53,7 @@
   <ItemGroup>
     <PackageReference Include="RhinoCommon">
       <Version>6.21.19351.9141</Version>
+      <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
   </ItemGroup>
   <ItemGroup />
