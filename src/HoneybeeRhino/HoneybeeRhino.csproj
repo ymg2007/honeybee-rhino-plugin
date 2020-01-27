@@ -43,6 +43,7 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="RhinoCommands\HB_GetInfo.cs" />
     <Compile Include="RhinoCommands\HoneybeeRhinoCommand.cs" />
     <Compile Include="HoneybeeRhinoPlugIn.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -7,23 +7,23 @@ using Rhino.Input.Custom;
 
 namespace HoneybeeRhino.RhinoCommands
 {
-    public class HB_MassToRoom : Command
+    public class HB_GetInfo : Command
     {
-        static HB_MassToRoom _instance;
-        public HB_MassToRoom()
+        static HB_GetInfo _instance;
+        public HB_GetInfo()
         {
             _instance = this;
         }
 
-        ///<summary>The only instance of the MyCommand1 command.</summary>
-        public static HB_MassToRoom Instance
+        ///<summary>The only instance of the HB_GetInfo command.</summary>
+        public static HB_GetInfo Instance
         {
             get { return _instance; }
         }
 
         public override string EnglishName
         {
-            get { return "HB_MassToRoom"; }
+            get { return "HB_GetInfo"; }
         }
 
         protected override Result RunCommand(RhinoDoc doc, RunMode mode)
@@ -40,23 +40,18 @@ namespace HoneybeeRhino.RhinoCommands
                     return go.CommandResult();
 
 
-                var selectedObjs = go.Objects().Select(_ => _.Brep()).ToList();
-                var hbObjs = selectedObjs.Select(_ => _.ToRoom()).ToList();
-
-                if (selectedObjs.Count() == hbObjs.Count())
+                var selectedObjs = go.Objects()[0].Geometry();
+                var json = selectedObjs.UserDictionary.GetString("HBData");
+                if (!string.IsNullOrEmpty(json))
                 {
-                    for (int i = 0; i < selectedObjs.Count(); i++)
-                    {
-                        var rhobj = selectedObjs[i];
-                        var json = hbObjs[i].ToJson();
-                        rhobj.UserDictionary.Set("HBData", json);
-                    }
+
+                    Rhino.UI.Dialogs.ShowMultiListBox(json, "Honeybee Data");
                     return Result.Success;
                 }
                 else
                 {
 
-                    RhinoApp.WriteLine("There are some object are not valid solid water-tight geometry!");
+                    RhinoApp.WriteLine("Selected geometry doesn't contains any Honeybee data!");
                     return Result.Failure;
                 }
 
