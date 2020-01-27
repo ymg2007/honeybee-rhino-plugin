@@ -46,7 +46,7 @@ namespace HoneybeeRhino
 
 
                 var selectedObjs = go.Objects().Select(_=> _.Geometry() as Brep);
-                var hbFace3D = selectedObjs.Select(_ => _.ToHB());
+                var hbFace3D = selectedObjs.Select(_ => _.ToHBFace3Ds());
 
                 if (selectedObjs.Count() == hbFace3D.Count())
                 {

@@ -21,19 +21,19 @@ namespace HoneybeeRhino
             );
         }
 
-        public static HB.Face3D ToHB(this RH.PlaneSurface surface)
+        public static HB.Face3D ToHBFace3D(this RH.PlaneSurface surface)
         {
-            return (surface as RH.Surface).ToHB();
+            return (surface as RH.Surface).ToHBFace3D();
 
         }
 
-        public static HB.Face3D ToHB(this RH.Surface surface)
+        public static HB.Face3D ToHBFace3D(this RH.Surface surface)
         {
-            return (surface.ToBrep().ToHB().First());
+            return (surface.ToBrep().ToHBFace3Ds().First());
            
         }
 
-        public static List<HB.Face3D> ToHB(this RH.Brep brep)
+        public static List<HB.Face3D> ToHBFace3Ds(this RH.Brep brep)
         {
             var face3Ds = new List<HB.Face3D>();
 
@@ -81,6 +81,99 @@ namespace HoneybeeRhino
             return face3Ds;
             
         }
+        public static HB.Face ToHBFace(this RH.Surface surface, double maxRoofFloorAngle = 30)
+        {
+           
+            var f = surface;
+            var norm = f.NormalAt(0.5, 0.5);
+            var floorBaseNorm = new RH.Vector3d(0, 0, -1);
+            var roofBaseNorm = new RH.Vector3d(0, 0, 1);
+
+            var face = new HB.Face(
+                    Guid.NewGuid().ToString(),
+                    f.ToHBFace3D(),
+                    HB.Face.FaceTypeEnum.Wall,
+                    new HB.Outdoors(),
+                    new HB.FacePropertiesAbridged()
+                    );
+
+            var isGround = surface.PointAt(0.5, 0.5).Z <= 0;
+            if (isGround)
+            {
+                face.BoundaryCondition = new HB.Ground();
+            }
+
+
+            if (CalAngle(norm, floorBaseNorm) <= maxRoofFloorAngle)
+            {
+                face.FaceType = HB.Face.FaceTypeEnum.Floor;
+                return face;
+
+            }
+            else if (CalAngle(norm, roofBaseNorm) <= maxRoofFloorAngle)
+            {
+                face.FaceType = HB.Face.FaceTypeEnum.RoofCeiling;
+                return face;
+            }
+            else
+            {
+                //the rests are walls
+                return face;
+            }
+
+
+            double CalAngle(RH.Vector3d v1, RH.Vector3d v2)
+            {
+                var cosA = v1 * v2 / (v1.Length * v2.Length);
+                return Math.Acos(cosA);
+            }
+        }
+        public static List<HB.Face> ToHBFaces(this RH.Brep brep, HB.Face.FaceTypeEnum faceType, HB.AnyOf<HB.Ground, HB.Outdoors, HB.Adiabatic, HB.Surface> boundaryCondition)
+        {
+            
+            var faces = new List<HB.Face>();
+
+            return brep.ToHBFace3Ds()
+                .Select(_ => new HB.Face(
+                    new Guid().ToString(),
+                    _,
+                    faceType,
+                    boundaryCondition,
+                    new HB.FacePropertiesAbridged()
+                    )
+                ).ToList();
+        }
+
+
+        public static HB.Room ToRoom(this RH.Brep closedBrep, double maxRoofFloorAngle = 30)
+        {
+            if (closedBrep.IsSolid)
+            {
+                var dupBrep = closedBrep.DuplicateBrep();
+                var subFaces = dupBrep.Faces.ToList();
+                subFaces.ForEach(_ => _.ShrinkFace(RH.BrepFace.ShrinkDisableSide.ShrinkAllSides));
+                var hbFaces = subFaces.Select(_ => _.ToHBFace(maxRoofFloorAngle)).ToList();
+                return new HB.Room(Guid.NewGuid().ToString(), hbFaces, new HB.RoomPropertiesAbridged());
+
+            }
+            else
+            {
+                throw new ArgumentException("This rhino object is not a water-tight solid!");
+            }
+
+        }
+
+        public static HB.Room ToRoom(this RH.Extrusion extrusion, double maxRoofFloorAngle = 30)
+        {
+            return extrusion.ToBrep().ToRoom(maxRoofFloorAngle);
+        }
+
+        public static HB.Room ToRoom(this RH.Box box, double maxRoofFloorAngle = 30)
+        {
+            return box.ToBrep().ToRoom(maxRoofFloorAngle);
+        }
+
+
 
 
     }

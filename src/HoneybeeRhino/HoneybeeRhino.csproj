@@ -43,9 +43,10 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="HoneybeeRhinoCommand.cs" />
+    <Compile Include="RhinoCommands\HoneybeeRhinoCommand.cs" />
     <Compile Include="HoneybeeRhinoPlugIn.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RhinoCommands\HB_MassToRoom.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="EmbeddedResources\plugin-utility.ico" />
