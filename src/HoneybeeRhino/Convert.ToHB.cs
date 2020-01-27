@@ -135,7 +135,7 @@ namespace HoneybeeRhino
 
             return brep.ToHBFace3Ds()
                 .Select(_ => new HB.Face(
-                    new Guid().ToString(),
+                    $"{faceType}_{Guid.NewGuid()}",
                     _,
                     faceType,
                     boundaryCondition,
@@ -153,7 +153,7 @@ namespace HoneybeeRhino
                 var subFaces = dupBrep.Faces.ToList();
                 subFaces.ForEach(_ => _.ShrinkFace(RH.BrepFace.ShrinkDisableSide.ShrinkAllSides));
                 var hbFaces = subFaces.Select(_ => _.ToHBFace(maxRoofFloorAngle)).ToList();
-                return new HB.Room(Guid.NewGuid().ToString(), hbFaces, new HB.RoomPropertiesAbridged());
+                return new HB.Room($"Room_{Guid.NewGuid()}".ToString(), hbFaces, new HB.RoomPropertiesAbridged());
 
             }
             else
