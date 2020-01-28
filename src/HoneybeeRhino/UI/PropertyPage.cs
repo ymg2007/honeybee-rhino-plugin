@@ -7,7 +7,7 @@ using HB = HoneybeeDotNet.Model;
 
 namespace HoneybeeRhino
 {
-    public class SettingPage : ObjectPropertiesPage
+    public class PropertyPage : ObjectPropertiesPage
     {
         public override string EnglishPageTitle => "Honeybee";
 
@@ -21,17 +21,17 @@ namespace HoneybeeRhino
             if (e.ObjectCount != 1) return false;
             if (e.Objects.Length != 1) return false; //there is a bug in Rhino, which ObjectCount ==1, but Object is empty.
 
-            var selectedObj = e.Objects[0];
+            var selectedObj = e.Objects[0].Geometry;
             return (selectedObj.UserDictionary.TryGetString("HBData", out string json));
         }
 
         public override void UpdatePage(ObjectPropertiesPageEventArgs e)
         {
-            var selectedObj = e.Objects[0];
+            var selectedObj = e.Objects[0].Geometry;
             var isHB = selectedObj.UserDictionary.TryGetString("HBData", out string json);
             if (isHB)
             {
-                
+                //TODO: Creat a property page..
             }
         }
     }
