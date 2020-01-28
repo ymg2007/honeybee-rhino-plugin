@@ -45,7 +45,7 @@ namespace HoneybeeRhino.RhinoCommands
                 if (!string.IsNullOrEmpty(json))
                 {
 
-                    Rhino.UI.Dialogs.ShowMultiListBox(json, "Honeybee Data");
+                    Rhino.UI.Dialogs.ShowEditBox("Honeybee Data", "Honeybee Schema Data can be shared across all platforms.", json, true, out string outJson);
                     return Result.Success;
                 }
                 else

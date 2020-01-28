@@ -3,6 +3,7 @@ using System.Linq;
 using Rhino;
 using Rhino.Commands;
 using Rhino.DocObjects;
+using Rhino.Geometry;
 using Rhino.Input.Custom;
 
 namespace HoneybeeRhino.RhinoCommands
@@ -30,8 +31,8 @@ namespace HoneybeeRhino.RhinoCommands
         {
             using (var go = new GetObject())
             {
-                go.SetCommandPrompt("Please select colsed objects for converting to Honeybee Room");
-                go.GeometryFilter = ObjectType.Brep | ObjectType.Extrusion;
+                go.SetCommandPrompt("Please select colsed objects for converting to Honeybee Room v1");
+                go.GeometryFilter = ObjectType.Extrusion | ObjectType.Brep;
                 go.Get();
                 if (go.CommandResult() != Result.Success)
                     return go.CommandResult();
@@ -40,23 +41,32 @@ namespace HoneybeeRhino.RhinoCommands
                     return go.CommandResult();
 
 
-                var selectedObjs = go.Objects().Select(_ => _.Brep()).ToList();
-                var hbObjs = selectedObjs.Select(_ => _.ToRoom()).ToList();
 
-                if (selectedObjs.Count() == hbObjs.Count())
+                //user data at Geomergy level is different at Brep level......
+                var geos = go.Objects().Select(_ => _.Geometry()).ToList(); //this kept extrusion and brep types
+                if (go.Objects().Any(_=>!_.Brep().IsSolid))
                 {
-                    for (int i = 0; i < selectedObjs.Count(); i++)
+                    RhinoApp.WriteLine("Not all objects are valid solid water-tight geometry!");
+                    return Result.Failure;
+                }
+                var hbObjs = go.Objects().Select(_ => _.Brep().ToRoom().ToJson()).ToList(); 
+              
+
+                if (geos.Count() == hbObjs.Count())
+                {
+                    var total = geos.Count();
+                    for (int i = 0; i < total; i++)
                     {
-                        var rhobj = selectedObjs[i];
-                        var json = hbObjs[i].ToJson();
-                        rhobj.UserDictionary.Set("HBData", json);
+
+                        var geo = geos[i];
+                        var json = hbObjs[i];
+                        geo.UserDictionary.Set("HBData", json);
                     }
                     return Result.Success;
                 }
                 else
                 {
-
-                    RhinoApp.WriteLine("There are some object are not valid solid water-tight geometry!");
+                    RhinoApp.WriteLine("Something went wrong. Not all objects are valid solid water-tight geometry!");
                     return Result.Failure;
                 }
 
