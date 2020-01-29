@@ -5,10 +5,13 @@ using Rhino.DocObjects;
 using Rhino.UI;
 using HB = HoneybeeDotNet.Model;
 
-namespace HoneybeeRhino
+namespace HoneybeeRhino.UI
 {
     public class PropertyPage : ObjectPropertiesPage
     {
+        private PropertyPanel panelUI;
+        public override object PageControl => panelUI ?? (panelUI = new PropertyPanel());
+
         public override string EnglishPageTitle => "Honeybee";
 
         public override ObjectType SupportedTypes => ObjectType.Brep | ObjectType.Extrusion;
@@ -22,16 +25,15 @@ namespace HoneybeeRhino
             if (e.Objects.Length != 1) return false; //there is a bug in Rhino, which ObjectCount ==1, but Object is empty.
 
             var selectedObj = e.Objects[0].Geometry;
-            return (selectedObj.UserDictionary.TryGetString("HBData", out string json));
+            return selectedObj.HasHBJson();
         }
 
         public override void UpdatePage(ObjectPropertiesPageEventArgs e)
         {
             var selectedObj = e.Objects[0].Geometry;
-            var isHB = selectedObj.UserDictionary.TryGetString("HBData", out string json);
-            if (isHB)
+            if (selectedObj.HasHBJson())
             {
-                //TODO: Creat a property page..
+                this.panelUI.updateRoomPanel(selectedObj);
             }
         }
     }

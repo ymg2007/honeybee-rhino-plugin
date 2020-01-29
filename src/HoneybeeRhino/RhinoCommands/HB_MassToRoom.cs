@@ -41,7 +41,6 @@ namespace HoneybeeRhino.RhinoCommands
                     return go.CommandResult();
 
 
-
                 //user data at Geomergy level is different at Brep level......
                 var geos = go.Objects().Select(_ => _.Geometry()).ToList(); //this kept extrusion and brep types
                 if (go.Objects().Any(_=>!_.Brep().IsSolid))
