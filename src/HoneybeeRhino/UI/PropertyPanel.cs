@@ -7,7 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using HoneybeeDotNet.Model;
+using System.Collections;
 
 namespace HoneybeeRhino.UI
 {
@@ -17,37 +18,56 @@ namespace HoneybeeRhino.UI
         {
         }
 
-        public void updateRoomPanel(Rhino.Geometry.GeometryBase selectedRoom)
+        public void updateRoomPanel(Room selectedRoom)
         {
-            var json = selectedRoom.GetHBJson();
-            var room = HoneybeeDotNet.Model.Room.FromJson(json);
+            var room = selectedRoom;
             var layout = new DynamicLayout { };
             layout.Spacing = new Size(5, 5);
             layout.Padding = new Padding(10);
             layout.DefaultSpacing = new Size(2, 2);
             //layout.DefaultPadding = new Padding(10);
 
-            layout.AddSeparateRow(new Label { Text = "Name" });
-            layout.AddSeparateRow(new TextBox { Text = room.Name });
 
-            layout.AddSeparateRow(new Label { Text = "Properties" });
-            layout.AddSeparateRow(new TextBox { Text = room.Properties?.ToJson() });
+            var props = typeof(Room).GetProperties();
+            foreach (var p in props)
+            {
+                var pType = p.PropertyType;
+                if (pType.IsGenericType && (pType.GetGenericTypeDefinition() ==(typeof(List<>))))
+                {
+                    layout.AddSeparateRow(new Label { Text = p.Name });
+                    //var t = new TextBox { Text = p.GetValue(room) as string };
+                    var t2 = new Eto.Forms.ListBox();
+                    var items = (IList)p.GetValue(room);
+                    t2.Height = 50;
+                    if (items != null)
+                    {
+                        foreach (var item in items)
+                        {
+                            var value = nameof(item);
+                            t2.Items.Add(new ListItem() { Text = value });
+                        }
 
-            layout.AddSeparateRow(new Label { Text = "Display Name" });
-            layout.AddSeparateRow(new TextBox { Text = room.DisplayName });
-
-            layout.AddSeparateRow(new Label { Text = "Indoor Shades" });
-            layout.AddSeparateRow(new TextBox { Text = room.IndoorShades?.Any().ToString() });
-
-            layout.AddSeparateRow(new Label { Text = "Outdoor Shades" });
-            layout.AddSeparateRow(new TextBox { Text = room.OutdoorShades?.Any().ToString() });
-
-            layout.AddSeparateRow(new Label { Text = "Multiplier" });
-            layout.AddSeparateRow(new TextBox { Text = room.Multiplier.ToString() });
+                        if (items.Count > 0)
+                        {
+                            t2.Height = 80;
+                        }
+                       
+                    }
+                    
+                    layout.AddSeparateRow(t2);
+                }
+                else
+                {
+                    layout.AddSeparateRow(new Label { Text = p.Name });
+                    var t = new TextBox { Text = p.GetValue(room)?.ToString() };
+                    layout.AddSeparateRow(t);
+                }
+            }
+            
 
             layout.Add(null);
             var data_button = new Button { Text = "Honeybee Data" };
-            data_button.Click += (sender, e) => Dialogs.ShowEditBox("Honeybee Data", "Honeybee Data can be shared across all platforms.", json, true, out string outJson);
+            data_button.Click += (sender, e) => Dialogs.ShowEditBox("Honeybee Data", "Honeybee Data can be shared across all platforms.", room.ToJson(), true, out string outJson);
             layout.AddSeparateRow(data_button, null);
 
 

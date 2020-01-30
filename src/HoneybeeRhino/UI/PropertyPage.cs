@@ -33,8 +33,10 @@ namespace HoneybeeRhino.UI
             var selectedObj = e.Objects[0].Geometry;
             if (selectedObj.HasHBJson())
             {
-                this.panelUI.updateRoomPanel(selectedObj);
+                var room = HoneybeeDotNet.Model.Room.FromJson(selectedObj.GetHBJson());
+                this.panelUI.updateRoomPanel(room);
             }
         }
     }
+
 }
