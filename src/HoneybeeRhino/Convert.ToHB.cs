@@ -173,10 +173,23 @@ namespace HoneybeeRhino
             return box.ToBrep().ToRoom(maxRoofFloorAngle);
         }
 
+        public static HB.Aperture ToAperture(this RH.Surface singleSurface)
+        {
+            var face3D = singleSurface.ToHBFace3D();
+            return new HB.Aperture($"Aperture_{Guid.NewGuid()}", face3D, new HB.Outdoors(), new HB.AperturePropertiesAbridged());
+        }
+
+        public static HB.Aperture ToWindow(this RH.Surface singleSurface) => ToAperture(singleSurface);
+
+        public static HB.Door ToDoor(this RH.Surface singleSurface)
+        {
+            var face3D = singleSurface.ToHBFace3D();
+            return new HB.Door($"Door_{Guid.NewGuid()}", face3D, new HB.Outdoors(), new HB.DoorPropertiesAbridged());
+        }
 
 
 
     }
 
-   
+
 }
