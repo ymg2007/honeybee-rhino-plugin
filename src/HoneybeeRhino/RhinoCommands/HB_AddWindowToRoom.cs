@@ -57,15 +57,11 @@ namespace HoneybeeRhino.RhinoCommands
                 if (SelectedObjs == null || SelectedObjs.Length < 1)
                     return Result.Failure;
 
-               
-                var winGeos = SelectedObjs.Select(_ => _.Object().Geometry).ToList();
+                //add HBdata to window geometery 
+                var winGeos = SelectedObjs.Select(_ => _.Object().Geometry.ToApertureGeo()).ToList();
 
                 //Check intersection, maybe provide an option for use to split window surfaces for zones.
                 //TODO: do this later
-
-
-                //add HBdata to window geometery 
-                //TODO:
 
 
 

@@ -42,34 +42,9 @@ namespace HoneybeeRhino.RhinoCommands
 
 
                 //user data at Geomergy level is different at Brep level......
-                var geos = go.Objects().Select(_ => _.Geometry()).ToList(); //this kept extrusion and brep types
-                if (go.Objects().Any(_=>!_.Brep().IsSolid))
-                {
-                    RhinoApp.WriteLine("Not all objects are valid solid water-tight geometry!");
-                    return Result.Failure;
-                }
-                var hbObjs = go.Objects().Select(_ => _.Brep().ToRoom().ToJson()).ToList(); 
-              
+                var geos = go.Objects().Select(_ => _.Geometry().ToRoomGeo()).ToList(); //this kept extrusion and brep type
+                return Result.Success;
 
-                if (geos.Count() == hbObjs.Count())
-                {
-                    var total = geos.Count();
-                    for (int i = 0; i < total; i++)
-                    {
-
-                        var geo = geos[i];
-                        var json = hbObjs[i];
-                        //TODO: change this to userobject later.
-                        geo.UserDictionary.Set("HBData", json);
-                        geo.UserDictionary.Set("HBType", "Room");
-                    }
-                    return Result.Success;
-                }
-                else
-                {
-                    RhinoApp.WriteLine("Something went wrong. Not all objects are valid solid water-tight geometry!");
-                    return Result.Failure;
-                }
 
             }
         }

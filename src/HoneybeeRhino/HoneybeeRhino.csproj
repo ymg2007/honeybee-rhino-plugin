@@ -43,6 +43,7 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Convert.ToHBRhinoObj.cs" />
     <Compile Include="Extensions\GeometryBaseExtension.cs" />
     <Compile Include="RhinoCommands\HB_GetInfo.cs" />
     <Compile Include="HoneybeeRhinoPlugIn.cs" />
