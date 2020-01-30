@@ -50,14 +50,14 @@ namespace HoneybeeRhino.RhinoCommands
                 var roomIds = go.Objects().Select(_ => _.ObjectId);
 
 
-                //Select window geometery.
+                //Select window geometry.
                 var rc = Rhino.Input.RhinoGet.GetMultipleObjects("Please select planer surfaces as windows to add to rooms", false, ObjectType.Surface, out ObjRef[] SelectedObjs);
                 if (rc != Result.Success)
                     return rc;
                 if (SelectedObjs == null || SelectedObjs.Length < 1)
                     return Result.Failure;
 
-                //add HBdata to window geometery 
+                //add HBdata to window geometry 
                 var winGeos = SelectedObjs.Select(_ => _.Object().Geometry.ToApertureGeo()).ToList();
 
                 //Check intersection, maybe provide an option for use to split window surfaces for zones.

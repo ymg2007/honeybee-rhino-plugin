@@ -30,7 +30,7 @@ namespace HoneybeeRhino.RhinoCommands
         {
             using (var go = new GetObject())
             {
-                go.SetCommandPrompt("Please select colsed objects for converting to Honeybee Room");
+                go.SetCommandPrompt("Please select closed objects for converting to Honeybee Room");
                 go.GeometryFilter = ObjectType.Brep | ObjectType.Extrusion;
                 go.Get();
                 if (go.CommandResult() != Result.Success)

@@ -24,7 +24,7 @@ namespace HoneybeeRhino
             }
             else
             {
-                throw new ArgumentException("Input geometery is not a valid object to convert to honeybee room!");
+                throw new ArgumentException("Input geometry is not a valid object to convert to honeybee room!");
             }
 
         }
@@ -42,7 +42,7 @@ namespace HoneybeeRhino
             }
             else
             {
-                throw new ArgumentException("Input geometery is not a valid planar object to convert to honeybee aperture!");
+                throw new ArgumentException("Input geometry is not a valid planar object to convert to honeybee aperture!");
             }
 
         }
@@ -51,7 +51,7 @@ namespace HoneybeeRhino
         /// </summary>
         /// <param name="windowGeometry"></param>
         /// <returns>Rhino Surface with Honeybee data</returns>
-        public static RH.Surface ToWindowGeo(this RH.Surface windowGeometry)
+        public static RH.GeometryBase ToWindowGeo(this RH.GeometryBase windowGeometry)
         {
             return windowGeometry.ToApertureGeo();
 
