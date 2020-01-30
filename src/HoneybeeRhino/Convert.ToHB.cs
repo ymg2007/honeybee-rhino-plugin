@@ -12,12 +12,12 @@ namespace HoneybeeRhino
     public static partial class Convert
     {
 
-        public static List<decimal> ToDecimalList(this RH.Point3d point)
+        public static List<double> ToDecimalList(this RH.Point3d point)
         {
-            return (new List<decimal>() { 
-                (decimal)point.X, 
-                (decimal)point.Y, 
-                (decimal)point.Z }
+            return (new List<double>() { 
+                point.X, 
+                point.Y, 
+                point.Z }
             );
         }
 
@@ -69,11 +69,11 @@ namespace HoneybeeRhino
                 }
 
                 //check if brep has holes
-                var boundaryPts = pts.First() as List<List<decimal>>;
+                var boundaryPts = pts.First() as List<List<double>>;
                 var face3D = new HB.Face3D(boundaryPts);
                 if (pts.Count > 1)
                 {
-                    face3D.Holes.AddRange(pts.Skip(1) as List<List<List<decimal>>>);
+                    face3D.Holes.AddRange(pts.Skip(1) as List<List<List<double>>>);
                 }
                 face3Ds.Add(face3D);
             }

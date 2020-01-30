@@ -59,7 +59,9 @@ namespace HoneybeeRhino.RhinoCommands
 
                         var geo = geos[i];
                         var json = hbObjs[i];
+                        //TODO: change this to userobject later.
                         geo.UserDictionary.Set("HBData", json);
+                        geo.UserDictionary.Set("HBType", "Room");
                     }
                     return Result.Success;
                 }

@@ -9,6 +9,20 @@ namespace HoneybeeRhino
 {
     public static class GeometryBaseExtension
     {
+
+        public static bool IsRoom(this GeometryBase geometry)
+        {
+            if (geometry.UserDictionary.TryGetString("HBType", out string typeName))
+            {
+                return typeName == "Room";
+            }
+            else
+            {
+                return false;
+            }
+            
+        }
+
         public static string GetHBJson(this GeometryBase geometry)
         {
             var isHB = geometry.UserDictionary.TryGetString("HBData", out string json);
