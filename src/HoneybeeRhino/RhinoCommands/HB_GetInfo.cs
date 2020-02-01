@@ -44,7 +44,7 @@ namespace HoneybeeRhino.RhinoCommands
                 var json = selectedObjs.UserDictionary.GetString("HBData");
                 if (!string.IsNullOrEmpty(json))
                 {
-                    var obj =  HoneybeeDotNet.Model.Room.FromJson(json);
+                    var obj =  HoneybeeDotNet.Room.FromJson(json);
                     Rhino.UI.Dialogs.ShowEditBox("Honeybee Data", "Honeybee Schema Data can be shared across all platforms.", json, true, out string outJson);
                     return Result.Success;
                 }

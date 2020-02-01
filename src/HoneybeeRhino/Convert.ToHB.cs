@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using HB = HoneybeeDotNet.Model;
+using HB = HoneybeeDotNet;
 using RH = Rhino.Geometry;
 using RHDoc = Rhino.DocObjects;
 

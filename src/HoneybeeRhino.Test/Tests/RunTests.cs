@@ -22,13 +22,13 @@ namespace HoneybeeRhino.Test
             var box = new Box(bbox);
             var room = box.ToRoom(maxRoofFloorAngle: 30);
 
-            var model = new HoneybeeDotNet.Model.Model(
+            var model = new HoneybeeDotNet.Model(
                 "modelName",
-                new HoneybeeDotNet.Model.ModelProperties(),
+                new HoneybeeDotNet.ModelProperties(),
                 "a new displace name"
                 );
-            model.Properties.Energy = HoneybeeDotNet.Model.ModelEnergyProperties.Default;
-            model.Rooms = new List<HoneybeeDotNet.Model.Room>();
+            model.Properties.Energy = HoneybeeDotNet.ModelEnergyProperties.Default;
+            model.Rooms = new List<HoneybeeDotNet.Room>();
             model.Rooms.Add(room);
 
             var json = model.ToJson();

@@ -3,7 +3,7 @@ using Rhino;
 using Rhino.Commands;
 using Rhino.DocObjects;
 using Rhino.UI;
-using HB = HoneybeeDotNet.Model;
+using HB = HoneybeeDotNet;
 
 namespace HoneybeeRhino.UI
 {
@@ -33,7 +33,7 @@ namespace HoneybeeRhino.UI
             var selectedObj = e.Objects[0].Geometry;
             if (selectedObj.HasHBJson())
             {
-                var room = HoneybeeDotNet.Model.Room.FromJson(selectedObj.GetHBJson());
+                var room = HoneybeeDotNet.Room.FromJson(selectedObj.GetHBJson());
                 this.panelUI.updateRoomPanel(room);
             }
         }
