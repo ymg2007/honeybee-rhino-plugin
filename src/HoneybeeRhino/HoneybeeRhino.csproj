@@ -45,6 +45,8 @@
   <ItemGroup>
     <Compile Include="Convert.ToHBRhinoObj.cs" />
     <Compile Include="Extensions\GeometryBaseExtension.cs" />
+    <Compile Include="Simulation\Runner.cs" />
+    <Compile Include="RhinoCommands\HB_CreateHBModel.cs" />
     <Compile Include="RhinoCommands\HB_GetInfo.cs" />
     <Compile Include="HoneybeeRhinoPlugIn.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -57,6 +59,9 @@
     <EmbeddedResource Include="EmbeddedResources\plugin-utility.ico" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json">
+      <Version>12.0.3</Version>
+    </PackageReference>
     <PackageReference Include="RhinoCommon">
       <Version>6.21.19351.9141</Version>
       <ExcludeAssets>runtime</ExcludeAssets>

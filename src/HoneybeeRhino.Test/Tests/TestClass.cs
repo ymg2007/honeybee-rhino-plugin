@@ -33,11 +33,11 @@ namespace HoneybeeRhino.Test
         public void Init_HBObj_Test()
         {
             var face = new Face3D(
-                new List<List<decimal>>()
+                new List<List<double>>()
                 {
-                    new List<decimal>(){0,0,0 },
-                    new List<decimal>(){0.5M,0.5M,0.5M },
-                    new List<decimal>(){1,0,0 }
+                    new List<double>(){0,0,0 },
+                    new List<double>(){0.5,0.5,0.5 },
+                    new List<double>(){1,0,0 }
                 });
 
             var door = new Door("mainEntrance", face);

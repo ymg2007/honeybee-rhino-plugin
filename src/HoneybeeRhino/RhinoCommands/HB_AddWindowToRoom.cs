@@ -64,8 +64,11 @@ namespace HoneybeeRhino.RhinoCommands
                 //TODO: do this later
 
 
-
                 //TODO: match windows to rooms 
+
+                //TODO: add windows to room
+                
+
                 var groupName = "groupname";
                 var guids= SelectedObjs.Select(objref => objref.ObjectId).ToList();
                 guids.AddRange(roomIds);

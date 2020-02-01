@@ -25,12 +25,12 @@ namespace HoneybeeRhino.Test
             TestContext.WriteLine("Assembly init started");
 
             // Ensure we are 64 bit
-            Assert.IsTrue(Environment.Is64BitProcess, "Tests must be run as x64");
+            Assert.IsTrue(Environment.Is64BitProcess, "Tests must be run as x64. Test > Test Settings > Default Processor Architecture > x64");
 
             // Set path to rhino system directory
             string envPath = Environment.GetEnvironmentVariable("path");
             string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-            systemDir = System.IO.Path.Combine(programFiles, "Rhino WIP", "System");
+            systemDir = System.IO.Path.Combine(programFiles, "Rhino 7 WIP", "System");
             Assert.IsTrue(System.IO.Directory.Exists(systemDir), "Rhino system dir not found: {0}", systemDir);
 
             // Add rhino system directory to path (for RhinoLibrary.dll)

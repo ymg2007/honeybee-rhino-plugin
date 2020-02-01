@@ -63,5 +63,27 @@ namespace HoneybeeRhino.Test
             Assert.AreEqual(room.Faces.Count, 6);
         }
 
+        [Test]
+        public void Test_CreateModel()
+        {
+            var bbox = new BoundingBox(new Point3d(0, 0, 0), new Point3d(10, 10, 3));
+            var box = new Box(bbox);
+            var room = box.ToRoom(maxRoofFloorAngle: 30);
+
+            var model = new HoneybeeDotNet.Model.Model(
+                "modelName",
+                new HoneybeeDotNet.Model.ModelProperties(),
+                "a new displace name"
+                );
+            model.Rooms.Add(room);
+
+            var json = model.ToJson();
+
+
+
+            TestContext.WriteLine(room.ToJson());
+            Assert.AreEqual(room.Faces.Count, 6);
+        }
+
     }
 }
