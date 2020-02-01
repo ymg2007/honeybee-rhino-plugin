@@ -48,7 +48,7 @@ namespace HoneybeeRhino.RhinoCommands
 
                 //Get Room geometry guid
                 var roomIds = go.Objects().Select(_ => _.ObjectId);
-
+        
 
                 //Select window geometry.
                 var rc = Rhino.Input.RhinoGet.GetMultipleObjects("Please select planer surfaces as windows to add to rooms", false, ObjectType.Surface, out ObjRef[] SelectedObjs);
@@ -59,7 +59,7 @@ namespace HoneybeeRhino.RhinoCommands
 
                 //add HBdata to window geometry 
                 var winGeos = SelectedObjs.Select(_ => _.Object().Geometry.ToApertureGeo()).ToList();
-
+                var guids = SelectedObjs.Select(objref => objref.ObjectId).ToList();
                 //Check intersection, maybe provide an option for use to split window surfaces for zones.
                 //TODO: do this later
 
@@ -67,15 +67,14 @@ namespace HoneybeeRhino.RhinoCommands
                 //TODO: match windows to rooms 
 
                 //TODO: add windows to room
-                
+                rooms.First().Geometry().UserDictionary.Set("HBLink", guids.First());
 
-                var groupName = "groupname";
-                var guids= SelectedObjs.Select(objref => objref.ObjectId).ToList();
-                guids.AddRange(roomIds);
-                var groupId = doc.Groups.Add(groupName, guids);
+                //var groupName = "groupname";
+                //guids.AddRange(roomIds);
+                //var groupId = doc.Groups.Add(groupName, guids);
 
-                var group= doc.Groups.FindIndex(groupId);
-                group.UserDictionary.Set("HBType", "RoomGroup");
+                //var group= doc.Groups.FindIndex(groupId);
+                //group.UserDictionary.Set("HBType", "RoomGroup");
 
 
                 doc.Views.Redraw();

@@ -31,11 +31,11 @@ namespace HoneybeeRhino
 
         public static RH.GeometryBase ToApertureGeo(this RH.GeometryBase apertureGeometry)
         {
-            var geo = apertureGeometry;
+            var geo = Rhino.Geometry.Brep.TryConvertBrep(apertureGeometry);
            
-            if (geo is RH.PlaneSurface srf)
+            if (geo.IsSurface && geo.Faces.First().UnderlyingSurface().IsPlanar())
             {
-                var hbobj = srf.ToAperture();
+                var hbobj = geo.Faces.First().UnderlyingSurface().ToAperture();
                 geo.UserDictionary.Set("HBData", hbobj.ToJson());
                 geo.UserDictionary.Set("HBType", "Aperture");
                 return geo;

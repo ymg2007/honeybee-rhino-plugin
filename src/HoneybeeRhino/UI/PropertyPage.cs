@@ -4,6 +4,8 @@ using Rhino.Commands;
 using Rhino.DocObjects;
 using Rhino.UI;
 using HB = HoneybeeDotNet;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace HoneybeeRhino.UI
 {
@@ -25,6 +27,14 @@ namespace HoneybeeRhino.UI
             if (e.Objects.Length != 1) return false; //there is a bug in Rhino, which ObjectCount ==1, but Object is empty.
 
             var selectedObj = e.Objects[0].Geometry;
+
+            if (selectedObj.UserDictionary.TryGetGuid("HBLink", out Guid childId))
+            {
+                e.Document.Objects.Select(childId, true, true);
+
+            }
+       
+     
             return selectedObj.HasHBJson();
         }
 
