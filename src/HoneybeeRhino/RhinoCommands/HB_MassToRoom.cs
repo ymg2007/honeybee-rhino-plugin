@@ -42,7 +42,8 @@ namespace HoneybeeRhino.RhinoCommands
 
 
                 //user data at Geometry level is different at Brep level......
-                var geos = go.Objects().Select(_ => _.Geometry().ToRoomGeo()).ToList(); //this kept extrusion and brep type
+                var geos = go.Objects().Select(_ => _.ToRoomGeo()).ToList(); 
+                
                 return Result.Success;
 
 

@@ -67,7 +67,8 @@ namespace HoneybeeRhino.RhinoCommands
                 //TODO: match windows to rooms 
 
                 //TODO: add windows to room
-                rooms.First().Geometry().UserDictionary.Set("HBLink", guids.First());
+                var groupEntity = Entities.GroupEntity.GetFromRhinoObject(rooms.First().Object());
+                groupEntity.ApertureIDs.AddRange(guids);
 
                 //var groupName = "groupname";
                 //guids.AddRange(roomIds);

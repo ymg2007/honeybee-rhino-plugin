@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Rhino.DocObjects;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,7 +12,7 @@ namespace HoneybeeRhino
 {
     public static partial class Convert
     {
-        public static RH.GeometryBase ToRoomGeo(this RH.GeometryBase roomGeometry, double maxRoofFloorAngle = 30)
+        private static RH.GeometryBase ToRoomGeo(this RH.GeometryBase roomGeometry, double maxRoofFloorAngle = 30)
         {
             var geo = roomGeometry;
             var brep = RH.Brep.TryConvertBrep(roomGeometry);
@@ -27,6 +28,14 @@ namespace HoneybeeRhino
                 throw new ArgumentException("Input geometry is not a valid object to convert to honeybee room!");
             }
 
+        }
+
+        public static RH.GeometryBase ToRoomGeo(this ObjRef roomRef, double maxRoofFloorAngle = 30)
+        {
+            var geo = roomRef.Geometry().ToRoomGeo(maxRoofFloorAngle);
+            var ent = new Entities.GroupEntity(roomRef);
+            geo.UserData.Add(ent);
+            return geo;
         }
 
         public static RH.GeometryBase ToApertureGeo(this RH.GeometryBase apertureGeometry)

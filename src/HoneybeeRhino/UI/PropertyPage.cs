@@ -26,16 +26,9 @@ namespace HoneybeeRhino.UI
             if (e.ObjectCount != 1) return false;
             if (e.Objects.Length != 1) return false; //there is a bug in Rhino, which ObjectCount ==1, but Object is empty.
 
-            var selectedObj = e.Objects[0].Geometry;
-
-            if (selectedObj.UserDictionary.TryGetGuid("HBLink", out Guid childId))
-            {
-                e.Document.Objects.Select(childId, true, true);
-
-            }
-       
-     
-            return selectedObj.HasHBJson();
+            var rObj = e.Objects[0];
+      
+            return rObj.Geometry.HasHBJson();
         }
 
         public override void UpdatePage(ObjectPropertiesPageEventArgs e)

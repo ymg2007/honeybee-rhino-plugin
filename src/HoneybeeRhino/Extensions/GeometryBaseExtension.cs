@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Rhino.DocObjects;
 using Rhino.Geometry;
 
 namespace HoneybeeRhino
 {
     public static class GeometryBaseExtension
     {
-
+        public static bool IsRoom(this ObjRef rhinoRef) => rhinoRef.Geometry().IsRoom();
+        public static bool IsRoom(this RhinoObject rhinoRef) => rhinoRef.Geometry.IsRoom();
         public static bool IsRoom(this GeometryBase geometry)
         {
             if (geometry.UserDictionary.TryGetString("HBType", out string typeName))
@@ -22,6 +24,22 @@ namespace HoneybeeRhino
             }
             
         }
+
+        public static bool IsAperture(this ObjRef rhinoRef) => rhinoRef.Geometry().IsAperture();
+        public static bool IsAperture(this RhinoObject rhinoRef) => rhinoRef.Geometry.IsAperture();
+        public static bool IsAperture(this GeometryBase geometry)
+        {
+            if (geometry.UserDictionary.TryGetString("HBType", out string typeName))
+            {
+                return typeName == "Aperture";
+            }
+            else
+            {
+                return false;
+            }
+
+        }
+        
 
         public static string GetHBJson(this GeometryBase geometry)
         {

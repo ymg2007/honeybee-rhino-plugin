@@ -44,6 +44,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Convert.ToHBRhinoObj.cs" />
+    <Compile Include="Entities\GroupEntity.cs" />
+    <Compile Include="Entities\BaseEntity.cs" />
+    <Compile Include="Entities\RoomEntity.cs" />
     <Compile Include="Extensions\GeometryBaseExtension.cs" />
     <Compile Include="Simulation\Runner.cs" />
     <Compile Include="RhinoCommands\HB_CreateHBModel.cs" />
