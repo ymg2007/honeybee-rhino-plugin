@@ -58,8 +58,10 @@ namespace HoneybeeRhino.RhinoCommands
                     return Result.Failure;
 
                 //add HBdata to window geometry 
-                var winGeos = SelectedObjs.Select(_ => _.Object().Geometry.ToApertureGeo()).ToList();
-                var guids = SelectedObjs.Select(objref => objref.ObjectId).ToList();
+                var WinObjs = SelectedObjs.Select(objref => objref.Object().ToApertureObj());
+                //var winGeos = SelectedObjs.Select(_ => _.Geometry().ToApertureGeo());
+                
+
                 //Check intersection, maybe provide an option for use to split window surfaces for zones.
                 //TODO: do this later
 
@@ -67,15 +69,16 @@ namespace HoneybeeRhino.RhinoCommands
                 //TODO: match windows to rooms 
 
                 //TODO: add windows to room
-                var groupEntity = Entities.GroupEntity.GetFromRhinoObject(rooms.First().Object());
-                groupEntity.ApertureIDs.AddRange(guids);
-
-                //var groupName = "groupname";
-                //guids.AddRange(roomIds);
-                //var groupId = doc.Groups.Add(groupName, guids);
-
-                //var group= doc.Groups.FindIndex(groupId);
-                //group.UserDictionary.Set("HBType", "RoomGroup");
+                var groupEntity = Entities.GroupEntity.TryGet(rooms.First().Object());
+                if (groupEntity.IsValid)
+                {
+                    groupEntity.AddApertures(WinObjs);
+                }
+                else
+                {
+                    //this shouldn't be happening, because all honeybee room must have to be part of group entity.
+                }
+                
 
 
                 doc.Views.Redraw();

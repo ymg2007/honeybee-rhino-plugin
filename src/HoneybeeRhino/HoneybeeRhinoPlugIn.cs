@@ -1,4 +1,5 @@
-﻿using Rhino;
+﻿using HoneybeeRhino.Entities;
+using Rhino;
 using Rhino.Collections;
 using Rhino.DocObjects;
 using Rhino.FileIO;
@@ -18,6 +19,8 @@ namespace HoneybeeRhino
     ///</summary>
     public class HoneybeeRhinoPlugIn : Rhino.PlugIns.PlugIn
     {
+        public GroupEntityTable GroupEntityTable { get; private set; } = new GroupEntityTable();
+
         public HoneybeeRhinoPlugIn()
         {
             Instance = this;
@@ -25,7 +28,8 @@ namespace HoneybeeRhino
             Rhino.RhinoDoc.EndOpenDocument += RhinoDoc_EndOpenDocument; // deal with CopyToClipboard/Paste action
             Rhino.RhinoDoc.BeforeTransformObjects += RhinoDoc_BeforeTransformObjects; //deal with Alt + Gumball drag duplicate action
             Rhino.RhinoDoc.BeginOpenDocument += RhinoDoc_BeginOpenDocument;
-       
+            Rhino.RhinoDoc.CloseDocument += RhinoDoc_OnCloseDocument;
+
         }
 
         
@@ -59,6 +63,14 @@ namespace HoneybeeRhino
             }
         }
 
+        private void RhinoDoc_OnCloseDocument(object sender, DocumentEventArgs e)
+        {
+            // When the document is closed, clear our 
+            // document user data containers.
+            GroupEntityTable.Clear();
+        }
+
+
         //this is only being used for temporary container when geometries are copy pasted in.
         private List<RhinoObject> _rhinoObjectsMergedIn = new List<RhinoObject>();
 
@@ -84,18 +96,19 @@ namespace HoneybeeRhino
                 this._rhinoObjectsMergedIn.Clear();
             }
 
-
+            var selectedGroupEntities = selectedObjs.Select(_ => GroupEntity.TryGet(_));
             var selectedRooms = selectedObjs.Where(_ => _.IsRoom());
             var selectedApertures = selectedObjs.Where(_ => _.IsAperture());
 
+            
 
-            //TODO: to be changed to any of honeybee object
-            if (!selectedRooms.Any())
-            {
-                //reset the flag.
-                this._isObjectCopied = false;
-                return;
-            }
+            ////TODO: to be changed to any of honeybee object
+            //if (!selectedGroupEntities.Any(_=>_.IsValid))
+            //{
+            //    //reset the flag.
+            //    this._isObjectCopied = false;
+            //    return;
+            //}
                 
 
 
@@ -107,8 +120,8 @@ namespace HoneybeeRhino
                 //TODO: figure out all new copied windows' ownership
                 foreach (var newroom in selectedRooms)
                 {
-                    var ent = Entities.GroupEntity.RenewGroupEntity(newroom);
-                    ent.ApertureIDs.AddRange(selectedApertures.Select(_ => _.Id));
+                    var ent = new GroupEntity(newroom);
+                    ent.AddApertures(selectedApertures);
                 }
                 //reset the flag.
                 this._isObjectCopied = false;
@@ -119,19 +132,45 @@ namespace HoneybeeRhino
             }
 
             //Only make the room obj as the entry point for selecting the entire group entity.
-            
             foreach (var room in selectedRooms)
             {
-                var entity = Entities.GroupEntity.GetFromRhinoObject(room);
-                if (entity != null)
+                var entity = GroupEntity.TryGet(room);
+                if (entity.IsValid)
                 {
                     entity.SelectEntireEntity();
-                    RhinoApp.WriteLine($"Room: {entity.RoomID.ToString()}; Window: {entity.ApertureIDs.Count}");
+                    entity.SelectShades();
 
                 }
                 else
                 {
-                    //something went seriously wrong, all rooms have group entity.
+                    //ignore
+                }
+                RhinoApp.WriteLine($"Room: {entity.RoomID.ToString()}; Window: {entity.ApertureCount}");
+            }
+            foreach (var apt in selectedApertures)
+            {
+                var entity = GroupEntity.TryGet(apt);
+                if (entity.IsValid)
+                {
+                    entity.SelectRoom();
+
+                }
+                else
+                {
+                    //ignore
+                }
+            }
+
+            foreach (var entity in selectedGroupEntities)
+            {
+                if (entity.IsValid)
+                {
+                    //entity.SelectEntireEntity();
+                    
+                }
+                else
+                {
+                    //ignore
                 }
             }
 
@@ -144,9 +183,6 @@ namespace HoneybeeRhino
             get; private set;
         }
 
-        // You can override methods here to change the plug-in behavior on
-        // loading and shut down, add options pages to the Rhino _Option command
-        // and maintain plug-in wide options in a document.
 
         protected override void ObjectPropertiesPages(List<ObjectPropertiesPage> pages)
         {
@@ -154,14 +190,35 @@ namespace HoneybeeRhino
             pages.Add(page);
         }
 
+
+        protected override bool ShouldCallWriteDocument(FileWriteOptions options)
+        {
+            return !options.WriteGeometryOnly && !options.WriteSelectedObjectsOnly;
+        }
+
+
         protected override void ReadDocument(RhinoDoc doc, BinaryArchiveReader archive, FileReadOptions options)
         {
-            base.ReadDocument(doc, archive, options);
+            archive.Read3dmChunkVersion(out var major, out var minor);
+            if (major ==1  &&  minor == 0)
+            {
+                var t = new GroupEntityTable();
+                t.ReadDocument(archive);
+
+                if (!options.ImportMode && !options.ImportReferenceMode)
+                {
+                    if (t.Count > 0)
+                        GroupEntityTable = t;
+
+                }
+            }
         }
 
         protected override void WriteDocument(RhinoDoc doc, BinaryArchiveWriter archive, FileWriteOptions options)
         {
-            base.WriteDocument(doc, archive, options);
+            archive.Write3dmChunkVersion(1, 0);
+            this.GroupEntityTable.WriteDocument(archive);
+
         }
     }
 }

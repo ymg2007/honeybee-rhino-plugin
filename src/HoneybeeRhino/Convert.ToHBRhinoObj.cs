@@ -34,8 +34,13 @@ namespace HoneybeeRhino
         {
             var geo = roomRef.Geometry().ToRoomGeo(maxRoofFloorAngle);
             var ent = new Entities.GroupEntity(roomRef);
-            geo.UserData.Add(ent);
             return geo;
+        }
+
+        public static RhinoObject ToApertureObj(this RhinoObject apertureGeometry)
+        {
+            apertureGeometry.Geometry.ToApertureGeo();
+            return apertureGeometry;
         }
 
         public static RH.GeometryBase ToApertureGeo(this RH.GeometryBase apertureGeometry)
@@ -63,9 +68,9 @@ namespace HoneybeeRhino
         public static RH.GeometryBase ToWindowGeo(this RH.GeometryBase windowGeometry)
         {
             return windowGeometry.ToApertureGeo();
-
         }
 
+        
 
     }
 }

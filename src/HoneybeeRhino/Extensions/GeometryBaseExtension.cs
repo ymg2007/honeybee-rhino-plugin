@@ -58,5 +58,11 @@ namespace HoneybeeRhino
         {
             return geometry.UserDictionary.TryGetString("HBData", out string json);
         }
+
+        public static bool HasGroupEntity(this RhinoObject rhinoRef)
+        {
+            var ent = Entities.GroupEntity.TryGet(rhinoRef);
+            return ent.IsValid;
+        }
     }
 }
