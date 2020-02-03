@@ -49,6 +49,7 @@
     <Compile Include="Entities\BaseEntity.cs" />
     <Compile Include="Entities\RoomEntity.cs" />
     <Compile Include="Extensions\GeometryBaseExtension.cs" />
+    <Compile Include="RhinoCommands\HB_RoomList.cs" />
     <Compile Include="Simulation\Runner.cs" />
     <Compile Include="RhinoCommands\HB_CreateHBModel.cs" />
     <Compile Include="RhinoCommands\HB_GetInfo.cs" />
