@@ -16,28 +16,28 @@ using Rhino.Geometry;
 namespace HoneybeeRhino.Entities
 {
     [Guid("B0508C74-707F-4D5C-B218-AEF3B4EEF06B")]
-    public class GroupEntity : BaseEntity
+    public class GroupEntity : UserData
     {
-        public Guid RoomID { get; private set; }
+        public Guid RoomID { get; private set; } = Guid.Empty;
         public GroupEntity() { }
 
+        public GroupEntity(Guid roomID) 
+        {
+            this.RoomID = roomID;
+            var table = HoneybeeRhinoPlugIn.Instance.GroupEntityTable;
+            var exist = table.Keys.Any(_ => _ == roomID);
+            if (!exist)
+            {
+                table.Add(roomID, this);
+            }
+            else
+            {
+                //TODO: maybe need to clear all child ids.
+            }
+           
+        }
+
         
-        private GroupEntity(Guid roomRhinoID)
-        {
-            this.RoomID = roomRhinoID;
-        }
-        public GroupEntity(ObjRef roomRhinoObjRef): this(roomRhinoObjRef.Object())
-        {
-        }
-
-        public GroupEntity(RhinoObject roomRhinoObj) : this(roomRhinoObj.Id)
-        {
-            var guid = roomRhinoObj.Id;
-            roomRhinoObj.Geometry.UserDictionary.Set("HBGroupEntity", guid);
-            HoneybeeRhinoPlugIn.Instance.GroupEntityTable.Add(guid, this);
-        }
-
-
         private List<Guid> ApertureIDs { get; set; } = new List<Guid>();
 
         public List<Guid> ShadeIDs { get; private set; } = new List<Guid>();
@@ -61,14 +61,12 @@ namespace HoneybeeRhino.Entities
 
         public void AddApertures(IEnumerable<RhinoObject> apertureObjs)
         {
-            //TODO: save group entity to document, instead of in geometries.
-            //Rhino will remove UserData if it has been added to other geometry,
-            //so we need to make a copy first for now.
             this.ApertureIDs.AddRange(apertureObjs.Select(_ => _.Id));
 
             foreach (var win in apertureObjs)
             {
-                win.Geometry.UserDictionary.Set("HBGroupEntity", this.RoomID);
+                var ent = Entities.ApertureEntity.TryGetFrom(win.Geometry);
+                ent.GroupEntityID = this.RoomID;
             }
         
         }
@@ -134,7 +132,7 @@ namespace HoneybeeRhino.Entities
         {
             return ReadArchive(archive);
         }
-        protected override bool Write(Rhino.FileIO.BinaryArchiveWriter archive)
+        protected override bool Write(BinaryArchiveWriter archive)
         {
             return WriteToArchive(archive);
         }
@@ -150,7 +148,7 @@ namespace HoneybeeRhino.Entities
             return !archive.ReadErrorOccured;
         }
 
-        public bool WriteToArchive(Rhino.FileIO.BinaryArchiveWriter archive)
+        public bool WriteToArchive(BinaryArchiveWriter archive)
         {
             archive.Write3dmChunkVersion(1, 0);
 
@@ -159,7 +157,7 @@ namespace HoneybeeRhino.Entities
             return !archive.WriteErrorOccured;
         }
 
-        private protected override ArchivableDictionary Serialize()
+        private ArchivableDictionary Serialize()
         {
             var dic = new ArchivableDictionary();
             dic.Set(nameof(RoomID), RoomID);
@@ -168,7 +166,7 @@ namespace HoneybeeRhino.Entities
             return dic;
         }
 
-        private protected override void Deserialize(ArchivableDictionary dictionary)
+        private void Deserialize(ArchivableDictionary dictionary)
         {
             var dic = dictionary;
             this.RoomID = dic.GetGuid(nameof(RoomID));
@@ -187,59 +185,53 @@ namespace HoneybeeRhino.Entities
         //    return ent;
         //}
 
-  
-        public static GroupEntity TryGet(RhinoObject obj)
+        public static GroupEntity TryGetFromID(Guid roomID)
+        {
+            GroupEntity rc = new GroupEntity();
+            var found = HoneybeeRhinoPlugIn.Instance.GroupEntityTable.TryGetValue(roomID, out GroupEntity ent);
+            return found ? ent : rc;
+        }
+
+        public static GroupEntity TryGetFrom(RhinoObject obj)
         {
             GroupEntity rc = new GroupEntity();
             if (obj == null)
                 return rc;
 
-            var hasEntityID = obj.Geometry.UserDictionary.TryGetGuid("HBGroupEntity", out Guid guid);
-            if (!hasEntityID)
-                return rc;
+            Guid groupEntityId = Guid.Empty;
 
+            if (obj.IsRoom())
+            {
+                var roomEnt = RoomEntity.TryGetFrom(obj.Geometry);
+                if (!roomEnt.IsValid)
+                    return rc;
+
+                groupEntityId = roomEnt.GroupEntityID;
+
+                //TODO: check if this saved Id == obj.GeometryID
+            }
+            else if (obj.IsAperture())
+            {
+                var roomEnt = ApertureEntity.TryGetFrom(obj.Geometry);
+                if (!roomEnt.IsValid)
+                    return rc;
+
+                groupEntityId = roomEnt.GroupEntityID;
+                //get aperture entity here
+            }
+
+
+            var entt = HBObjEntity.TryGetFrom(obj.Geometry);
+
+          
             //if object is copied, this saved Entity ID will not be valid.
-            var found = HoneybeeRhinoPlugIn.Instance.GroupEntityTable.TryGetValue(guid, out GroupEntity ent);
+            var found = HoneybeeRhinoPlugIn.Instance.GroupEntityTable.TryGetValue(groupEntityId, out GroupEntity ent);
             return found ? ent : rc;
 
-            //if (obj.IsRoom())
-            //{
-            //    var found = HoneybeeRhinoPlugIn.Instance.GroupEntityTable.TryGetValue(obj.Id, out GroupEntity ent);
-            //    return found ? ent : rc;
-            //}
-            //else if (obj.IsAperture())
-            //{
-            //    var found = HoneybeeRhinoPlugIn.Instance.GroupEntityTable.TryGetValue(guid, out GroupEntity ent);
-            //    return found ? ent : rc;
-
-            //}
-            //else
-            //{
-            //    //input geometry is not a valid honeybee object.
-            //    //just return an empty group entity.
-                
-            //    return rc;
-            //}
-            
 
             
         }
        
-        public static GroupEntity GetFromRhinoObject(RhinoObject obj)
-        {
-            GroupEntity rc = TryGet(obj);
-
-            if (rc.IsValid)
-            {
-                return rc;
-            }
-            else
-            {
-                return new GroupEntity();
-            }
-                
-        }
-
 
     }
 }

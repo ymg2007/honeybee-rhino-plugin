@@ -27,16 +27,16 @@ namespace HoneybeeRhino.UI
             if (e.Objects.Length != 1) return false; //there is a bug in Rhino, which ObjectCount ==1, but Object is empty.
 
             var rObj = e.Objects[0];
-      
-            return rObj.Geometry.HasHBJson();
+
+            return rObj.Geometry.HasHBObjEntity();
         }
 
         public override void UpdatePage(ObjectPropertiesPageEventArgs e)
         {
             var selectedObj = e.Objects[0].Geometry;
-            if (selectedObj.HasHBJson())
+            if (selectedObj.HasHBObjEntity())
             {
-                var room = HoneybeeDotNet.Room.FromJson(selectedObj.GetHBJson());
+                var room = Entities.RoomEntity.TryGetFrom(selectedObj).HBObject;
                 this.panelUI.updateRoomPanel(room);
             }
         }

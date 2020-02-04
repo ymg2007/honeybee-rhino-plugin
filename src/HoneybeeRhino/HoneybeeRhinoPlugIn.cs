@@ -96,32 +96,24 @@ namespace HoneybeeRhino
                 this._rhinoObjectsMergedIn.Clear();
             }
 
-            var selectedGroupEntities = selectedObjs.Select(_ => GroupEntity.TryGet(_));
+            //var selectedGroupEntities = selectedObjs.Select(_ => GroupEntity.TryGet(_));
             var selectedRooms = selectedObjs.Where(_ => _.IsRoom());
             var selectedApertures = selectedObjs.Where(_ => _.IsAperture());
-
-            
-
-            ////TODO: to be changed to any of honeybee object
-            //if (!selectedGroupEntities.Any(_=>_.IsValid))
-            //{
-            //    //reset the flag.
-            //    this._isObjectCopied = false;
-            //    return;
-            //}
-                
-
-
             //TODO: work on this later
             //var selectedShds = selectedObjs.Where(_ => _.IsShade());
+
+
             if (this._isObjectCopied)
             {
                 //check all group entities for new copied objects.
                 //TODO: figure out all new copied windows' ownership
                 foreach (var newroom in selectedRooms)
                 {
-                    var ent = new GroupEntity(newroom);
-                    ent.AddApertures(selectedApertures);
+                    var roomEnt = RoomEntity.TryGetFrom(newroom.Geometry);
+                    roomEnt.UpdateHostID(newroom);
+
+                    var grpEnt = GroupEntity.TryGetFromID(newroom.Id);
+                    grpEnt.AddApertures(selectedApertures);
                 }
                 //reset the flag.
                 this._isObjectCopied = false;
@@ -134,7 +126,7 @@ namespace HoneybeeRhino
             //Only make the room obj as the entry point for selecting the entire group entity.
             foreach (var room in selectedRooms)
             {
-                var entity = GroupEntity.TryGet(room);
+                var entity = GroupEntity.TryGetFrom(room);
                 if (entity.IsValid)
                 {
                     entity.SelectEntireEntity();
@@ -149,7 +141,7 @@ namespace HoneybeeRhino
             }
             foreach (var apt in selectedApertures)
             {
-                var entity = GroupEntity.TryGet(apt);
+                var entity = GroupEntity.TryGetFrom(apt);
                 if (entity.IsValid)
                 {
                     entity.SelectRoom();
@@ -161,18 +153,6 @@ namespace HoneybeeRhino
                 }
             }
 
-            foreach (var entity in selectedGroupEntities)
-            {
-                if (entity.IsValid)
-                {
-                    //entity.SelectEntireEntity();
-                    
-                }
-                else
-                {
-                    //ignore
-                }
-            }
 
 
         }

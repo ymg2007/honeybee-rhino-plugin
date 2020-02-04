@@ -12,15 +12,15 @@ namespace HoneybeeRhino
 {
     public static partial class Convert
     {
-        private static RH.GeometryBase ToRoomGeo(this RH.GeometryBase roomGeometry, double maxRoofFloorAngle = 30)
+        private static RH.GeometryBase ToRoomGeo(this RH.GeometryBase roomGeo, Guid hostID, double maxRoofFloorAngle = 30)
         {
-            var geo = roomGeometry;
-            var brep = RH.Brep.TryConvertBrep(roomGeometry);
+            var geo = roomGeo;
+            var brep = RH.Brep.TryConvertBrep(roomGeo);
             if (brep != null)
             {
                 var hbobj = brep.ToRoom();
-                geo.UserDictionary.Set("HBData", hbobj.ToJson());
-                geo.UserDictionary.Set("HBType", "Room");
+                var ent = new Entities.RoomEntity(hbobj, hostID);
+                geo.UserData.Add(ent);
                 return geo;
             }
             else
@@ -30,28 +30,30 @@ namespace HoneybeeRhino
 
         }
 
-        public static RH.GeometryBase ToRoomGeo(this ObjRef roomRef, double maxRoofFloorAngle = 30)
+        public static RH.GeometryBase ToRoomGeo(this RhinoObject roomObj, double maxRoofFloorAngle = 30)
         {
-            var geo = roomRef.Geometry().ToRoomGeo(maxRoofFloorAngle);
-            var ent = new Entities.GroupEntity(roomRef);
+            var id = roomObj.Id;
+            var geo = roomObj.Geometry.ToRoomGeo(id, maxRoofFloorAngle);
             return geo;
+        
         }
 
-        public static RhinoObject ToApertureObj(this RhinoObject apertureGeometry)
+        public static RhinoObject ToApertureObj(this RhinoObject apertureObj)
         {
-            apertureGeometry.Geometry.ToApertureGeo();
-            return apertureGeometry;
+            apertureObj.Geometry.ToApertureGeo(apertureObj.Id);
+            return apertureObj;
         }
 
-        public static RH.GeometryBase ToApertureGeo(this RH.GeometryBase apertureGeometry)
+        public static RH.GeometryBase ToApertureGeo(this RH.GeometryBase apertureGeo, Guid hostID)
         {
-            var geo = Rhino.Geometry.Brep.TryConvertBrep(apertureGeometry);
+            var geo = Rhino.Geometry.Brep.TryConvertBrep(apertureGeo);
            
             if (geo.IsSurface && geo.Faces.First().UnderlyingSurface().IsPlanar())
             {
                 var hbobj = geo.Faces.First().UnderlyingSurface().ToAperture();
-                geo.UserDictionary.Set("HBData", hbobj.ToJson());
-                geo.UserDictionary.Set("HBType", "Aperture");
+                var ent = new Entities.ApertureEntity(hbobj);
+                ent.HostGeoID = hostID;
+                geo.UserData.Add(ent);
                 return geo;
             }
             else
@@ -60,17 +62,6 @@ namespace HoneybeeRhino
             }
 
         }
-        /// <summary>
-        /// This is the same as ToApertureGeo(), just for those are not familiar with the term "Aperture" in energy model.
-        /// </summary>
-        /// <param name="windowGeometry"></param>
-        /// <returns>Rhino Surface with Honeybee data</returns>
-        public static RH.GeometryBase ToWindowGeo(this RH.GeometryBase windowGeometry)
-        {
-            return windowGeometry.ToApertureGeo();
-        }
-
-        
 
     }
 }

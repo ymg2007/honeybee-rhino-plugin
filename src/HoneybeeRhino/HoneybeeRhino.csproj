@@ -46,7 +46,8 @@
     <Compile Include="Convert.ToHBRhinoObj.cs" />
     <Compile Include="Entities\GroupEntityTable.cs" />
     <Compile Include="Entities\GroupEntity.cs" />
-    <Compile Include="Entities\BaseEntity.cs" />
+    <Compile Include="Entities\HBObjEntity.cs" />
+    <Compile Include="Entities\ApertureEntity.cs" />
     <Compile Include="Entities\RoomEntity.cs" />
     <Compile Include="Extensions\GeometryBaseExtension.cs" />
     <Compile Include="RhinoCommands\HB_RoomList.cs" />

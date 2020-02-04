@@ -31,7 +31,7 @@ namespace HoneybeeRhino.RhinoCommands
         {
             using (var go = new GetObject())
             {
-                go.SetCommandPrompt("Please select closed objects for converting to Honeybee Room v1");
+                go.SetCommandPrompt("Please select closed objects for converting to Honeybee Room");
                 go.GeometryFilter = ObjectType.Extrusion | ObjectType.Brep;
                 go.Get();
                 if (go.CommandResult() != Result.Success)
@@ -42,9 +42,9 @@ namespace HoneybeeRhino.RhinoCommands
 
 
                 //user data at Geometry level is different at Brep level......
-                var geos = go.Objects().Select(_ => _.ToRoomGeo()).ToList(); 
-                
-                return Result.Success;
+                go.Objects().ToList().ForEach(_ => _.Object().ToRoomGeo());
+           
+                return Result.Success; 
 
 
             }

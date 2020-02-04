@@ -69,7 +69,7 @@ namespace HoneybeeRhino.RhinoCommands
                 //TODO: match windows to rooms 
 
                 //TODO: add windows to room
-                var groupEntity = Entities.GroupEntity.TryGet(rooms.First().Object());
+                var groupEntity = Entities.GroupEntity.TryGetFrom(rooms.First().Object());
                 if (groupEntity.IsValid)
                 {
                     groupEntity.AddApertures(WinObjs);
