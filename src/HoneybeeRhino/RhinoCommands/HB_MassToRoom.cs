@@ -46,19 +46,12 @@ namespace HoneybeeRhino.RhinoCommands
 
                 foreach (var item in go.Objects())
                 {
-                    if (item.Object().ObjectType == ObjectType.Extrusion)
-                    {
-                        doc.Objects.Replace(item, Brep.TryConvertBrep(item.Geometry()));
-                    }
+                    var geo = item.Geometry().ToRoomGeo(item.ObjectId);
 
-                    item.Object().ToRoomGeo();
+                    doc.Objects.Replace(item.ObjectId, geo);
                 }
                 
                 doc.Views.Redraw();
-                
-                //user data at Geometry level is different at Brep level......
-                //go.Objects().ToList().ForEach(_ => _.Object().ToRoomGeo());
-           
                 return Result.Success; 
 
 

@@ -12,16 +12,16 @@ namespace HoneybeeRhino
 {
     public static partial class Convert
     {
-        private static RH.GeometryBase ToRoomGeo(this RH.GeometryBase roomGeo, Guid hostID, double maxRoofFloorAngle = 30)
+        public static RH.Brep ToRoomGeo(this RH.GeometryBase roomGeo, Guid hostID, double maxRoofFloorAngle = 30)
         {
-            var geo = roomGeo;
+            //var geo = roomGeo;
             var brep = RH.Brep.TryConvertBrep(roomGeo);
             if (brep != null)
             {
                 var hbobj = brep.ToRoom();
                 var ent = new Entities.RoomEntity(hbobj, hostID);
-                geo.UserData.Add(ent);
-                return geo;
+                brep.UserData.Add(ent);
+                return brep;
             }
             else
             {
@@ -30,21 +30,21 @@ namespace HoneybeeRhino
 
         }
 
-        public static RH.GeometryBase ToRoomGeo(this RhinoObject roomObj, double maxRoofFloorAngle = 30)
-        {
-            var id = roomObj.Id;
-            var geo = roomObj.Geometry.ToRoomGeo(id, maxRoofFloorAngle);
-            return geo;
+        //public static RH.GeometryBase ToRoomGeo(this RhinoObject roomObj, double maxRoofFloorAngle = 30)
+        //{
+        //    var id = roomObj.Id;
+        //    var geo = roomObj.Geometry.ToRoomGeo(id, maxRoofFloorAngle);
+        //    return geo;
         
-        }
+        //}
 
-        public static RhinoObject ToApertureObj(this RhinoObject apertureObj)
-        {
-            apertureObj.Geometry.ToApertureGeo(apertureObj.Id);
-            return apertureObj;
-        }
+        //public static RhinoObject ToApertureObj(this RhinoObject apertureObj)
+        //{
+        //    apertureObj.Geometry.ToApertureGeo(apertureObj.Id);
+        //    return apertureObj;
+        //}
 
-        public static RH.GeometryBase ToApertureGeo(this RH.GeometryBase apertureGeo, Guid hostID)
+        public static RH.Brep ToApertureGeo(this RH.GeometryBase apertureGeo, Guid hostID)
         {
             var geo = Rhino.Geometry.Brep.TryConvertBrep(apertureGeo);
            

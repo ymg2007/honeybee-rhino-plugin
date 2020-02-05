@@ -154,8 +154,9 @@ namespace HoneybeeRhino
 
                 for (int i = 0; i < hbFaces.Count; i++)
                 {
-                    //TODO: change it to FaceEntity later.
-                    closedBrep.Faces[i].UserDictionary.Set("HBData", hbFaces[i].ToJson());
+                    var bFace = closedBrep.Surfaces[i];
+                    var faceEnt = new Entities.FaceEntity(hbFaces[i]);
+                    bFace.UserData.Add(faceEnt);
                 }
                
                 return new HB.Room($"Room_{Guid.NewGuid()}".ToString(), hbFaces, new HB.RoomPropertiesAbridged());
@@ -168,10 +169,10 @@ namespace HoneybeeRhino
 
         }
 
-        public static HB.Room ToRoom(this RH.Extrusion extrusion, double maxRoofFloorAngle = 30)
-        {
-            return extrusion.ToBrep().ToRoom(maxRoofFloorAngle);
-        }
+        //public static HB.Room ToRoom(this RH.Extrusion extrusion, double maxRoofFloorAngle = 30)
+        //{
+        //    return extrusion.ToBrep().ToRoom(maxRoofFloorAngle);
+        //}
 
         public static HB.Room ToRoom(this RH.Box box, double maxRoofFloorAngle = 30)
         {

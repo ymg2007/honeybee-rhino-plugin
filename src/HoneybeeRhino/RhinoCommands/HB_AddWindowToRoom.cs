@@ -31,7 +31,7 @@ namespace HoneybeeRhino.RhinoCommands
             using (var go = new GetObject())
             {
                 go.SetCommandPrompt("Please select honeybee rooms for adding windows to");
-                go.GeometryFilter = ObjectType.Extrusion | ObjectType.Brep;
+                go.GeometryFilter = ObjectType.Brep;
                 go.GroupSelect = false;
                 go.Get();
                  if (go.CommandResult() != Result.Success)
@@ -58,7 +58,8 @@ namespace HoneybeeRhino.RhinoCommands
                     return Result.Failure;
 
                 //add HBdata to window geometry 
-                var WinObjs = SelectedObjs.Select(objref => objref.Object().ToApertureObj());
+                var WinObjs = SelectedObjs.Select(objref => objref.Object());
+                WinObjs.ToList().ForEach(_ => _.Geometry.ToApertureGeo(_.Id));
                 //var winGeos = SelectedObjs.Select(_ => _.Geometry().ToApertureGeo());
                 
 
