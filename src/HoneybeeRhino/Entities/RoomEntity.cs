@@ -15,7 +15,7 @@ namespace HoneybeeRhino.Entities
     [Guid("D0F6A6F9-0CE0-41B7-8029-AB67F6B922AD")]
     public class RoomEntity : HBObjEntity
     {
-        public HB.Room HBObject { get; set; }
+        public HB.Room HBObject { get; private set; }
 
         public RoomEntity()
         {

@@ -12,28 +12,28 @@ using HB = HoneybeeDotNet;
 
 namespace HoneybeeRhino.Entities
 {
-    [Guid("FC5517EF-9AFF-4D02-A26D-80E1FEC4B6F1")]
-    public class ApertureEntity : HBObjEntity
+    [Guid("88EC0885-1ACF-4D40-B53E-11D4AE174987")]
+    public class FaceEntity : HBObjEntity
     {
-        public HB.Aperture HBObject { get; private set; }
+        public HB.Face HBObject { get; private set; }
 
-        public ApertureEntity()
+        public FaceEntity()
         {
 
         }
 
-        public ApertureEntity(HB.Aperture hbObj)
+        public FaceEntity(HB.Face hbObj)
         {
             this.HBObject = hbObj;
         }
 
         protected override void OnDuplicate(UserData source)
         {
-            if (source is ApertureEntity src)
+            if (source is FaceEntity src)
             {
                 base.OnDuplicate(source);
                 var json = src.HBObject.ToJson();
-                this.HBObject = HB.Aperture.FromJson(json);
+                this.HBObject = HB.Face.FromJson(json);
             }
         }
 
@@ -42,7 +42,7 @@ namespace HoneybeeRhino.Entities
             var dic = dictionary;
             base.Deserialize(dic);
             var json = dic.GetString("HBData");
-            this.HBObject = HB.Aperture.FromJson(json);
+            this.HBObject = HB.Face.FromJson(json);
         }
 
         private protected override ArchivableDictionary Serialize()
@@ -52,18 +52,18 @@ namespace HoneybeeRhino.Entities
             return dic;
         }
 
-        //public static ApertureEntity TryGetFrom(RhinoObject obj)
+        //public static FaceEntity TryGetFrom(RhinoObject obj)
         //{
         //    return TryGetFrom(obj.Geometry);
         //}
 
-        public static ApertureEntity TryGetFrom(Rhino.Geometry.GeometryBase rhinoGeo)
+        public static FaceEntity TryGetFrom(Rhino.Geometry.GeometryBase rhinoGeo)
         {
-            var rc = new ApertureEntity();
+            var rc = new FaceEntity();
             if (!rhinoGeo.IsValid)
                 return rc;
 
-            var ent = rhinoGeo.UserData.Find(typeof(ApertureEntity)) as ApertureEntity;
+            var ent = rhinoGeo.UserData.Find(typeof(FaceEntity)) as FaceEntity;
 
             return ent == null ? rc : ent;
         }
