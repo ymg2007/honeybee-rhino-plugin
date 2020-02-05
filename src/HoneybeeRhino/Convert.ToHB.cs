@@ -107,20 +107,18 @@ namespace HoneybeeRhino
             if (CalAngle(norm, floorBaseNorm) <= maxRoofFloorAngle)
             {
                 face.FaceType = HB.Face.FaceTypeEnum.Floor;
-                return face;
-
             }
             else if (CalAngle(norm, roofBaseNorm) <= maxRoofFloorAngle)
             {
                 face.FaceType = HB.Face.FaceTypeEnum.RoofCeiling;
-                return face;
             }
             else
             {
+                face.FaceType = HB.Face.FaceTypeEnum.Wall;
                 //the rests are walls
-                return face;
             }
-
+          
+            return face;
 
             double CalAngle(RH.Vector3d v1, RH.Vector3d v2)
             {
@@ -153,6 +151,13 @@ namespace HoneybeeRhino
                 var subFaces = dupBrep.Faces.ToList();
                 subFaces.ForEach(_ => _.ShrinkFace(RH.BrepFace.ShrinkDisableSide.ShrinkAllSides));
                 var hbFaces = subFaces.Select(_ => _.ToHBFace(maxRoofFloorAngle)).ToList();
+
+                for (int i = 0; i < hbFaces.Count; i++)
+                {
+                    //TODO: change it to FaceEntity later.
+                    closedBrep.Faces[i].UserDictionary.Set("HBData", hbFaces[i].ToJson());
+                }
+               
                 return new HB.Room($"Room_{Guid.NewGuid()}".ToString(), hbFaces, new HB.RoomPropertiesAbridged());
 
             }
