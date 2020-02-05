@@ -19,8 +19,10 @@ namespace HoneybeeRhino
     ///</summary>
     public class HoneybeeRhinoPlugIn : Rhino.PlugIns.PlugIn
     {
+        private RoomEntityMouseCallback m_mc;
         public GroupEntityTable GroupEntityTable { get; private set; } = new GroupEntityTable();
 
+        public string ObjectSelectMode { get; set; } = "GroupEntity";
         public HoneybeeRhinoPlugIn()
         {
             Instance = this;
@@ -29,6 +31,13 @@ namespace HoneybeeRhino
             Rhino.RhinoDoc.BeforeTransformObjects += RhinoDoc_BeforeTransformObjects; //deal with Alt + Gumball drag duplicate action
             Rhino.RhinoDoc.BeginOpenDocument += RhinoDoc_BeginOpenDocument;
             Rhino.RhinoDoc.CloseDocument += RhinoDoc_OnCloseDocument;
+
+            
+            if (m_mc == null)
+            {
+                m_mc = new RoomEntityMouseCallback();
+                m_mc.Enabled = true;
+            }
 
         }
 
@@ -122,6 +131,14 @@ namespace HoneybeeRhino
             {
 
             }
+
+            //currently there is one object is double clicked,
+            //it is under editing, and no need to select the entire groupEntity.
+            if (!this.m_mc.EditingObj.Equals(System.Guid.Empty))
+            {
+                return;
+            }
+            
 
             //Only make the room obj as the entry point for selecting the entire group entity.
             foreach (var room in selectedRooms)

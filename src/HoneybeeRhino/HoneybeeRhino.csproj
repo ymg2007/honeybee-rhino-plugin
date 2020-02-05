@@ -50,7 +50,9 @@
     <Compile Include="Entities\ApertureEntity.cs" />
     <Compile Include="Entities\RoomEntity.cs" />
     <Compile Include="Extensions\GeometryBaseExtension.cs" />
+    <Compile Include="RhinoCommands\HB_EditRoom.cs" />
     <Compile Include="RhinoCommands\HB_RoomList.cs" />
+    <Compile Include="RoomEntityMouseCallback.cs" />
     <Compile Include="Simulation\Runner.cs" />
     <Compile Include="RhinoCommands\HB_CreateHBModel.cs" />
     <Compile Include="RhinoCommands\HB_GetInfo.cs" />
