@@ -70,6 +70,11 @@ namespace HoneybeeRhino
                 this._mergedCounts = e.Document.Objects.Count - this._mergedCounts;
                 Rhino.RhinoApp.WriteLine($"Total {this._mergedCounts} objects merged");
             }
+            else
+            {
+                this._isObjectCopied = true;
+                this._mergedCounts = 0;
+            }
         }
 
         private void RhinoDoc_OnCloseDocument(object sender, DocumentEventArgs e)

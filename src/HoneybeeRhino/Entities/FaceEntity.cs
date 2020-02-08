@@ -17,7 +17,7 @@ namespace HoneybeeRhino.Entities
     {
         public HB.Face HBObject { get; private set; }
 
-        public override bool ShouldWrite => true;
+        public override bool IsValid => HBObject != null;
         public FaceEntity()
         {
             

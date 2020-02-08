@@ -59,8 +59,8 @@ namespace HoneybeeRhino.RhinoCommands
 
                 //add HBdata to window geometry 
                 var WinObjs = SelectedObjs.Select(objref => objref.Object());
+
                 WinObjs.ToList().ForEach(_ => _.Geometry.ToApertureGeo(_.Id));
-                //var winGeos = SelectedObjs.Select(_ => _.Geometry().ToApertureGeo());
                 
 
                 //Check intersection, maybe provide an option for use to split window surfaces for zones.

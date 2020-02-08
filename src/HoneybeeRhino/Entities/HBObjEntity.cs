@@ -15,7 +15,7 @@ namespace HoneybeeRhino.Entities
     {
         public Guid HostGeoID { get; set; } = Guid.Empty;
         public Guid GroupEntityID { get; set; } = Guid.Empty;
-        public bool IsValid => this.HostGeoID != Guid.Empty;
+        public virtual bool IsValid => this.HostGeoID != Guid.Empty;
         public override bool ShouldWrite => IsValid;
 
         protected override void OnDuplicate(UserData source)
