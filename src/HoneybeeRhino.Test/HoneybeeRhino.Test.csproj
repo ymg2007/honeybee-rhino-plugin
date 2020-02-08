@@ -34,8 +34,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="HoneybeeDotNet">
-      <HintPath>..\..\..\honeybee-schema-dotnet\src\HoneybeeDotNet\bin\Debug\HoneybeeDotNet.dll</HintPath>
+    <Reference Include="HoneybeeSchema">
+      <HintPath>..\..\..\honeybee-schema-dotnet\src\HoneybeeSchema\bin\Debug\HoneybeeSchema.dll</HintPath>
     </Reference>
     <Reference Include="System" />
   </ItemGroup>

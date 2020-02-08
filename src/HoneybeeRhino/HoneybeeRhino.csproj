@@ -34,8 +34,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="HoneybeeDotNet">
-      <HintPath>..\..\..\honeybee-schema-dotnet\src\HoneybeeDotNet\bin\Debug\HoneybeeDotNet.dll</HintPath>
+    <Reference Include="HoneybeeSchema">
+      <HintPath>..\..\..\honeybee-schema-dotnet\src\HoneybeeSchema\bin\Debug\HoneybeeSchema.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -43,7 +43,7 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Convert.ToHBRhinoObj.cs" />
+    <Compile Include="Converter\Convert.ToHBRhinoObj.cs" />
     <Compile Include="Entities\FaceEntity.cs" />
     <Compile Include="Entities\GroupEntityTable.cs" />
     <Compile Include="Entities\GroupEntity.cs" />
@@ -78,7 +78,7 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <Compile Include="Convert.ToHB.cs" />
+    <Compile Include="Converter\Convert.ToHB.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

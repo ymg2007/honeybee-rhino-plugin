@@ -8,7 +8,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using HB = HoneybeeDotNet;
+using HB = HoneybeeSchema;
 
 namespace HoneybeeRhino.Entities
 {
@@ -20,7 +20,7 @@ namespace HoneybeeRhino.Entities
         public override bool ShouldWrite => true;
         public FaceEntity()
         {
-
+            
         }
 
         public FaceEntity(HB.Face hbObj)

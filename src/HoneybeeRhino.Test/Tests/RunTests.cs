@@ -18,27 +18,27 @@ namespace HoneybeeRhino.Test
         [Test]
         public void RunOpenStudio_Test()
         {
-            var bbox = new BoundingBox(new Point3d(0, 0, 0), new Point3d(10, 10, 3));
-            var box = new Box(bbox);
-            var room = box.ToRoom(maxRoofFloorAngle: 30);
+            //var bbox = new BoundingBox(new Point3d(0, 0, 0), new Point3d(10, 10, 3));
+            //var box = new Box(bbox);
+            //var room = box.ToRoom(maxRoofFloorAngle: 30);
 
-            var model = new HoneybeeDotNet.Model(
-                "modelName",
-                new HoneybeeDotNet.ModelProperties(),
-                "a new displace name"
-                );
-            model.Properties.Energy = HoneybeeDotNet.ModelEnergyProperties.Default;
-            model.Rooms = new List<HoneybeeDotNet.Room>();
-            model.Rooms.Add(room);
+            //var model = new HoneybeeSchema.Model(
+            //    "modelName",
+            //    new HoneybeeSchema.ModelProperties(),
+            //    "a new displace name"
+            //    );
+            //model.Properties.Energy = HoneybeeSchema.ModelEnergyProperties.Default;
+            //model.Rooms = new List<HoneybeeSchema.Room>();
+            //model.Rooms.Add(room);
 
-            var json = model.ToJson();
-            var modelPath = @"D:\Dev\test\HB\model.json";
-            File.WriteAllText(modelPath, json);
+            //var json = model.ToJson();
+            //var modelPath = @"D:\Dev\test\HB\model.json";
+            //File.WriteAllText(modelPath, json);
 
 
-            var studyFolder = @"D:\Dev\test\HB";
-            var simuParPath = @"D:\Dev\test\HB\simPar.json";
-            Runner.RunOpenStudio(studyFolder, modelPath, simuParPath);
+            //var studyFolder = @"D:\Dev\test\HB";
+            //var simuParPath = @"D:\Dev\test\HB\simPar.json";
+            //Runner.RunOpenStudio(studyFolder, modelPath, simuParPath);
         }
 
         

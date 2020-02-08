@@ -8,7 +8,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using HB = HoneybeeDotNet;
+using HB = HoneybeeSchema;
 
 namespace HoneybeeRhino.Entities
 {

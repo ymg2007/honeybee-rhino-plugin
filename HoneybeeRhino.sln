@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29709.97
@@ -6,6 +6,8 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HoneybeeRhino", "src\HoneybeeRhino\HoneybeeRhino.csproj", "{E0B1CE7D-FDC1-436D-B676-0BE1C462E8B5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HoneybeeRhino.Test", "src\HoneybeeRhino.Test\HoneybeeRhino.Test.csproj", "{8EDF4429-251A-416D-BB68-93F227191BCF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RhinoNUnitTestRunner", "src\NUnitTestRunner\RhinoNUnitTestRunner.csproj", "{A2F987A6-1603-4318-92A5-3E3F80C43313}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{8EDF4429-251A-416D-BB68-93F227191BCF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8EDF4429-251A-416D-BB68-93F227191BCF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8EDF4429-251A-416D-BB68-93F227191BCF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A2F987A6-1603-4318-92A5-3E3F80C43313}.Debug|Any CPU.ActiveCfg = Debug64|Any CPU
+		{A2F987A6-1603-4318-92A5-3E3F80C43313}.Debug|Any CPU.Build.0 = Debug64|Any CPU
+		{A2F987A6-1603-4318-92A5-3E3F80C43313}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2F987A6-1603-4318-92A5-3E3F80C43313}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

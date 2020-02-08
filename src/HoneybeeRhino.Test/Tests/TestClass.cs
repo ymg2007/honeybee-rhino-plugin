@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;
 using Rhino.Geometry;
-using HoneybeeDotNet;
+using HoneybeeSchema;
 
 namespace HoneybeeRhino.Test
 {

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Rhino;
 
 
 namespace HoneybeeRhino.Test
@@ -55,12 +56,22 @@ namespace HoneybeeRhino.Test
         [Test]
         public void Test_BoxToRoom()
         {
+            
             var bbox = new BoundingBox(new Point3d(0, 0, 0), new Point3d(10, 10, 3));
             var box = new Box(bbox);
-            var room = box.ToRoom(maxRoofFloorAngle: 30);
+            var id = RhinoDoc.ActiveDoc.Objects.Add(box.ToBrep());
+            var rhinoObj = RhinoDoc.ActiveDoc.Objects.FindId(id);
+            var geo = rhinoObj.Geometry;
+            geo.ToRoomGeo(rhinoObj.Id);
 
-            TestContext.WriteLine(room.ToJson());
-            Assert.AreEqual(room.Faces.Count, 6);
+            var t = Transform.Translation(new Vector3d(30, 40, 50));
+            geo.Transform(t);
+            RhinoDoc.ActiveDoc.Objects.Replace(id, Brep.TryConvertBrep(geo));
+            var ent = Entities.RoomEntity.TryGetFrom(rhinoObj.Geometry);
+            //TestContext.WriteLine(ent.HBObject.ToJson());
+            Assert.AreEqual(ent.HBObject.Faces.Count, 6);
+            Assert.IsTrue(ent.HostGeoID != Guid.Empty);
+            RhinoDoc.ActiveDoc.Views.Redraw();
         }
 
         [Test]
@@ -70,19 +81,19 @@ namespace HoneybeeRhino.Test
             var box = new Box(bbox);
             var room = box.ToRoom(maxRoofFloorAngle: 30);
 
-            var model = new HoneybeeDotNet.Model(
+            var model = new HoneybeeSchema.Model(
                 "modelName",
-                new HoneybeeDotNet.ModelProperties(),
+                new HoneybeeSchema.ModelProperties(energy: HoneybeeSchema.ModelEnergyProperties.Default),
                 "a new displace name"
                 );
-            model.Rooms = new List<HoneybeeDotNet.Room>();
+            model.Rooms = new List<HoneybeeSchema.Room>();
             model.Rooms.Add(room);
 
             var json = model.ToJson();
 
 
 
-            TestContext.WriteLine(room.ToJson());
+            //TestContext.WriteLine(room.ToJson());
             Assert.AreEqual(room.Faces.Count, 6);
         }
 

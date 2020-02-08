@@ -3,7 +3,7 @@ using Rhino;
 using Rhino.Commands;
 using Rhino.DocObjects;
 using Rhino.UI;
-using HB = HoneybeeDotNet;
+using HB = HoneybeeSchema;
 using System.Linq;
 using System.Collections.Generic;
 

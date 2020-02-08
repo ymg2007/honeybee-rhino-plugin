@@ -38,9 +38,9 @@ namespace HoneybeeRhino.RhinoCommands
 
             // TODO: create a model.
 
-            var model = new HoneybeeDotNet.Model(
+            var model = new HoneybeeSchema.Model(
                 "modelName",
-                new HoneybeeDotNet.ModelProperties(),
+                new HoneybeeSchema.ModelProperties(),
                 "a new displace name"
                 );
             model.Rooms.AddRange(allRooms);
