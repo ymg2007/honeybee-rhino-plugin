@@ -32,11 +32,12 @@ namespace HoneybeeRhino.RhinoCommands
             using (var go = new GetObject())
             {
                 go.SetCommandPrompt("Please select closed objects for converting to Honeybee Room");
+               
                 //Only Brep is accepted, because we need to save meta data to sub-surface as well. 
                 //Extrusion doesn't have sub-surface.
                 //Convert all extrusion to Brep first.
-                go.GeometryFilter = ObjectType.Brep | ObjectType.Extrusion; 
-                go.Get();
+                go.GeometryFilter = ObjectType.Brep | ObjectType.Extrusion;
+                go.GetMultiple(1, 0);
                 if (go.CommandResult() != Result.Success)
                     return go.CommandResult();
 
