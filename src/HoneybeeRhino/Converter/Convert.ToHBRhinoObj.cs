@@ -50,6 +50,7 @@ namespace HoneybeeRhino
            
             if (geo.IsSurface && geo.Faces.First().UnderlyingSurface().IsPlanar())
             {
+                //TODO: shinkFace
                 var hbobj = geo.Faces.First().UnderlyingSurface().ToAperture();
                 var ent = new Entities.ApertureEntity(hbobj);
                 ent.HostGeoID = hostID;

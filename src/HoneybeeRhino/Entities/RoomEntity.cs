@@ -17,6 +17,7 @@ namespace HoneybeeRhino.Entities
     {
         public HB.Room HBObject { get; private set; }
 
+        //TODO: override isValid to check if hostID exists
         public RoomEntity()
         {
         }
@@ -27,19 +28,22 @@ namespace HoneybeeRhino.Entities
             this.HostGeoID = hostID;
             this.GroupEntityID = hostID;
 
-            var ent = new Entities.GroupEntity(hostID);
+            var ent = new GroupEntity(hostID);
+            ent.AddToDocument();
         }
         /// <summary>
         /// Use this for objects were duplicated alone with RhinoObject, but Ids were still referencing old Rhino object ID.
         /// </summary>
         /// <param name="roomObj"></param>
-        public void UpdateHostID(RhinoObject newRoomObj)
+        public RoomEntity UpdateHostFrom(RhinoObject newRoomObj)
         {
             var hostID = newRoomObj.Id;
             this.HostGeoID = hostID;
             this.GroupEntityID = hostID;
 
-            var ent = new Entities.GroupEntity(hostID);
+            var ent = new GroupEntity(hostID);
+            ent.AddToDocument();
+            return this;
         }
 
         protected override void OnDuplicate(UserData source)

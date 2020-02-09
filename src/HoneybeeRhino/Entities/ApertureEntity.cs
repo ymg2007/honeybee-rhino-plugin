@@ -17,6 +17,7 @@ namespace HoneybeeRhino.Entities
     {
         public HB.Aperture HBObject { get; private set; }
 
+        //TODO: override isValid to check if hostID exists
         public ApertureEntity()
         {
 
@@ -36,6 +37,14 @@ namespace HoneybeeRhino.Entities
                 this.HBObject = HB.Aperture.FromJson(json);
             }
         }
+
+        public ApertureEntity UpdateHostFrom(RhinoObject newApertureObj)
+        {
+            var hostID = newApertureObj.Id;
+            this.HostGeoID = hostID;
+            return this;
+        }
+
 
         private protected override void Deserialize(ArchivableDictionary dictionary)
         {

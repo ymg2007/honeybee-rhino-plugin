@@ -120,14 +120,15 @@ namespace HoneybeeRhino
             if (this._isObjectCopied)
             {
                 //check all group entities for new copied objects.
+                var newApertures = selectedApertures.Select(_ => _.TryGetApertureEntity().UpdateHostFrom(_));
                 //TODO: figure out all new copied windows' ownership
                 foreach (var newroom in selectedRooms)
                 {
-                    var roomEnt = RoomEntity.TryGetFrom(newroom.Geometry);
-                    roomEnt.UpdateHostID(newroom);
+                    var roomEnt = newroom.TryGetRoomEntity();
+                    roomEnt.UpdateHostFrom(newroom);
 
                     var grpEnt = GroupEntity.TryGetFromID(newroom.Id);
-                    grpEnt.AddApertures(selectedApertures);
+                    grpEnt.AddApertures(newApertures);
                 }
                 //reset the flag.
                 this._isObjectCopied = false;
@@ -148,7 +149,7 @@ namespace HoneybeeRhino
             //Only make the room obj as the entry point for selecting the entire group entity.
             foreach (var room in selectedRooms)
             {
-                var entity = GroupEntity.TryGetFrom(room);
+                var entity = GroupEntity.TryGetFrom(room.Geometry);
                 if (entity.IsValid)
                 {
                     entity.SelectEntireEntity();
@@ -163,7 +164,7 @@ namespace HoneybeeRhino
             }
             foreach (var apt in selectedApertures)
             {
-                var entity = GroupEntity.TryGetFrom(apt);
+                var entity = GroupEntity.TryGetFrom(apt.Geometry);
                 if (entity.IsValid)
                 {
                     entity.SelectRoom();

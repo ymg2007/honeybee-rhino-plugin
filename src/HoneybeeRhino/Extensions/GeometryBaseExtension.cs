@@ -27,7 +27,9 @@ namespace HoneybeeRhino
             return ent.IsValid;
 
         }
-        
+
+        public static Entities.ApertureEntity TryGetApertureEntity(this RhinoObject rhinoRef) => Entities.ApertureEntity.TryGetFrom(rhinoRef.Geometry);
+        public static Entities.RoomEntity TryGetRoomEntity(this RhinoObject rhinoRef) => Entities.RoomEntity.TryGetFrom(rhinoRef.Geometry);
 
         //public static string GetHBJson(this GeometryBase geometry)
         //{
@@ -50,8 +52,43 @@ namespace HoneybeeRhino
 
         public static bool HasGroupEntity(this RhinoObject rhinoRef)
         {
-            var ent = Entities.GroupEntity.TryGetFrom(rhinoRef);
+            var ent = Entities.GroupEntity.TryGetFrom(rhinoRef.Geometry);
             return ent.IsValid;
         }
+
+        //https://github.com/mcneel/rhino-developer-samples/blob/6/rhinocommon/cs/SampleCsCommands/SampleCsExtrusion.cs#L122
+        public static bool IsCoplanar(this Plane plane, Plane testPlane, double tolerance)
+        {
+            if (!plane.IsValid || !testPlane.IsValid)
+                return false;
+
+            tolerance = tolerance < Rhino.RhinoMath.ZeroTolerance? Rhino.RhinoMath.ZeroTolerance: tolerance;
+
+            var eq0 = plane.GetPlaneEquation();
+            var eq1 = testPlane.GetPlaneEquation();
+
+            return Math.Abs(eq0[0] - eq1[0]) < tolerance &&
+                   Math.Abs(eq0[1] - eq1[1]) < tolerance &&
+                   Math.Abs(eq0[2] - eq1[2]) < tolerance &&
+                   Math.Abs(eq0[3] - eq1[3]) < tolerance;
+        }
+
+        public static bool IsCoplanar(this Surface surface, Surface testSurface, double tolerance)
+        {
+            if (!surface.IsValid || !testSurface.IsValid)
+                return false;
+
+            if (!surface.IsPlanar() || !testSurface.IsPlanar())
+                return false;
+
+            tolerance = tolerance < Rhino.RhinoMath.ZeroTolerance ? Rhino.RhinoMath.ZeroTolerance : tolerance;
+
+            surface.TryGetPlane(out Plane plane);
+            testSurface.TryGetPlane(out Plane testPlane);
+            return plane.IsCoplanar(testPlane, tolerance);
+        }
+
+
+
     }
 }

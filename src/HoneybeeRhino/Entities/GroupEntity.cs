@@ -24,17 +24,20 @@ namespace HoneybeeRhino.Entities
         public GroupEntity(Guid roomID) 
         {
             this.RoomID = roomID;
+        }
+
+        public void AddToDocument()
+        {
             var table = HoneybeeRhinoPlugIn.Instance.GroupEntityTable;
-            var exist = table.Keys.Any(_ => _ == roomID);
+            var exist = table.Keys.Any(_ => _ == this.RoomID);
             if (!exist)
             {
-                table.Add(roomID, this);
+                table.Add(this.RoomID, this);
             }
             else
             {
                 //TODO: maybe need to clear all child ids.
             }
-           
         }
 
         
@@ -59,21 +62,46 @@ namespace HoneybeeRhino.Entities
 
         public int ApertureCount => this.ApertureIDs.Count;
 
-        public void AddApertures(IEnumerable<RhinoObject> apertureObjs)
-        {
-            this.ApertureIDs.AddRange(apertureObjs.Select(_ => _.Id));
+        //public void AddApertures(IEnumerable<RhinoObject> apertureObjs)
+        //{
+        //    this.ApertureIDs.AddRange(apertureObjs.Select(_ => _.Id));
 
+        //    foreach (var win in apertureObjs)
+        //    {
+        //        var ent = Entities.ApertureEntity.TryGetFrom(win.Geometry);
+        //        ent.GroupEntityID = this.RoomID;
+        //    }
+        //}
+        public void AddApertures(IEnumerable<Brep> apertureObjs)
+        {
             foreach (var win in apertureObjs)
             {
-                var ent = Entities.ApertureEntity.TryGetFrom(win.Geometry);
-                ent.GroupEntityID = this.RoomID;
+                var ent = Entities.ApertureEntity.TryGetFrom(win);
+                if (ent.IsValid)
+                {
+                    ent.GroupEntityID = this.RoomID;
+                    this.ApertureIDs.Add(ent.HostGeoID);
+                }
+                else
+                {
+                    throw new ArgumentException("Some input geometries are not valid aperture object!");
+                }
             }
-        
+
         }
-     
+        public void AddApertures(IEnumerable<ApertureEntity> apertureEntities)
+        {
+            foreach (var ent in apertureEntities)
+            {
+                ent.GroupEntityID = this.RoomID;
+                this.ApertureIDs.Add(ent.HostGeoID);
+            }
+
+        }
+
 
         //=========================== Select and highlight =================================
-        
+
         public bool SelectRoom() => SelectByIDs(new Guid[] { this.RoomID });
 
         public bool SelectApertures() => SelectByIDs(this.ApertureIDs);
@@ -192,7 +220,7 @@ namespace HoneybeeRhino.Entities
             return found ? ent : rc;
         }
 
-        public static GroupEntity TryGetFrom(RhinoObject obj)
+        public static GroupEntity TryGetFrom(GeometryBase obj)
         {
             GroupEntity rc = new GroupEntity();
             if (obj == null)
@@ -202,7 +230,7 @@ namespace HoneybeeRhino.Entities
 
             if (obj.IsRoom())
             {
-                var roomEnt = RoomEntity.TryGetFrom(obj.Geometry);
+                var roomEnt = RoomEntity.TryGetFrom(obj);
                 if (!roomEnt.IsValid)
                     return rc;
 
@@ -212,7 +240,7 @@ namespace HoneybeeRhino.Entities
             }
             else if (obj.IsAperture())
             {
-                var roomEnt = ApertureEntity.TryGetFrom(obj.Geometry);
+                var roomEnt = ApertureEntity.TryGetFrom(obj);
                 if (!roomEnt.IsValid)
                     return rc;
 
@@ -221,7 +249,7 @@ namespace HoneybeeRhino.Entities
             }
 
 
-            var entt = HBObjEntity.TryGetFrom(obj.Geometry);
+            var entt = HBObjEntity.TryGetFrom(obj);
 
           
             //if object is copied, this saved Entity ID will not be valid.

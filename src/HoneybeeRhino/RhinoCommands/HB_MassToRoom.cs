@@ -35,7 +35,7 @@ namespace HoneybeeRhino.RhinoCommands
                
                 //Only Brep is accepted, because we need to save meta data to sub-surface as well. 
                 //Extrusion doesn't have sub-surface.
-                //Convert all extrusion to Brep first.
+                //all extrusion will be converted to Brep.
                 go.GeometryFilter = ObjectType.Brep | ObjectType.Extrusion;
                 go.GetMultiple(1, 0);
                 if (go.CommandResult() != Result.Success)
@@ -48,7 +48,6 @@ namespace HoneybeeRhino.RhinoCommands
                 foreach (var item in go.Objects())
                 {
                     var geo = item.Geometry().ToRoomGeo(item.ObjectId);
-
                     doc.Objects.Replace(item.ObjectId, geo);
                 }
                 
