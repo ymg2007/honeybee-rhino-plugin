@@ -7,10 +7,9 @@ using Tests = HoneybeeRhino.Test;
 namespace RhinoNUnitTestRunner
 {
     //https://github.com/JoinCAD/RhinoNUnitTestRunner
-    [System.Runtime.InteropServices.Guid("96ad7749-f2c4-4be3-b692-1d3c2e2806e1")]
-    public class RhinoNUnitTestRunnerCommand : Command
+    public class ConvertToHB_TestRunner : Command
     {
-        public RhinoNUnitTestRunnerCommand()
+        public ConvertToHB_TestRunner()
         {
             // Rhino only creates one instance of each command class defined in a
             // plug-in, so it is safe to store a refence in a static property.
@@ -18,7 +17,7 @@ namespace RhinoNUnitTestRunner
         }
 
         ///<summary>The only instance of this command.</summary>
-        public static RhinoNUnitTestRunnerCommand Instance
+        public static ConvertToHB_TestRunner Instance
         {
             get; private set;
         }
@@ -26,7 +25,7 @@ namespace RhinoNUnitTestRunner
         ///<returns>The command name as it appears on the Rhino command line.</returns>
         public override string EnglishName
         {
-            get { return "RhinoNUnitTestRunnerCommand"; }
+            get { return "ConvertToHB_TestRunner"; }
         }
 
         protected override Result RunCommand(RhinoDoc doc, RunMode mode)

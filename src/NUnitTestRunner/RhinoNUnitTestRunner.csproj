@@ -65,7 +65,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="RhinoConsoleTextWriter.cs" />
-    <Compile Include="RhinoNUnitTestRunnerCommand.cs" />
+    <Compile Include="TestRunners\RoomEntity_TestRunner.cs" />
+    <Compile Include="TestRunners\ConvertToHB_TestRunner.cs" />
     <Compile Include="RhinoNUnitTestRunnerPlugIn.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
