@@ -82,14 +82,65 @@ namespace HoneybeeRhino
             if (!surface.IsPlanar() || !testSurface.IsPlanar())
                 return false;
 
-            tolerance = tolerance < Rhino.RhinoMath.ZeroTolerance ? Rhino.RhinoMath.ZeroTolerance : tolerance;
-
             surface.TryGetPlane(out Plane plane);
             testSurface.TryGetPlane(out Plane testPlane);
             return plane.IsCoplanar(testPlane, tolerance);
         }
+        public static bool isIntersected(this BoundingBox room, BoundingBox anotherRoom)
+        {
+            var roomMax = room.Max;
+            var roomMin = room.Min;
 
+            var otherMax = anotherRoom.Max;
+            var otherMin = anotherRoom.Min;
 
+            //Check intersections for each dimension.
+            var isXIntersected = IsBetween((roomMax.X, roomMin.X), (otherMax.X, otherMin.X));
+            var isYIntersected = IsBetween((roomMax.Y, roomMin.Y), (otherMax.Y, otherMin.Y));
+            var isZIntersected = IsBetween((roomMax.Z, roomMin.Z), (otherMax.Z, otherMin.Z));
+
+            return isXIntersected && isYIntersected && isZIntersected;
+
+            bool IsBetween((double Max, double Min) v1, (double Max, double Min) v2)
+            {
+                return v1.Max >= v2.Min && v2.Max >= v1.Min;
+            }
+
+        }
+
+        public static bool SolveAdjacny(this Brep roomGeo, List<Brep> otherRooms, double tolerance)
+        {
+            if (!roomGeo.IsRoom())
+                return false;
+
+            if (otherRooms.Any(_ => !_.IsRoom()))
+                return false;
+
+            //Check bounding boxes first
+            var roomBBox = roomGeo.GetBoundingBox(false);
+            var intersectedRooms = otherRooms.Where(_ => roomBBox.isIntersected(_.GetBoundingBox(false)));
+
+            var currentBrep = roomGeo;
+            var allBreps = otherRooms;
+            tolerance = Math.Max(tolerance, Rhino.RhinoMath.ZeroTolerance);
+
+            foreach (Brep item in allBreps)
+            {
+                var tempBrep = currentBrep.Split(item, tolerance);
+                if (tempBrep.Any())
+                {
+                    var newBrep = Brep.JoinBreps(tempBrep, tolerance);
+
+                    currentBrep = newBrep.First();
+                    currentBrep.Faces.ShrinkFaces();
+                }
+            }
+
+            return true;
+
+            
+            
+        }
 
     }
 }
