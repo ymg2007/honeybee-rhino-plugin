@@ -68,10 +68,25 @@ namespace HoneybeeRhino
             var eq0 = plane.GetPlaneEquation();
             var eq1 = testPlane.GetPlaneEquation();
 
-            return Math.Abs(eq0[0] - eq1[0]) < tolerance &&
-                   Math.Abs(eq0[1] - eq1[1]) < tolerance &&
-                   Math.Abs(eq0[2] - eq1[2]) < tolerance &&
-                   Math.Abs(eq0[3] - eq1[3]) < tolerance;
+            //sameNormalCoPlane
+            var cop = 
+                Math.Abs(eq0[0] - eq1[0]) < tolerance &&
+                Math.Abs(eq0[1] - eq1[1]) < tolerance &&
+                Math.Abs(eq0[2] - eq1[2]) < tolerance &&
+                Math.Abs(eq0[3] - eq1[3]) < tolerance;
+
+            //invertNormalCoPlane
+            if (!cop)
+            {
+                cop =
+                    Math.Abs(eq0[0] + eq1[0]) < tolerance &&
+                    Math.Abs(eq0[1] + eq1[1]) < tolerance &&
+                    Math.Abs(eq0[2] + eq1[2]) < tolerance &&
+                    Math.Abs(eq0[3] + eq1[3]) < tolerance;
+            }
+
+
+            return cop;
         }
 
         public static bool IsCoplanar(this Surface surface, Surface testSurface, double tolerance)
@@ -107,38 +122,69 @@ namespace HoneybeeRhino
             }
 
         }
-
-        public static bool SolveAdjacny(this Brep roomGeo, List<Brep> otherRooms, double tolerance)
+        public static IEnumerable<Brep> SolveAdjancy(this IEnumerable<Brep> rooms, double tolerance)
         {
-            if (!roomGeo.IsRoom())
-                return false;
+            var checkedObjs = rooms.AsParallel().AsOrdered().Select(_ => _.DuplicateBrep().SolveAdjancy(rooms, tolerance));
+            return checkedObjs;
+        }
 
-            if (otherRooms.Any(_ => !_.IsRoom()))
-                return false;
+        public static Brep SolveAdjancy(this Brep roomGeo, IEnumerable<Brep> otherRooms, double tolerance)
+        {
+            tolerance = Math.Max(tolerance, Rhino.RhinoMath.ZeroTolerance);
 
             //Check bounding boxes first
             var roomBBox = roomGeo.GetBoundingBox(false);
             var intersectedRooms = otherRooms.Where(_ => roomBBox.isIntersected(_.GetBoundingBox(false)));
+            //remove room-self
+            //intersectedRooms = intersectedRooms.SkipWhile(_ => _.IsDuplicate(roomGeo, tolerance));
 
             var currentBrep = roomGeo;
-            var allBreps = otherRooms;
-            tolerance = Math.Max(tolerance, Rhino.RhinoMath.ZeroTolerance);
+            var allBreps = intersectedRooms;
 
-            foreach (Brep item in allBreps)
+            foreach (Brep brep in allBreps)
             {
-                var tempBrep = currentBrep.Split(item, tolerance);
-                if (tempBrep.Any())
+                var isDup = brep.IsDuplicate(currentBrep,tolerance);
+                if (isDup)
+                    continue;
+
+                var currentBrepFaces = currentBrep.Faces;
+                var cutters = new List<Brep>();
+                foreach (var curBrepFace in currentBrepFaces)
                 {
-                    var newBrep = Brep.JoinBreps(tempBrep, tolerance);
+                    var coplanned = brep.Faces.Where(_ => _.UnderlyingSurface().IsCoplanar(curBrepFace, tolerance));
+                    var faceCutters = coplanned.Where(_ => _.GetBoundingBox(false).isIntersected(roomBBox)).Select(_=>_.ToBrep());
+                    cutters.AddRange(faceCutters);
+                    //newFaces.AddRange(curBrepFace.ToBrep().Split(cutters, tolerance));
+
+                }
+
+                var newBreps = currentBrep.Split(cutters, tolerance);
+
+                if (newBreps.Any())
+                {
+                    var newBrep = Brep.JoinBreps(newBreps, tolerance);
 
                     currentBrep = newBrep.First();
                     currentBrep.Faces.ShrinkFaces();
                 }
+                else
+                {
+
+                }
+                
+
+                //var tempBreps = currentBrep.Split(allCutters, tolerance);
+                //if (tempBreps.Any())
+                //{
+                //    var newBrep = Brep.JoinBreps(tempBreps, tolerance);
+
+                //    currentBrep = newBrep.First();
+                //    currentBrep.Faces.ShrinkFaces();
+                //}
             }
 
-            return true;
+            return currentBrep;
 
-            
             
         }
 
