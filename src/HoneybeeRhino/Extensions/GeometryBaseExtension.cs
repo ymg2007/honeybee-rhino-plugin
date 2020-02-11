@@ -122,21 +122,19 @@ namespace HoneybeeRhino
             }
 
         }
-        public static IEnumerable<Brep> SolveAdjancy(this IEnumerable<Brep> rooms, double tolerance)
+        public static IEnumerable<Brep> SolveAdjacency(this IEnumerable<Brep> rooms, double tolerance)
         {
-            var checkedObjs = rooms.AsParallel().AsOrdered().Select(_ => _.DuplicateBrep().SolveAdjancy(rooms, tolerance));
+            var checkedObjs = rooms.AsParallel().AsOrdered().Select(_ => _.DuplicateBrep().SolveAdjacency(rooms, tolerance));
             return checkedObjs;
         }
 
-        public static Brep SolveAdjancy(this Brep roomGeo, IEnumerable<Brep> otherRooms, double tolerance)
+        public static Brep SolveAdjacency(this Brep roomGeo, IEnumerable<Brep> otherRooms, double tolerance)
         {
             tolerance = Math.Max(tolerance, Rhino.RhinoMath.ZeroTolerance);
 
             //Check bounding boxes first
             var roomBBox = roomGeo.GetBoundingBox(false);
             var intersectedRooms = otherRooms.Where(_ => roomBBox.isIntersected(_.GetBoundingBox(false)));
-            //remove room-self
-            //intersectedRooms = intersectedRooms.SkipWhile(_ => _.IsDuplicate(roomGeo, tolerance));
 
             var currentBrep = roomGeo;
             var allBreps = intersectedRooms;
@@ -160,18 +158,11 @@ namespace HoneybeeRhino
 
                 var newBreps = currentBrep.Split(cutters, tolerance);
 
-                if (newBreps.Any())
-                {
-                    var newBrep = Brep.JoinBreps(newBreps, tolerance);
+                var newBrep = Brep.JoinBreps(newBreps, tolerance);
 
-                    currentBrep = newBrep.First();
-                    currentBrep.Faces.ShrinkFaces();
-                }
-                else
-                {
+                currentBrep = newBrep.First();
+                currentBrep.Faces.ShrinkFaces();
 
-                }
-                
 
                 //var tempBreps = currentBrep.Split(allCutters, tolerance);
                 //if (tempBreps.Any())

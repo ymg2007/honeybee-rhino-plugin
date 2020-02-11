@@ -8,23 +8,23 @@ using Rhino.Geometry;
 
 namespace HoneybeeRhino.RhinoCommands
 {
-    public class HB_SolveAdjancy : Command
+    public class HB_SolveAdjacency : Command
     {
-        static HB_SolveAdjancy _instance;
-        public HB_SolveAdjancy()
+        static HB_SolveAdjacency _instance;
+        public HB_SolveAdjacency()
         {
             _instance = this;
         }
 
         ///<summary>The only instance of the HB_SolveAdjancy command.</summary>
-        public static HB_SolveAdjancy Instance
+        public static HB_SolveAdjacency Instance
         {
             get { return _instance; }
         }
 
         public override string EnglishName
         {
-            get { return "HB_SolveAdjancy"; }
+            get { return "HB_SolveAdjacency"; }
         }
 
         protected override Result RunCommand(RhinoDoc doc, RunMode mode)
@@ -44,22 +44,25 @@ namespace HoneybeeRhino.RhinoCommands
                
                 //Must be all room objects.
                 var rooms = go.Objects().Select(_ => _.Brep());
-                //if (rooms.Any(_ => !_.IsRoom()))
-                //    return go.CommandResult();
+                if (rooms.Any(_ => !_.IsRoom()))
+                {
+                    RhinoApp.WriteLine("Not all selected objects are Honeybee room, please double check, and convert it to room first.");
+                    return go.CommandResult();
+                }
 
 
                 var tol = RhinoDoc.ActiveDoc.ModelAbsoluteTolerance / 10;
                 var dupRooms = rooms.Select(_ => _.DuplicateBrep());
-                var checkedObjs = dupRooms.SolveAdjancy(tol);
+                var checkedObjs = dupRooms.SolveAdjacency(tol);
 
                 var counts = rooms.Count();
-                var ids = go.Objects().Select(_ => _.ObjectId);
-                var validObjs = checkedObjs.Any(_ => _.TryGetRoomEntity().IsValid);
+                var ids = go.Objects().Select(_ => _.ObjectId).ToList();
+
                 var objs = checkedObjs.ToList();
+
                 for (int i = 0; i < counts; i++)
                 {
-                    var newB = objs[i];
-                    doc.Objects.Replace(ids.ElementAt(i), newB);
+                    doc.Objects.Replace(ids[i], objs[i]);
                 }
 
                 doc.Views.Redraw();
