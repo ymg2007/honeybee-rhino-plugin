@@ -124,7 +124,7 @@ namespace HoneybeeRhino
         }
         public static IEnumerable<Brep> SolveAdjacency(this IEnumerable<Brep> rooms, double tolerance)
         {
-            var checkedObjs = rooms.AsParallel().AsOrdered().Select(_ => _.DuplicateBrep().SolveAdjacency(rooms, tolerance));
+            var checkedObjs = rooms.Select(_ => _.DuplicateBrep().SolveAdjacency(rooms, tolerance));
             return checkedObjs;
         }
 
@@ -139,13 +139,13 @@ namespace HoneybeeRhino
             var currentBrep = roomGeo;
             var allBreps = intersectedRooms;
 
+            var currentBrepFaces = currentBrep.Faces;
             foreach (Brep brep in allBreps)
             {
                 var isDup = brep.IsDuplicate(currentBrep,tolerance);
                 if (isDup)
                     continue;
 
-                var currentBrepFaces = currentBrep.Faces;
                 var cutters = new List<Brep>();
                 foreach (var curBrepFace in currentBrepFaces)
                 {
@@ -163,17 +163,11 @@ namespace HoneybeeRhino
                 currentBrep = newBrep.First();
                 currentBrep.Faces.ShrinkFaces();
 
-
-                //var tempBreps = currentBrep.Split(allCutters, tolerance);
-                //if (tempBreps.Any())
-                //{
-                //    var newBrep = Brep.JoinBreps(tempBreps, tolerance);
-
-                //    currentBrep = newBrep.First();
-                //    currentBrep.Faces.ShrinkFaces();
-                //}
             }
-
+            //move over the roomEntity to new geometry.
+            //all faceEntities in Brep.surface stays even after split.
+            var roomEnt = roomGeo.TryGetRoomEntity();
+            currentBrep.UserData.Add(roomEnt);
             return currentBrep;
 
             
