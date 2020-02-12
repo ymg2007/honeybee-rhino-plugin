@@ -48,7 +48,7 @@
     <Compile Include="Entities\ApertureEntity.cs" />
     <Compile Include="Entities\RoomEntity.cs" />
     <Compile Include="Extensions\GeometryBaseExtension.cs" />
-    <Compile Include="RhinoCommands\GetBrepJson.cs" />
+    <Compile Include="RhinoCommands\BrepJson.cs" />
     <Compile Include="RhinoCommands\HB_EditRoom.cs" />
     <Compile Include="RhinoCommands\HB_RoomList.cs" />
     <Compile Include="RhinoCommands\HB_SolveAdjacency.cs" />
@@ -68,7 +68,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="HoneybeeSchema">
-      <Version>1.15.0.3830</Version>
+      <Version>1.16.1.4729</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>12.0.3</Version>

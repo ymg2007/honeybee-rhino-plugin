@@ -131,6 +131,26 @@ namespace HoneybeeRhino
             return matchedObj;
         }
 
+        public static IEnumerable<BrepFace> GetAdjFaces(this Brep room, Brep adjacentRoom, double tolerance)
+        {
+            var cutters = new List<BrepFace>();
+            var currentBrepFaces = room.Faces;
+            var adjRoom = adjacentRoom;
+            //var roomBBox = room.GetBoundingBox(false);
+            foreach (var curBrepFace in currentBrepFaces)
+            {
+                var curFaceBBox = curBrepFace.GetBoundingBox(false);
+                var coplanned = adjRoom.Faces.Where(_ => _.UnderlyingSurface().IsCoplanar(curBrepFace, tolerance, true));
+                var faceCutters = coplanned.Where(_ => _.GetBoundingBox(false).isIntersected(curFaceBBox));
+                if (faceCutters.Any())
+                {
+                    cutters.AddRange(faceCutters);
+                }
+                
+            }
+            return cutters;
+        }
+
         public static Brep IntersectMasses(this Brep roomGeo, IEnumerable<Brep> otherRooms, double tolerance)
         {
             tolerance = Math.Max(tolerance, Rhino.RhinoMath.ZeroTolerance);
@@ -143,24 +163,18 @@ namespace HoneybeeRhino
             var allBreps = adjacentRooms;
 
             var currentBrepFaces = currentBrep.Faces;
-            foreach (Brep brep in allBreps)
+            foreach (Brep adjBrep in allBreps)
             {
-                var isDup = brep.IsDuplicate(currentBrep,tolerance);
+                var isDup = adjBrep.IsDuplicate(currentBrep,tolerance);
                 if (isDup)
                     continue;
 
-                var cutters = new List<Brep>();
-                foreach (var curBrepFace in currentBrepFaces)
-                {
-                    var coplanned = brep.Faces.Where(_ => _.UnderlyingSurface().IsCoplanar(curBrepFace, tolerance, true));
-                    var faceCutters = coplanned.Where(_ => _.GetBoundingBox(false).isIntersected(roomBBox)).Select(_=>_.ToBrep());
-                    cutters.AddRange(faceCutters);
-                }
+                var cutters = currentBrep.GetAdjFaces(adjBrep, tolerance).Select(_ => _.ToBrep());
                 //There is no overlapping area.
                 if (!cutters.Any())
                     continue;
 
-                var newBreps = currentBrep.Split(cutters, tolerance);
+                var newBreps = currentBrep.Split(cutters, tolerance).SkipWhile(_=>_ == null);
                 if (!newBreps.Any())
                     continue;
 
@@ -220,9 +234,8 @@ namespace HoneybeeRhino
                 {
                     var currentFaceBbox = curBrepFace.GetBoundingBox(false);
                     var currentFaceArea = AreaMassProperties.Compute(curBrepFace).Area;
-                    var coplanned = adjFaces.Where(_ => _.UnderlyingSurface().IsCoplanar(curBrepFace, tolerance, true));
-                    var matches = coplanned
-                        .Where(_ => _.GetBoundingBox(false).isIntersected(currentFaceBbox));
+
+                    var matches = currentBrep.GetAdjFaces(adjBrep, tolerance);
 
                     //ignore this face, and keep its original outdoor, ground, or surface;
                     if (!matches.Any())
