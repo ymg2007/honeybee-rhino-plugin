@@ -6,26 +6,23 @@ using Tests = HoneybeeRhino.Test;
 
 namespace RhinoNUnitTestRunner
 {
-    //https://github.com/JoinCAD/RhinoNUnitTestRunner
-    public class ConvertToHB_TestRunner : Command
+    public class NUnitTestRunner : Command
     {
-        public ConvertToHB_TestRunner()
+        static NUnitTestRunner _instance;
+        public NUnitTestRunner()
         {
-            // Rhino only creates one instance of each command class defined in a
-            // plug-in, so it is safe to store a refence in a static property.
-            Instance = this;
+            _instance = this;
         }
 
-        ///<summary>The only instance of this command.</summary>
-        public static ConvertToHB_TestRunner Instance
+        ///<summary>The only instance of the RoomEntity_TestRunner command.</summary>
+        public static NUnitTestRunner Instance
         {
-            get; private set;
+            get { return _instance; }
         }
 
-        ///<returns>The command name as it appears on the Rhino command line.</returns>
         public override string EnglishName
         {
-            get { return "ConvertToHB_TestRunner"; }
+            get { return "NUnitTestRunner"; }
         }
 
         protected override Result RunCommand(RhinoDoc doc, RunMode mode)
@@ -33,7 +30,7 @@ namespace RhinoNUnitTestRunner
             try
             {
                 // Go get the assembly through your preferred method.
-                var assembly = typeof(Tests.ConvertToHB).Assembly;
+                var assembly = typeof(Tests.RoomEntityTests).Assembly;
                 new AutoRun(assembly).Execute(new string[] { }, new RhinoConsoleTextWriter(), null);
             }
             catch (Exception e)
@@ -41,7 +38,7 @@ namespace RhinoNUnitTestRunner
                 RhinoApp.Write(e.ToString());
                 return Result.Failure;
             }
-            
+
             return Result.Success;
         }
     }

@@ -13,13 +13,15 @@ namespace HoneybeeRhino.Test
     {
         static bool initialized = false;
         static string systemDir = null;
-
+        static Rhino.RhinoDoc _doc;
         [OneTimeSetUp]
         public void Init()
         {
-            if (initialized)
+            _doc = Rhino.RhinoDoc.ActiveDoc;
+            if (initialized || _doc != null)
             {
-                throw new InvalidOperationException("AssemblyInitialize should only be called once");
+                return;
+                //throw new InvalidOperationException("AssemblyInitialize should only be called once");
             }
             initialized = true;
             TestContext.WriteLine("Assembly init started");
@@ -64,7 +66,11 @@ namespace HoneybeeRhino.Test
         public static void AssemblyCleanup()
         {
             // Shotdown the rhino process at the end of the test run
-            ExitInProcess();
+            if ( _doc == null)
+            {
+                ExitInProcess();
+            }
+            
         }
 
         [DllImport("RhinoLibrary.dll")]
