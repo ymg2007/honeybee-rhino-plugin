@@ -18,6 +18,7 @@ namespace HoneybeeRhino.Entities
         public HB.Aperture HBObject { get; private set; }
 
         //TODO: override isValid to check if hostID exists
+        public override string Description => this.IsValid ? $"HBApertureEntity: {HBObject.Name}" : base.Description;
         public ApertureEntity()
         {
 

@@ -18,6 +18,7 @@ namespace HoneybeeRhino.Entities
         public HB.Room HBObject { get; private set; }
 
         //TODO: override isValid to check if hostID exists
+        public override string Description => this.IsValid ? $"HBRoomEntity: {HBObject.Name}" : base.Description;
         public RoomEntity()
         {
         }

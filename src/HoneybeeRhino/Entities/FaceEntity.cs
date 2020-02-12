@@ -18,6 +18,7 @@ namespace HoneybeeRhino.Entities
         public HB.Face HBObject { get; private set; }
 
         public override bool IsValid => HBObject != null;
+        public override string Description => this.IsValid ? $"HBFaceEntity: {HBObject.Name}" : base.Description;
         public FaceEntity()
         {
         }
