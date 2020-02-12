@@ -90,7 +90,7 @@ namespace HoneybeeRhino
             var roofBaseNorm = new RH.Vector3d(0, 0, 1);
 
             var face = new HB.Face(
-                    Guid.NewGuid().ToString(),
+                    "Face_" + Guid.NewGuid().ToString(),
                     f.ToHBFace3D(),
                     HB.Face.FaceTypeEnum.Wall,
                     new HB.Outdoors(),

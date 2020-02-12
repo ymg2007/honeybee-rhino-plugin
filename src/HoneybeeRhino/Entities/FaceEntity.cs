@@ -53,10 +53,10 @@ namespace HoneybeeRhino.Entities
             return dic;
         }
 
-        //public static FaceEntity TryGetFrom(RhinoObject obj)
-        //{
-        //    return TryGetFrom(obj.Geometry);
-        //}
+        public void UpdateNameID()
+        {
+            this.HBObject.Name = "Face_" + Guid.NewGuid().ToString();
+        }
 
         public static FaceEntity TryGetFrom(Rhino.Geometry.GeometryBase rhinoGeo)
         {
@@ -65,7 +65,11 @@ namespace HoneybeeRhino.Entities
                 return rc;
 
             var ent = rhinoGeo.UserData.Find(typeof(FaceEntity)) as FaceEntity;
-
+            if (ent == null)
+            {
+                ent = (rhinoGeo as Rhino.Geometry.Brep).Surfaces[0].UserData.Find(typeof(FaceEntity)) as FaceEntity;
+            }
+            
             return ent == null ? rc : ent;
         }
     }
