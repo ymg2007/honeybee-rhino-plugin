@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Rhino;
-
+using System.IO;
 
 namespace HoneybeeRhino.Test
 {
@@ -95,6 +95,33 @@ namespace HoneybeeRhino.Test
 
             //TestContext.WriteLine(room.ToJson());
             Assert.AreEqual(room.Faces.Count, 6);
+        }
+
+        [Test]
+        public void Test_Coplanar()
+        {
+            string file = @"D:\Dev\honeybee-rhino-plugin\src\HoneybeeRhino.Test\TestModels\TwoSimpleBreps.json";
+            string json = System.IO.File.ReadAllText(file);
+            var breps = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Brep>>(json);
+            var tol = 0.0001;
+
+            var firstB = breps[0];
+            var secondB = breps[1];
+
+            var cutters = new List<Brep>();
+            foreach (var face in firstB.Faces)
+            {
+                var intersectedFaces = secondB.Faces.Where(_ => _.GetBoundingBox(false).isIntersected(face.GetBoundingBox(false)));
+                var coplanarFaces = intersectedFaces.Where(_ => _.UnderlyingSurface().IsCoplanar(face.UnderlyingSurface(), tol, true)).Select(_ => _.ToBrep());
+                cutters.AddRange(coplanarFaces);
+            }
+
+            Assert.AreEqual(cutters.Count, 1);
+
+            var cutterProp = AreaMassProperties.Compute(cutters.First());
+            Assert.IsTrue(Math.Abs(cutterProp.Area - 4*3.5)< tol);
+            Assert.IsTrue(cutterProp.Centroid.DistanceToSquared(new Point3d(2, 0, 1.75))< Math.Pow(tol,2));
+
         }
 
     }

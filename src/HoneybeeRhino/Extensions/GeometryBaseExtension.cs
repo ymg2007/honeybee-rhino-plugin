@@ -237,7 +237,7 @@ namespace HoneybeeRhino
 
                         //Check if two adjacent faces are really matching.
                         var isAreaSame = Math.Abs(adjProp.Area - curProp.Area) < tolerance;
-                        var isCenterSame = adjProp.Centroid.DistanceToSquared(curProp.Centroid) < Math.Sqrt(tolerance);
+                        var isCenterSame = adjProp.Centroid.DistanceToSquared(curProp.Centroid) < Math.Pow(tolerance,2);
 
                         if (isAreaSame && isCenterSame)
                         {
