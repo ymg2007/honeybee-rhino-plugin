@@ -148,14 +148,16 @@ namespace HoneybeeRhino
             if (closedBrep.IsSolid)
             {
                 var dupBrep = closedBrep.DuplicateBrep();
-                var subFaces = dupBrep.Faces.ToList();
-                subFaces.ForEach(_ => _.ShrinkFace(RH.BrepFace.ShrinkDisableSide.ShrinkAllSides));
-                var hbFaces = subFaces.Select(_ => _.ToHBFace(maxRoofFloorAngle)).ToList();
+                var subFaces = dupBrep.Faces;
+                subFaces.ShrinkFaces();
 
+                var hbFaces = subFaces.Select(_ => _.ToHBFace(maxRoofFloorAngle)).ToList();
+                //var testEnt = new Entities.FaceEntity(hbFaces[0]);
+                
                 for (int i = 0; i < hbFaces.Count; i++)
                 {
-                    var bFace = closedBrep.Surfaces[i];
                     var faceEnt = new Entities.FaceEntity(hbFaces[i]);
+                    var bFace = closedBrep.Surfaces[i];
                     bFace.UserData.Add(faceEnt);
                 }
                
