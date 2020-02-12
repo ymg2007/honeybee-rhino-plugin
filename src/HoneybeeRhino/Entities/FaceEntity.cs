@@ -20,7 +20,6 @@ namespace HoneybeeRhino.Entities
         public override bool IsValid => HBObject != null;
         public FaceEntity()
         {
-            
         }
 
         public FaceEntity(HB.Face hbObj)
@@ -55,7 +54,15 @@ namespace HoneybeeRhino.Entities
 
         public void UpdateNameID()
         {
-            this.HBObject.Name = "Face_" + Guid.NewGuid().ToString();
+            if (this.IsValid)
+            {
+                this.HBObject.Name = "Face_" + Guid.NewGuid().ToString();
+            }
+            else
+            {
+                throw new ArgumentNullException("HBObject is null");
+            }
+     
         }
 
         public static FaceEntity TryGetFrom(Rhino.Geometry.GeometryBase rhinoGeo)
@@ -69,7 +76,7 @@ namespace HoneybeeRhino.Entities
             {
                 ent = (rhinoGeo as Rhino.Geometry.Brep).Surfaces[0].UserData.Find(typeof(FaceEntity)) as FaceEntity;
             }
-            
+
             return ent == null ? rc : ent;
         }
     }

@@ -60,7 +60,7 @@ namespace HoneybeeRhino
         }
 
         //https://github.com/mcneel/rhino-developer-samples/blob/6/rhinocommon/cs/SampleCsCommands/SampleCsExtrusion.cs#L122
-        public static bool IsCoplanar(this Plane plane, Plane testPlane, double tolerance, bool testIfInverted = false)
+        public static bool IsCoplanar(this Plane plane, Plane testPlane, double tolerance, bool testInvertedNormalOnly = false)
         {
             if (!plane.IsValid || !testPlane.IsValid)
                 return false;
@@ -78,7 +78,7 @@ namespace HoneybeeRhino
                 Math.Abs(eq0[3] - eq1[3]) < tolerance;
 
             //invertNormalCoPlane
-            if ((!cop) || testIfInverted)
+            if ((!cop) || testInvertedNormalOnly)
             {
                 cop =
                     Math.Abs(eq0[0] + eq1[0]) < tolerance &&
@@ -91,7 +91,7 @@ namespace HoneybeeRhino
             return cop;
         }
 
-        public static bool IsCoplanar(this Surface surface, Surface testSurface, double tolerance, bool testIfInverted = false)
+        public static bool IsCoplanar(this Surface surface, Surface testSurface, double tolerance, bool testInvertedNormalOnly = false)
         {
             if (!surface.IsValid || !testSurface.IsValid)
                 return false;
@@ -101,7 +101,7 @@ namespace HoneybeeRhino
 
             surface.TryGetPlane(out Plane plane);
             testSurface.TryGetPlane(out Plane testPlane);
-            return plane.IsCoplanar(testPlane, tolerance, testIfInverted);
+            return plane.IsCoplanar(testPlane, tolerance, testInvertedNormalOnly);
         }
         public static bool isIntersected(this BoundingBox room, BoundingBox anotherRoom)
         {
@@ -126,12 +126,7 @@ namespace HoneybeeRhino
         }
         public static IEnumerable<Brep> SolveAdjacency(this IEnumerable<Brep> rooms, double tolerance)
         {
-            var checkedObjs = rooms.Select(_ => _.DuplicateBrep().IntersectMasses(rooms, tolerance));
-            var areas = checkedObjs.Select(_ => _.Faces.Select(f => AreaMassProperties.Compute(f).Area));
-            var areaSrfs = checkedObjs.Select(_ => _.Surfaces.Select(f => AreaMassProperties.Compute(f).Area));
-            checkedObjs.ToList().ForEach(_ => _.Faces.ShrinkFaces());
-            var areas2 = checkedObjs.Select(_ => _.Faces.Select(f => AreaMassProperties.Compute(f).Area));
-            var areaSrfs2 = checkedObjs.Select(_ => _.Surfaces.Select(f => AreaMassProperties.Compute(f).Area));
+            var checkedObjs = rooms.AsParallel().AsOrdered().Select(_ => _.DuplicateBrep().IntersectMasses(rooms, tolerance)).ToList();
             var matchedObj = checkedObjs.Select(_ => _.DuplicateBrep().MatchInteriorFaces(checkedObjs, tolerance));
             return matchedObj;
         }
@@ -157,14 +152,18 @@ namespace HoneybeeRhino
                 var cutters = new List<Brep>();
                 foreach (var curBrepFace in currentBrepFaces)
                 {
-                    var coplanned = brep.Faces.Where(_ => _.UnderlyingSurface().IsCoplanar(curBrepFace, tolerance));
+                    var coplanned = brep.Faces.Where(_ => _.UnderlyingSurface().IsCoplanar(curBrepFace, tolerance, true));
                     var faceCutters = coplanned.Where(_ => _.GetBoundingBox(false).isIntersected(roomBBox)).Select(_=>_.ToBrep());
                     cutters.AddRange(faceCutters);
-                    //newFaces.AddRange(curBrepFace.ToBrep().Split(cutters, tolerance));
-
                 }
+                //There is no overlapping area.
+                if (!cutters.Any())
+                    continue;
 
                 var newBreps = currentBrep.Split(cutters, tolerance);
+                if (!newBreps.Any())
+                    continue;
+
                 //assign new name ID to newly split faces.
                 newBreps.Where(_ => _.Surfaces.Count == 1).ToList().ForEach(_ => _.TryGetFaceEntity().UpdateNameID());
                 var newBrep = Brep.JoinBreps(newBreps, tolerance);
@@ -172,11 +171,20 @@ namespace HoneybeeRhino
                 currentBrep = newBrep.First();
                 currentBrep.Faces.ShrinkFaces();
 
+
             }
             //move over the roomEntity to new geometry.
             //all faceEntities in Brep.surface stays even after split.
             var roomEnt = roomGeo.TryGetRoomEntity();
-            currentBrep.UserData.Add(roomEnt);
+            if (roomEnt == null)
+            {
+                throw new ArgumentNullException("Room entity is null");
+            }
+            else
+            {
+                currentBrep.UserData.Add(roomEnt);
+            }
+         
             //TODO: update subsurfaces geometry data
             //Probably there is no need to update this geometry data until export to simulation engine.
             //No one needs this data.
@@ -197,49 +205,41 @@ namespace HoneybeeRhino
             var currentRoomEnt = currentBrep.TryGetRoomEntity();
             var adjBreps = adjacentRooms;
 
+            //Check sub-faces
             var currentFaces = currentBrep.Faces;
-            currentFaces.ShrinkFaces();
-            var curAreas = currentFaces.Select(_ => AreaMassProperties.Compute(_).Area);
-            var CurCenters = currentFaces.Select(_ => AreaMassProperties.Compute(_).Centroid);
-
             foreach (Brep adjBrep in adjBreps)
             {
                 var adjRoomEnt = adjBrep.TryGetRoomEntity();
                 var adjFaces = adjBrep.Faces;
-                adjFaces.ShrinkFaces();
                 //var isDup = adjBrep.IsDuplicate(currentBrep, tolerance);
                 if (adjRoomEnt.GroupEntityID == currentRoomEnt.GroupEntityID)
                     continue;
 
-                var areas = adjFaces.Select(_ => AreaMassProperties.Compute(_).Area);
-                var centers = adjFaces.Select(_ => AreaMassProperties.Compute(_).Centroid);
+                //Loop through current room's sub-faces
                 foreach (var curBrepFace in currentFaces)
                 {
                     var currentFaceBbox = curBrepFace.GetBoundingBox(false);
                     var currentFaceArea = AreaMassProperties.Compute(curBrepFace).Area;
                     var coplanned = adjFaces.Where(_ => _.UnderlyingSurface().IsCoplanar(curBrepFace, tolerance, true));
-                    //var matches = coplanned
-                    //    .Where(_ => _.GetBoundingBox(false).isIntersected(currentFaceBbox));
+                    var matches = coplanned
+                        .Where(_ => _.GetBoundingBox(false).isIntersected(currentFaceBbox));
 
                     //ignore this face, and keep its original outdoor, ground, or surface;
-                    if (!coplanned.Any())
+                    if (!matches.Any())
                         continue;
 
-                    foreach (var adjFace in coplanned)
+                    foreach (var adjFace in matches)
                     {
-                        adjFace.ShrinkFace(BrepFace.ShrinkDisableSide.ShrinkAllSides);
-                        curBrepFace.ShrinkFace(BrepFace.ShrinkDisableSide.ShrinkAllSides);
                         var adjProp = AreaMassProperties.Compute(adjFace);
                         var curProp = AreaMassProperties.Compute(curBrepFace);
                         var p1 = adjProp.Centroid;
                         var p2 = curProp.Centroid;
-                        if (curProp.Area<40)
-                        {
-                            Rhino.RhinoDoc.ActiveDoc.Objects.AddPoint(p1);
-                            Rhino.RhinoDoc.ActiveDoc.Views.Redraw();
-                        }
-                
-                        if (Math.Abs(adjProp.Area - curProp.Area) < tolerance)
+
+                        //Check if two adjacent faces are really matching.
+                        var isAreaSame = Math.Abs(adjProp.Area - curProp.Area) < tolerance;
+                        var isCenterSame = adjProp.Centroid.DistanceToSquared(curProp.Centroid) < Math.Sqrt(tolerance);
+
+                        if (isAreaSame && isCenterSame)
                         {
                             var adjEnt = adjBrep.Surfaces[adjFace.SurfaceIndex].TryGetFaceEntity();
                             var curEnt = currentBrep.Surfaces[curBrepFace.SurfaceIndex].TryGetFaceEntity();
