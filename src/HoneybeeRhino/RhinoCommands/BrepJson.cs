@@ -5,19 +5,20 @@ using Newtonsoft.Json;
 using Rhino.DocObjects;
 using Rhino.Input.Custom;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace HoneybeeRhino.RhinoCommands
 {
-    public class GetBrepJson : Command
+    public class BrepJson : Command
     {
-        static GetBrepJson _instance;
-        public GetBrepJson()
+        static BrepJson _instance;
+        public BrepJson()
         {
             _instance = this;
         }
 
         ///<summary>The only instance of the GetBrepJson command.</summary>
-        public static GetBrepJson Instance
+        public static BrepJson Instance
         {
             get { return _instance; }
         }
@@ -40,10 +41,10 @@ namespace HoneybeeRhino.RhinoCommands
 
                 if (go.ObjectCount == 0)
                 {
-                    string file = @"D:\Dev\honeybee-rhino-plugin\src\HoneybeeRhino.Test\TestModels\TwoSimpleBreps.json";
-                    string json = System.IO.File.ReadAllText(file);
-                    var breps = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Rhino.Geometry.Brep>>(json);
-                    foreach (var b in breps)
+                    string file = @"D:\Dev\honeybee-rhino-plugin\src\HoneybeeRhino.Test\TestModels\RingFiveBreps.json";
+                    string j = System.IO.File.ReadAllText(file);
+                    var bs = JsonConvert.DeserializeObject<List<Rhino.Geometry.Brep>>(j);
+                    foreach (var b in bs)
                     {
                         doc.Objects.AddBrep(b);
                     }
@@ -51,15 +52,9 @@ namespace HoneybeeRhino.RhinoCommands
                     return Result.Success;
                 }
                    
+                var breps = go.Objects().Select(_ => _.Brep());
+                var json = JsonConvert.SerializeObject(breps);
 
-                var jsons = new List<string>();
-                foreach (var item in go.Objects())
-                {
-                    var geo = item.Brep();
-                    var json = JsonConvert.SerializeObject(geo);
-                    jsons.Add(json);
-                }
-                
                 return Result.Success;
 
 
