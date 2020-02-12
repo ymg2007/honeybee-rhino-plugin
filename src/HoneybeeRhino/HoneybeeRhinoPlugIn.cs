@@ -21,7 +21,7 @@ namespace HoneybeeRhino
     {
         private RoomEntityMouseCallback m_mc;
         public GroupEntityTable GroupEntityTable { get; private set; } = new GroupEntityTable();
-
+        public override Rhino.PlugIns.PlugInLoadTime LoadTime => Rhino.PlugIns.PlugInLoadTime.AtStartup;
         public string ObjectSelectMode { get; set; } = "GroupEntity";
         public HoneybeeRhinoPlugIn()
         {
