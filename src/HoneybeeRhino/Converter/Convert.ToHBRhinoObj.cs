@@ -18,10 +18,8 @@ namespace HoneybeeRhino
             var brep = RH.Brep.TryConvertBrep(roomGeo);
             if (brep != null)
             {
-                var hbobj = brep.ToRoom();
-                var ent = new Entities.RoomEntity(hbobj, hostID);
-                brep.UserData.Add(ent);
-                return brep;
+                var newRoomObj = brep.ToRoom(hostID);
+                return newRoomObj;
             }
             else
             {

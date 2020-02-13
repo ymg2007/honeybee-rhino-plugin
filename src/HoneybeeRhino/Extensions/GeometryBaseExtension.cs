@@ -60,7 +60,7 @@ namespace HoneybeeRhino
         }
 
         //https://github.com/mcneel/rhino-developer-samples/blob/6/rhinocommon/cs/SampleCsCommands/SampleCsExtrusion.cs#L122
-        public static bool IsCoplanar(this Plane plane, Plane testPlane, double tolerance, bool testInvertedNormalOnly = false)
+        public static bool IsCoplanar(this Plane plane, Plane testPlane, double tolerance, bool sameNormal = true, bool fliptedNormal = false)
         {
             if (!plane.IsValid || !testPlane.IsValid)
                 return false;
@@ -71,27 +71,37 @@ namespace HoneybeeRhino
             var eq1 = testPlane.GetPlaneEquation();
 
             //sameNormalCoPlane
-            var cop = 
-                Math.Abs(eq0[0] - eq1[0]) < tolerance &&
-                Math.Abs(eq0[1] - eq1[1]) < tolerance &&
-                Math.Abs(eq0[2] - eq1[2]) < tolerance &&
-                Math.Abs(eq0[3] - eq1[3]) < tolerance;
+            var sameNormalCop =
+                 Math.Abs(eq0[0] - eq1[0]) < tolerance &&
+                 Math.Abs(eq0[1] - eq1[1]) < tolerance &&
+                 Math.Abs(eq0[2] - eq1[2]) < tolerance &&
+                 Math.Abs(eq0[3] - eq1[3]) < tolerance;
 
-            //invertNormalCoPlane
-            if ((!cop) || testInvertedNormalOnly)
+            var fliptedCop =
+                Math.Abs(eq0[0] + eq1[0]) < tolerance &&
+                Math.Abs(eq0[1] + eq1[1]) < tolerance &&
+                Math.Abs(eq0[2] + eq1[2]) < tolerance &&
+                Math.Abs(eq0[3] + eq1[3]) < tolerance;
+
+            if (sameNormal && !fliptedNormal)
             {
-                cop =
-                    Math.Abs(eq0[0] + eq1[0]) < tolerance &&
-                    Math.Abs(eq0[1] + eq1[1]) < tolerance &&
-                    Math.Abs(eq0[2] + eq1[2]) < tolerance &&
-                    Math.Abs(eq0[3] + eq1[3]) < tolerance;
+                //check the same normal only
+                return sameNormalCop;
+            }
+            else if (!sameNormal && fliptedNormal)
+            {
+                //check the inverted normal only
+                return fliptedCop;
+            }
+            else
+            {
+                //check both
+                return sameNormalCop || fliptedCop;
             }
 
-
-            return cop;
         }
 
-        public static bool IsCoplanar(this Surface surface, Surface testSurface, double tolerance, bool testInvertedNormalOnly = false)
+        public static bool IsCoplanar(this Surface surface, Surface testSurface, double tolerance, bool sameNormal = true, bool fliptedNormal = false)
         {
             if (!surface.IsValid || !testSurface.IsValid)
                 return false;
@@ -101,7 +111,7 @@ namespace HoneybeeRhino
 
             surface.TryGetPlane(out Plane plane);
             testSurface.TryGetPlane(out Plane testPlane);
-            return plane.IsCoplanar(testPlane, tolerance, testInvertedNormalOnly);
+            return plane.IsCoplanar(testPlane, tolerance, sameNormal, fliptedNormal);
         }
         public static bool isIntersected(this BoundingBox room, BoundingBox anotherRoom)
         {
@@ -126,32 +136,47 @@ namespace HoneybeeRhino
         }
         public static IEnumerable<Brep> SolveAdjacency(this IEnumerable<Brep> rooms, double tolerance)
         {
-            var checkedObjs = rooms.AsParallel().AsOrdered().Select(_ => _.DuplicateBrep().IntersectMasses(rooms, tolerance)).ToList();
+            var checkedObjs = rooms.IntersectMasses(tolerance).ToList();
             var matchedObj = checkedObjs.Select(_ => _.DuplicateBrep().MatchInteriorFaces(checkedObjs, tolerance));
             return matchedObj;
         }
 
-        public static IEnumerable<BrepFace> GetAdjFaces(this Brep room, Brep adjacentRoom, double tolerance)
+        public static IEnumerable<(BrepFace roomFace, IEnumerable<BrepFace> matchedCutters)> GetAdjFaces(this Brep room, Brep adjacentRoom, double tolerance)
         {
-            var cutters = new List<BrepFace>();
+            var cutters = new List<(BrepFace, IEnumerable<BrepFace>)>();
             var currentBrepFaces = room.Faces;
             var adjRoom = adjacentRoom;
             //var roomBBox = room.GetBoundingBox(false);
             foreach (var curBrepFace in currentBrepFaces)
             {
                 var curFaceBBox = curBrepFace.GetBoundingBox(false);
-                var coplanned = adjRoom.Faces.Where(_ => _.UnderlyingSurface().IsCoplanar(curBrepFace, tolerance, true));
+                var coplanned = adjRoom.Faces.Where(_ => _.UnderlyingSurface().IsCoplanar(curBrepFace, tolerance, sameNormal:false, fliptedNormal:true));
                 var faceCutters = coplanned.Where(_ => _.GetBoundingBox(false).isIntersected(curFaceBBox));
                 if (faceCutters.Any())
                 {
-                    cutters.AddRange(faceCutters);
+                    var srf = faceCutters.Select(_ => _.UnderlyingSurface());
+                    var b = faceCutters.Select(_ => _.ToBrep().Surfaces[0]);
+                    var srfByindex = adjRoom.Surfaces[faceCutters.First().SurfaceIndex];
+                    var c = curBrepFace.ToBrep().Surfaces[0];
+                    var c2 = curBrepFace.UnderlyingSurface();
+                    var c3 = room.Surfaces[curBrepFace.SurfaceIndex];
+                    cutters.Add((curBrepFace, faceCutters));
                 }
                 
             }
             return cutters;
         }
 
-        public static Brep IntersectMasses(this Brep roomGeo, IEnumerable<Brep> otherRooms, double tolerance)
+        public static IEnumerable<Brep> IntersectMasses(this IEnumerable<Brep> otherRooms, double tolerance)
+        {
+            var copy = otherRooms.Select(_ => _.DuplicateBrep());
+            var intersected = copy.Select(_ => _.IntersectWithMasses(otherRooms, tolerance));
+            //var isRoom = otherRooms.Select(_ => _.Surfaces.All(s => s.TryGetFaceEntity().IsValid));
+            //var isRoom2 = intersected.Select(_ => _.Surfaces.All(s => s.TryGetFaceEntity().IsValid));
+            return intersected;
+        }
+
+        private static Brep IntersectWithMasses(this Brep roomGeo, IEnumerable<Brep> otherRooms, double tolerance)
         {
             tolerance = Math.Max(tolerance, Rhino.RhinoMath.ZeroTolerance);
 
@@ -163,28 +188,61 @@ namespace HoneybeeRhino
             var allBreps = adjacentRooms;
 
             var currentBrepFaces = currentBrep.Faces;
+            var isRoomValid = otherRooms.Select(_ => _.Surfaces.All(s => s.TryGetFaceEntity().IsValid));
+            var isThisRoomValid = currentBrep.Surfaces.All(s => s.TryGetFaceEntity().IsValid);
+            var faceAreasBeforeSplit = currentBrepFaces.Select(_ => AreaMassProperties.Compute(_).Area);
             foreach (Brep adjBrep in allBreps)
             {
-                var isDup = adjBrep.IsDuplicate(currentBrep,tolerance);
+                var isDup = adjBrep.IsDuplicate(roomGeo, tolerance);
                 if (isDup)
                     continue;
 
-                var cutters = currentBrep.GetAdjFaces(adjBrep, tolerance).Select(_ => _.ToBrep());
+                //Get matched faces, and its adjacent cutters.
+                var matchAndCutters = currentBrep.GetAdjFaces(adjBrep, tolerance);
                 //There is no overlapping area.
-                if (!cutters.Any())
+                if (!matchAndCutters.Any())
                     continue;
 
-                var newBreps = currentBrep.Split(cutters, tolerance).SkipWhile(_=>_ == null);
-                if (!newBreps.Any())
-                    continue;
 
-                //assign new name ID to newly split faces.
-                newBreps.Where(_ => _.Surfaces.Count == 1).ToList().ForEach(_ => _.TryGetFaceEntity().UpdateNameID());
-                var newBrep = Brep.JoinBreps(newBreps, tolerance);
+                //Split and Join
+                var solidBrep = currentBrep;
+                foreach (var matchAndCutter in matchAndCutters)
+                {
+                    var currentRoomFace = matchAndCutter.roomFace;
+                    var cutters = matchAndCutter.matchedCutters.Select(_=>_.DuplicateFace(false));
+                    //Split the current brep by cutters
+                    var newBreps = solidBrep.Split(cutters, tolerance).SkipWhile(_ => _ == null);
 
-                currentBrep = newBrep.First();
-                currentBrep.Faces.ShrinkFaces();
+                    if (!newBreps.Any())
+                        continue;
 
+                    
+                    var ent1 = currentRoomFace.UnderlyingSurface().TryGetFaceEntity();
+                    var ent2 = currentBrep.Surfaces[currentRoomFace.SurfaceIndex].TryGetFaceEntity();
+                    //var ent3 = currentRoomFace.ToBrep().Surfaces[0].TryGetFaceEntity();
+                    var ent = currentRoomFace.TryGetFaceEntity();
+
+
+                    //assign new name ID to newly split faces.
+                    //DO NOT use following Linq expression, because ToList() creates new object, instead of referencing the same one. 
+                    //newBreps.Where(_ => _.Faces.Count == 1).ToList().ForEach(_ => _.TryGetFaceEntity().UpdateID_CopyFrom(ent));
+                    foreach (var item in newBreps)
+                    {
+                        if (item.Faces.Count == 1)
+                        {
+                            item.TryGetFaceEntity().UpdateID_CopyFrom(ent);
+                        }
+                    }
+                   
+
+                    //Join back to solid
+                    var newBrep = Brep.JoinBreps(newBreps, tolerance);
+                    solidBrep = newBrep.First();
+                    solidBrep.Faces.ShrinkFaces();
+                }
+                //just to make logically clear, but they are essentially the same.
+                //solidBrep is only used in above foreach loop
+                currentBrep = solidBrep;
 
             }
             //move over the roomEntity to new geometry.
@@ -205,7 +263,6 @@ namespace HoneybeeRhino
 
             return currentBrep;
 
-            
         }
         public static Brep MatchInteriorFaces(this Brep room, IEnumerable<Brep> otherRooms, double tolerance)
         {
@@ -220,49 +277,41 @@ namespace HoneybeeRhino
             var adjBreps = adjacentRooms;
 
             //Check sub-faces
-            var currentFaces = currentBrep.Faces;
             foreach (Brep adjBrep in adjBreps)
             {
                 var adjRoomEnt = adjBrep.TryGetRoomEntity();
-                var adjFaces = adjBrep.Faces;
+                //var adjFaces = adjBrep.Faces;
                 //var isDup = adjBrep.IsDuplicate(currentBrep, tolerance);
                 if (adjRoomEnt.GroupEntityID == currentRoomEnt.GroupEntityID)
                     continue;
 
-                //Loop through current room's sub-faces
-                foreach (var curBrepFace in currentFaces)
+                var matches = currentBrep.GetAdjFaces(adjBrep, tolerance);
+                //ignore this face, and keep its original outdoor, ground, or surface;
+                if (!matches.Any())
+                    continue;
+
+                foreach (var match in matches)
                 {
-                    var currentFaceBbox = curBrepFace.GetBoundingBox(false);
-                    var currentFaceArea = AreaMassProperties.Compute(curBrepFace).Area;
+                    var matchedSubFace = match.roomFace;
+                    var curProp = AreaMassProperties.Compute(matchedSubFace);
 
-                    var matches = currentBrep.GetAdjFaces(adjBrep, tolerance);
-
-                    //ignore this face, and keep its original outdoor, ground, or surface;
-                    if (!matches.Any())
+                    var matchedadjFaces = match.matchedCutters;
+                    var sameAreaFaces = matchedadjFaces.Where(_ => Math.Abs(AreaMassProperties.Compute(_).Area - curProp.Area) < tolerance);
+                    if (!sameAreaFaces.Any())
                         continue;
 
-                    foreach (var adjFace in matches)
-                    {
-                        var adjProp = AreaMassProperties.Compute(adjFace);
-                        var curProp = AreaMassProperties.Compute(curBrepFace);
-                        var p1 = adjProp.Centroid;
-                        var p2 = curProp.Centroid;
+                    //Check if two adjacent faces are really matching.
+                    var sameCenterFaces = sameAreaFaces.Where(_ => AreaMassProperties.Compute(_).Centroid.DistanceToSquared(curProp.Centroid) < Math.Pow(tolerance, 2));
+                    if (!sameCenterFaces.Any())
+                        continue;
 
-                        //Check if two adjacent faces are really matching.
-                        var isAreaSame = Math.Abs(adjProp.Area - curProp.Area) < tolerance;
-                        var isCenterSame = adjProp.Centroid.DistanceToSquared(curProp.Centroid) < Math.Pow(tolerance,2);
+                    var matchedAdjFace = sameCenterFaces.First();
 
-                        if (isAreaSame && isCenterSame)
-                        {
-                            var adjEnt = adjBrep.Surfaces[adjFace.SurfaceIndex].TryGetFaceEntity();
-                            var curEnt = currentBrep.Surfaces[curBrepFace.SurfaceIndex].TryGetFaceEntity();
-                            adjEnt.HBObject.BoundaryCondition =  new HoneybeeSchema.Surface(new List<string>(2) { curEnt.HBObject.Name, currentRoomEnt.HBObject.Name });
-                            curEnt.HBObject.BoundaryCondition = new HoneybeeSchema.Surface(new List<string>(2) { adjEnt.HBObject.Name, adjRoomEnt.HBObject.Name });
-                        }
-                    }
-
+                    var adjEnt = adjBrep.Surfaces[matchedAdjFace.SurfaceIndex].TryGetFaceEntity();
+                    var curEnt = currentBrep.Surfaces[matchedSubFace.SurfaceIndex].TryGetFaceEntity();
+                    adjEnt.HBObject.BoundaryCondition = new HoneybeeSchema.Surface(new List<string>(2) { curEnt.HBObject.Name, currentRoomEnt.HBObject.Name });
+                    curEnt.HBObject.BoundaryCondition = new HoneybeeSchema.Surface(new List<string>(2) { adjEnt.HBObject.Name, adjRoomEnt.HBObject.Name });
                 }
-
 
             }
 

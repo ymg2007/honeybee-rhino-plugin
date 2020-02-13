@@ -69,7 +69,7 @@ namespace HoneybeeRhino.RhinoCommands
                 {
                     //Check aperture surface
                     var apertureBrep = Brep.TryConvertBrep(aperture.Geometry).DuplicateBrep();
-                    apertureBrep.Faces.ToList().ForEach(_ => _.ShrinkFace(BrepFace.ShrinkDisableSide.ShrinkAllSides));
+                    apertureBrep.Faces.ShrinkFaces();
                     var apertureSrf = apertureBrep.Surfaces.First() as PlaneSurface;
                     apertureSrf.TryGetPlane(out Plane aptPlane);
                     var apertureBBox = apertureBrep.GetBoundingBox(false);
@@ -89,7 +89,7 @@ namespace HoneybeeRhino.RhinoCommands
                         //TODO: need to test following method performance
                         var isInside = srfBBox.Contains(apertureBBox, false);
                         var isIntersected = srfBBox.Contains(apertureBBox.Max, false) || srfBBox.Contains(apertureBBox.Min, false);
-                        var isCoPlanner = roomSrf.IsCoplanar(apertureSrf, RhinoMath.ZeroTolerance);
+                        var isCoPlanner = roomSrf.IsCoplanar(apertureSrf, RhinoMath.ZeroTolerance, true, true);
                         if (isInside)
                         {
                             var apertureGeo = aperture.Geometry.ToApertureGeo(aperture.Id);

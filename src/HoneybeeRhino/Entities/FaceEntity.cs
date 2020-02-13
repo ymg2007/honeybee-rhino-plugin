@@ -2,6 +2,7 @@
 using Rhino.DocObjects;
 using Rhino.DocObjects.Custom;
 using Rhino.FileIO;
+using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,13 +29,21 @@ namespace HoneybeeRhino.Entities
             this.HBObject = hbObj;
         }
 
+        public void Duplicate(FaceEntity otherFaceEntityToCopyFrom)
+        {
+            var json = otherFaceEntityToCopyFrom.HBObject.ToJson();
+            this.HBObject = HB.Face.FromJson(json);
+            //in Base.OnDuplicate() also makes a copy of HostGeoID, 
+            //but this is for Duplicate() called by manually, such as UpdateID_CopyFrom();
+            this.HostGeoID = otherFaceEntityToCopyFrom.HostGeoID;
+        }
+
         protected override void OnDuplicate(UserData source)
         {
             if (source is FaceEntity src)
             {
                 base.OnDuplicate(source);
-                var json = src.HBObject.ToJson();
-                this.HBObject = HB.Face.FromJson(json);
+                this.Duplicate(src);
             }
         }
 
@@ -53,15 +62,16 @@ namespace HoneybeeRhino.Entities
             return dic;
         }
 
-        public void UpdateNameID()
+        public void UpdateID_CopyFrom(FaceEntity otherFaceEntity)
         {
-            if (this.IsValid)
+            if (otherFaceEntity.IsValid)
             {
+                this.Duplicate(otherFaceEntity);
                 this.HBObject.Name = "Face_" + Guid.NewGuid().ToString();
             }
             else
             {
-                throw new ArgumentNullException("HBObject is null");
+                throw new ArgumentNullException("OtherFaceEntity is null");
             }
      
         }
@@ -72,13 +82,23 @@ namespace HoneybeeRhino.Entities
             if (!rhinoGeo.IsValid)
                 return rc;
 
-            var ent = rhinoGeo.UserData.Find(typeof(FaceEntity)) as FaceEntity;
-            if (ent == null)
+            if (rhinoGeo is BrepFace brepFace)
             {
-                ent = (rhinoGeo as Rhino.Geometry.Brep).Surfaces[0].UserData.Find(typeof(FaceEntity)) as FaceEntity;
+                //var ent = brepFace.Brep.Surfaces[brepFace.SurfaceIndex].UserData.Find(typeof(FaceEntity)) as FaceEntity;
+                var ent = brepFace.UnderlyingSurface().TryGetFaceEntity();
+                return ent == null ? rc : ent;
             }
-
-            return ent == null ? rc : ent;
+            else if (rhinoGeo is Surface surface)
+            {
+                var ent = surface.UserData.Find(typeof(FaceEntity)) as FaceEntity;
+                return ent == null ? rc : ent;
+            }
+            else
+            {
+                var ent = (rhinoGeo as Rhino.Geometry.Brep).Surfaces[0].UserData.Find(typeof(FaceEntity)) as FaceEntity;
+                return ent == null ? rc : ent;
+            }
+          
         }
     }
 }
