@@ -45,6 +45,7 @@
     <Compile Include="Tests\ConvertToHB.cs" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="RhinoCommon" Version="7.0.20042.9575-wip" />
     <PackageReference Include="HoneybeeSchema">
       <Version>1.16.1.4729</Version>
     </PackageReference>
