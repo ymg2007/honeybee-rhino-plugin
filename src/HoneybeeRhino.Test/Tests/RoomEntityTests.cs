@@ -23,7 +23,10 @@ namespace HoneybeeRhino.Test
             var bbox = new BoundingBox(new Point3d(0, 0, 0), new Point3d(10, 10, 3));
             var box = new Box(bbox);
             var id = _doc.Objects.Add(box.ToBrep());
+            var newHBGeo = box.ToBrep().ToRoomGeo(id);
+            _doc.Objects.Replace(id, newHBGeo);
             var rhinoObj = _doc.Objects.FindId(id);
+
             return rhinoObj;
         }
 
@@ -52,11 +55,12 @@ namespace HoneybeeRhino.Test
             var room = box.ToBrep().ToRoomGeo(Guid.NewGuid());
 
             var ent = room.TryGetRoomEntity();
-
+            var srfNames = room.Surfaces.Select(_ => _.TryGetFaceEntity().HBObject.Name);
             try
             {
                 Assert.AreEqual(ent.HBObject.Faces.Count, 6);
                 Assert.IsTrue(ent.HostGeoID != Guid.Empty);
+                Assert.AreEqual(srfNames.Count(), 6);
             }
             catch (AssertionException e)
             {
@@ -66,11 +70,37 @@ namespace HoneybeeRhino.Test
         }
 
         [Test]
+        public void Test_RingFiveRooms()
+        {
+            string file = @"D:\Dev\honeybee-rhino-plugin\src\HoneybeeRhino.Test\TestModels\RingFiveBreps.json";
+            var breps = LoadBoxesFromJson(file);
+            //breps = _doc.Objects.Where(_ => _.IsSelected(true) >= 1).Select(_=>Brep.TryConvertBrep(_.Geometry)).ToList();
+            var rooms = breps.Select(_=>_.ToRoomGeo(Guid.NewGuid()));
+
+            var ents = rooms.Select(_=>_.TryGetRoomEntity());
+            var srfNames = rooms.Select(rm=>rm.Surfaces.Select(_ => _.TryGetFaceEntity().HBObject.Name)).ToList();
+
+            try
+            {
+                Assert.IsTrue(ents.All(_=>_.IsValid));
+                Assert.IsTrue(ents.All(_=>_.HostGeoID != Guid.Empty));
+                for (int i = 0; i < breps.Count(); i++)
+                {
+                    Assert.IsTrue(srfNames[i].Count() == breps[i].Faces.Count);
+                }
+            }
+            catch (AssertionException e)
+            {
+                throw e;
+            }
+
+        }
+
+        [Test]
         public void Test_MoveRoom()
         {
             var rhinoObj = InitRoomBox();
             var geo = rhinoObj.Geometry;
-            geo.ToRoomGeo(rhinoObj.Id);
 
             var t = Transform.Translation(new Vector3d(10, 10, 0));
             geo.Transform(t);
@@ -99,8 +129,7 @@ namespace HoneybeeRhino.Test
         public void Test_CopyRoomEntity()
         {
             var rhinoObj = InitRoomBox();
-            var geo = rhinoObj.Geometry;
-            geo.ToRoomGeo(rhinoObj.Id);
+       
 
             var dupGeo = rhinoObj.DuplicateGeometry();
             var id = _doc.Objects.Add(dupGeo);
@@ -141,7 +170,7 @@ namespace HoneybeeRhino.Test
             {
                 Assert.AreEqual(cutters.Count(), 1);
 
-                var cutterProp = AreaMassProperties.Compute(cutters.First());
+                var cutterProp = AreaMassProperties.Compute(cutters.First().matchedCutters.First());
                 Assert.IsTrue(Math.Abs(cutterProp.Area - 4 * 3.5) < _tol);
                 Assert.IsTrue(cutterProp.Centroid.DistanceToSquared(new Point3d(2, 0, 1.75)) < Math.Pow(_tol, 2));
             }
@@ -161,7 +190,7 @@ namespace HoneybeeRhino.Test
             var breps = LoadBoxesFromJson(file);
 
             var rooms = breps.Select(_ => _.ToRoomGeo(Guid.NewGuid()));
-            var intersectedBreps = rooms.Select(_ => _.IntersectMasses(rooms, _tol)).ToList();
+            var intersectedBreps = rooms.IntersectMasses(_tol).ToList();
 
             var firstB = intersectedBreps[0];
             var secondB = intersectedBreps[1];
@@ -184,13 +213,13 @@ namespace HoneybeeRhino.Test
             var hbObjs_first = firstB.Surfaces.Select(_ => _.TryGetFaceEntity().HBObject);
             var hbObjs_second = secondB.Surfaces.Select(_ => _.TryGetFaceEntity().HBObject);
 
-            var faceNames_first = hbObjs_first.Select(_ => _.Name).Distinct();
-            var faceNames_second = hbObjs_second.Select(_ => _.Name).Distinct();
+            var faceNames_first = hbObjs_first.Select(_ => _.Name);
+            var faceNames_second = hbObjs_second.Select(_ => _.Name);
 
             try
             {
-                Assert.IsTrue(faceNames_first.Count() == 7);
-                Assert.IsTrue(faceNames_second.Count() == 7);
+                Assert.IsTrue(faceNames_first.Count() == faceNames_first.Distinct().Count());
+                Assert.IsTrue(faceNames_second.Count() == faceNames_second.Distinct().Count());
             }
             catch (AssertionException e)
             {
@@ -218,15 +247,46 @@ namespace HoneybeeRhino.Test
         }
 
         [Test]
+        public void Test_DuplicateBreps_WithUserData()
+        {
+            string file = @"D:\Dev\honeybee-rhino-plugin\src\HoneybeeRhino.Test\TestModels\RingFiveBreps.json";
+            var breps = LoadBoxesFromJson(file);
+            var rooms = breps.Select(_ => _.ToRoomGeo(Guid.NewGuid()));
+            var isRoom = rooms.Select(_ => _.Surfaces.All(s => s.TryGetFaceEntity().IsValid));
+
+            var intersectedBreps = rooms.Select(_ => _.DuplicateBrep());
+            var isNewRoomSurfacesOK = rooms.Select(_ => _.Surfaces.All(s => s.TryGetFaceEntity().IsValid));
+
+            try
+            {
+                Assert.IsTrue(isNewRoomSurfacesOK.All(_ => _));
+            }
+            catch (AssertionException e)
+            {
+                throw e;
+            }
+        }
+
+        [Test]
         public void Test_IntersectMass_MoreBreps()
         {
 
             string file = @"D:\Dev\honeybee-rhino-plugin\src\HoneybeeRhino.Test\TestModels\RingFiveBreps.json";
             var breps = LoadBoxesFromJson(file);
-
             var rooms = breps.Select(_ => _.ToRoomGeo(Guid.NewGuid()));
-            var intersectedBreps = rooms.Select(_ => _.IntersectMasses(rooms, _tol)).ToList();
 
+            var intersectedBreps = rooms.Select(_ => _.DuplicateBrep());
+            intersectedBreps = rooms.IntersectMasses(_tol);
+
+            //foreach (var item in intersectedBreps)
+            //{
+            //    if (item.Faces.Count !=8)
+            //    {
+            //        _doc.Objects.Add(item);
+            //    }
+
+            //}
+            //_doc.Views.Redraw();
 
             //check if there is a new face created
             try
@@ -239,10 +299,19 @@ namespace HoneybeeRhino.Test
             {
                 throw e;
             }
-           
+
 
             ////Check if all face names are identical
-            //var hbObjs_first = firstB.Surfaces.Select(_ => _.TryGetFaceEntity().HBObject);
+            var names = intersectedBreps.Select(b => b.Surfaces.Select(_ => _.TryGetFaceEntity().HBObject.Name));
+            var diffNames = names.Distinct();
+            try
+            {
+                Assert.IsTrue(names.Sum(_=>_.Count()) == diffNames.Sum(_ => _.Count()));
+            }
+            catch (AssertionException e)
+            {
+                throw e;
+            }
             //var hbObjs_second = secondB.Surfaces.Select(_ => _.TryGetFaceEntity().HBObject);
 
             //var faceNames_first = hbObjs_first.Select(_ => _.Name).Distinct();
