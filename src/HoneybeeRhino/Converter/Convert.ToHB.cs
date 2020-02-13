@@ -142,39 +142,7 @@ namespace HoneybeeRhino
                 ).ToList();
         }
 
-        public static RH.Brep ToAllPlaneBrep(this RH.Brep roomBrep, double tolerance = 0.0001)
-        {
-            var surfs = roomBrep.Faces;
-            var checkedSrfs = new List<RH.Brep>();
-            foreach (var srf in surfs)
-            {
-                var s = srf.UnderlyingSurface();
-                if (s is RH.PlaneSurface ps)
-                {
-                    checkedSrfs.Add(ps.ToBrep());
-                }
-                else if (srf.IsPlanar())
-                {
-                    var cv = srf.OuterLoop.To3dCurve();
-                    var p = RH.Brep.CreatePlanarBreps(cv, tolerance).First();
-                    checkedSrfs.Add(p);
-                    
-                }
-                else
-                {
-                    throw new ArgumentException("Non-planar surfaces are not accepted!");
-                }
-                
-            }
 
-            var joined = RH.Brep.JoinBreps(checkedSrfs, tolerance).First();
-            if (!joined.IsSolid)
-            {
-                joined = joined.CapPlanarHoles(tolerance);
-            }
-            return joined;
-          
-        }
 
         private static RH.Brep ToRoom(this RH.Brep closedBrep, Guid hostID, double maxRoofFloorAngle = 30, double tolerance = 0.0001)
         {

@@ -319,5 +319,39 @@ namespace HoneybeeRhino
             return currentBrep;
         }
 
+
+        public static Brep ToAllPlaneBrep(this Brep roomBrep, double tolerance = 0.0001)
+        {
+            var surfs = roomBrep.Faces;
+            var checkedSrfs = new List<Brep>();
+            foreach (var srf in surfs)
+            {
+                var s = srf.UnderlyingSurface();
+                if (s is PlaneSurface ps)
+                {
+                    checkedSrfs.Add(ps.ToBrep());
+                }
+                else if (srf.IsPlanar())
+                {
+                    var cv = srf.OuterLoop.To3dCurve();
+                    var p = Brep.CreatePlanarBreps(cv, tolerance).First();
+                    checkedSrfs.Add(p);
+
+                }
+                else
+                {
+                    throw new ArgumentException("Non-planar surfaces are not accepted!");
+                }
+
+            }
+
+            var joined = Brep.JoinBreps(checkedSrfs, tolerance).First();
+            if (!joined.IsSolid)
+            {
+                joined = joined.CapPlanarHoles(tolerance);
+            }
+            return joined;
+
+        }
     }
 }
