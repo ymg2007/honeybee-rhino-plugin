@@ -28,22 +28,22 @@ namespace HoneybeeRhino.RhinoCommands
         {
             // TODO: ask for a name:
 
-            // TODO: create a default energy property
+            //// TODO: create a default energy property
 
-            // TODO: select all rooms in this rhino document
-            var allRooms = doc.Objects
-                .Where(_=>_.Geometry.IsRoom())
-                .Select(_=>Rhino.Geometry.Brep.TryConvertBrep(_.Geometry).ToRoom()) ;
+            //// TODO: select all rooms in this rhino document
+            //var allRooms = doc.Objects
+            //    .Where(_=>_.Geometry.IsRoom())
+            //    .Select(_=>Rhino.Geometry.Brep.TryConvertBrep(_.Geometry).ToRoom()) ;
           
 
-            // TODO: create a model.
+            //// TODO: create a model.
 
-            var model = new HoneybeeSchema.Model(
-                "modelName",
-                new HoneybeeSchema.ModelProperties(),
-                "a new displace name"
-                );
-            model.Rooms.AddRange(allRooms);
+            //var model = new HoneybeeSchema.Model(
+            //    "modelName",
+            //    new HoneybeeSchema.ModelProperties(),
+            //    "a new displace name"
+            //    );
+            //model.Rooms.AddRange(allRooms);
 
             return Result.Success;
         }

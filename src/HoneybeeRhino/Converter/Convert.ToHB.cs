@@ -142,12 +142,45 @@ namespace HoneybeeRhino
                 ).ToList();
         }
 
+        public static RH.Brep ToAllPlaneBrep(this RH.Brep roomBrep, double tolerance = 0.0001)
+        {
+            var surfs = roomBrep.Faces;
+            var checkedSrfs = new List<RH.Brep>();
+            foreach (var srf in surfs)
+            {
+                var s = srf.UnderlyingSurface();
+                if (s is RH.PlaneSurface ps)
+                {
+                    checkedSrfs.Add(ps.ToBrep());
+                }
+                else if (srf.IsPlanar())
+                {
+                    var cv = srf.OuterLoop.To3dCurve();
+                    var p = RH.Brep.CreatePlanarBreps(cv, tolerance).First();
+                    checkedSrfs.Add(p);
+                    
+                }
+                else
+                {
+                    throw new ArgumentException("Non-planar surfaces are not accepted!");
+                }
+                
+            }
 
-        public static HB.Room ToRoom(this RH.Brep closedBrep, double maxRoofFloorAngle = 30)
+            var joined = RH.Brep.JoinBreps(checkedSrfs, tolerance).First();
+            if (!joined.IsSolid)
+            {
+                joined = joined.CapPlanarHoles(tolerance);
+            }
+            return joined;
+          
+        }
+
+        private static RH.Brep ToRoom(this RH.Brep closedBrep, Guid hostID, double maxRoofFloorAngle = 30, double tolerance = 0.0001)
         {
             if (closedBrep.IsSolid)
             {
-                var dupBrep = closedBrep.DuplicateBrep();
+                var dupBrep = closedBrep.ToAllPlaneBrep(tolerance);
                 var subFaces = dupBrep.Faces;
                 subFaces.ShrinkFaces();
 
@@ -157,11 +190,15 @@ namespace HoneybeeRhino
                 for (int i = 0; i < hbFaces.Count; i++)
                 {
                     var faceEnt = new Entities.FaceEntity(hbFaces[i]);
-                    var bFace = closedBrep.Surfaces[i];
+                    var bFace = dupBrep.Surfaces[i];
                     bFace.UserData.Add(faceEnt);
                 }
-               
-                return new HB.Room($"Room_{Guid.NewGuid()}".ToString(), hbFaces, new HB.RoomPropertiesAbridged());
+
+                var room = new HB.Room($"Room_{Guid.NewGuid()}".ToString(), hbFaces, new HB.RoomPropertiesAbridged());
+                var roomEnt = new Entities.RoomEntity(room, hostID);
+                dupBrep.UserData.Add(roomEnt);
+
+                return dupBrep;
 
             }
             else
@@ -176,11 +213,7 @@ namespace HoneybeeRhino
         //    return extrusion.ToBrep().ToRoom(maxRoofFloorAngle);
         //}
 
-        public static HB.Room ToRoom(this RH.Box box, double maxRoofFloorAngle = 30)
-        {
-            return box.ToBrep().ToRoom(maxRoofFloorAngle);
-        }
-
+    
         public static HB.Aperture ToAperture(this RH.Surface singleSurface)
         {
             if (singleSurface.IsPlanar())

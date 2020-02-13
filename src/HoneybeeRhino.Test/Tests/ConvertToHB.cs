@@ -52,6 +52,28 @@ namespace HoneybeeRhino.Test
             Assert.AreEqual(boudary[2], new List<decimal> { 1, 0, 1 });
         }
 
+        [Test]
+        public void Test_AllPlaneBrep()
+        {
+
+            string file = @"D:\Dev\honeybee-rhino-plugin\src\HoneybeeRhino.Test\TestModels\RingFiveBreps.json";
+            string json = System.IO.File.ReadAllText(file);
+            var breps = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Brep>>(json);
+            var srfTypes = breps.Select(_ => _.Surfaces.Select(s => s.GetType()));
+
+            var newBreps = breps.Select(_ => _.ToAllPlaneBrep());
+            var newSrfTypes = newBreps.Select(_ => _.Surfaces.All(s => s.GetType() == typeof(PlaneSurface)));
+            try
+            {
+                Assert.IsTrue(newSrfTypes.All(_=>_ == true));
+            }
+            catch (AssertionException e)
+            {
+                throw e;
+            }
+
+
+        }
 
        
         
