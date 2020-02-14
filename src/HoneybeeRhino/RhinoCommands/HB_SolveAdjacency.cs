@@ -44,25 +44,28 @@ namespace HoneybeeRhino.RhinoCommands
                
                 //Must be all room objects.
                 var rooms = go.Objects().Select(_ => _.Brep());
-                if (rooms.Any(_ => !_.IsRoom()))
-                {
-                    RhinoApp.WriteLine("Not all selected objects are Honeybee room, please double check, and convert it to room first.");
-                    return go.CommandResult();
-                }
+                //if (rooms.Any(_ => !_.IsRoom()))
+                //{
+                //    RhinoApp.WriteLine("Not all selected objects are Honeybee room, please double check, and convert it to room first.");
+                //    return go.CommandResult();
+                //}
 
+                var ids = go.Objects().Select(_ => _.ObjectId).ToList();
 
                 var tol = RhinoDoc.ActiveDoc.ModelAbsoluteTolerance / 10;
                 var dupRooms = rooms.Select(_ => _.DuplicateBrep());
-                var checkedObjs = dupRooms.SolveAdjacency(tol);
+  
+                var checkedObjs = dupRooms.SolveAdjacency(tol, true);
 
                 var counts = rooms.Count();
-                var ids = go.Objects().Select(_ => _.ObjectId).ToList();
+
 
                 var objs = checkedObjs.ToList();
 
                 for (int i = 0; i < counts; i++)
                 {
                     doc.Objects.Replace(ids[i], objs[i]);
+                    //doc.Objects.Add(objs[i]);
                 }
 
                 doc.Views.Redraw();
