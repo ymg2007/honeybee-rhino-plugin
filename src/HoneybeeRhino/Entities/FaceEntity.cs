@@ -31,11 +31,7 @@ namespace HoneybeeRhino.Entities
 
         public void Duplicate(FaceEntity otherFaceEntityToCopyFrom)
         {
-            var json = otherFaceEntityToCopyFrom.HBObject.ToJson();
-            this.HBObject = HB.Face.FromJson(json);
-            //in Base.OnDuplicate() also makes a copy of HostGeoID, 
-            //but this is for Duplicate() called by manually, such as UpdateID_CopyFrom();
-            this.HostGeoID = otherFaceEntityToCopyFrom.HostGeoID;
+            this.OnDuplicate(otherFaceEntityToCopyFrom);
         }
 
         protected override void OnDuplicate(UserData source)
@@ -43,7 +39,8 @@ namespace HoneybeeRhino.Entities
             if (source is FaceEntity src)
             {
                 base.OnDuplicate(source);
-                this.Duplicate(src);
+                var json = src.HBObject.ToJson();
+                this.HBObject = HB.Face.FromJson(json);
             }
         }
 
@@ -71,7 +68,7 @@ namespace HoneybeeRhino.Entities
             }
             else
             {
-                throw new ArgumentNullException("OtherFaceEntity is null");
+                //throw new ArgumentNullException("OtherFaceEntity is null");
             }
      
         }

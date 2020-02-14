@@ -18,6 +18,7 @@ namespace HoneybeeRhino.Entities
         public HB.Room HBObject { get; private set; }
 
         //TODO: override isValid to check if hostID exists
+        public override bool IsValid => this.HBObject != null && this.HostGeoID != Guid.Empty;
         public override string Description => this.IsValid ? $"HBRoomEntity: {HBObject.Name}" : base.Description;
         public RoomEntity()
         {
@@ -46,14 +47,22 @@ namespace HoneybeeRhino.Entities
             ent.AddToDocument();
             return this;
         }
+        public void Duplicate(RoomEntity otherRoomEntityToCopyFrom)
+        {
+            this.OnDuplicate(otherRoomEntityToCopyFrom);
+        }
 
         protected override void OnDuplicate(UserData source)
         {
             if (source is RoomEntity src)
             {
+                if (!src.IsValid)
+                    return;
+                
                 base.OnDuplicate(source);
                 var json = src.HBObject.ToJson();
                 this.HBObject = HB.Room.FromJson(json);
+
             }
             
         }
