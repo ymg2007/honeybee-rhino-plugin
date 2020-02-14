@@ -65,6 +65,8 @@ namespace HoneybeeRhino.Test
             var newSrfTypes = newBreps.Select(_ => _.Surfaces.All(s => s.GetType() == typeof(PlaneSurface)));
             try
             {
+                Assert.IsTrue(newBreps.Count() == breps.Count);
+                Assert.IsTrue(newBreps.All(_ => _.IsSolid));
                 Assert.IsTrue(newSrfTypes.All(_=>_ == true));
             }
             catch (AssertionException e)
