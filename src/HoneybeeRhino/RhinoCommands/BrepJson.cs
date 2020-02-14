@@ -6,6 +6,7 @@ using Rhino.DocObjects;
 using Rhino.Input.Custom;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 
 namespace HoneybeeRhino.RhinoCommands
 {
@@ -55,6 +56,14 @@ namespace HoneybeeRhino.RhinoCommands
                 var breps = go.Objects().Select(_ => _.Brep());
                 var json = JsonConvert.SerializeObject(breps);
 
+                string tempFile = Path.Combine(Path.GetTempPath(), "temp.json");
+
+                using (StreamWriter file = new StreamWriter(tempFile, true))
+                {
+                    file.Write(json);
+                }
+
+                RhinoApp.WriteLine($"Saved to: {tempFile}");
                 return Result.Success;
 
 
