@@ -4,6 +4,7 @@ using Rhino.Collections;
 using Rhino.DocObjects;
 using Rhino.FileIO;
 using Rhino.UI;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -23,6 +24,9 @@ namespace HoneybeeRhino
         public GroupEntityTable GroupEntityTable { get; private set; } = new GroupEntityTable();
         public override Rhino.PlugIns.PlugInLoadTime LoadTime => Rhino.PlugIns.PlugInLoadTime.AtStartup;
         public string ObjectSelectMode { get; set; } = "GroupEntity";
+
+        //only for holding temp entity data, which will not be saved to file.
+        public Dictionary<Guid, HBObjEntity> TempEntityHolder = new Dictionary<Guid, HBObjEntity>();
         public HoneybeeRhinoPlugIn()
         {
             Instance = this;
