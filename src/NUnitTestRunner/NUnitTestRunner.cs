@@ -3,6 +3,7 @@ using Rhino;
 using Rhino.Commands;
 using NUnitLite;
 using Tests = HoneybeeRhino.Test;
+using Rhino.Input.Custom;
 
 namespace RhinoNUnitTestRunner
 {
@@ -29,9 +30,15 @@ namespace RhinoNUnitTestRunner
         {
             try
             {
-                // Go get the assembly through your preferred method.
+                var gs = new GetString();
+                gs.SetCommandPrompt("set arguments");
+                gs.GetLiteralString();
+                if (gs.CommandResult() != Result.Success)
+                    return gs.CommandResult();
+                //https://github.com/nunit/docs/wiki/Console-Command-Line
+                var args = gs.StringResult().Split(',');
                 var assembly = typeof(Tests.RoomEntityTests).Assembly;
-                new AutoRun(assembly).Execute(new string[] { }, new RhinoConsoleTextWriter(), null);
+                new AutoRun(assembly).Execute(args, new RhinoConsoleTextWriter(), null);
             }
             catch (Exception e)
             {
