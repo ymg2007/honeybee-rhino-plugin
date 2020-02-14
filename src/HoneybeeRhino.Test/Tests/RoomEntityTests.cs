@@ -70,6 +70,57 @@ namespace HoneybeeRhino.Test
         }
 
         [Test]
+        public void Test_Room_DuplicateBrep()
+        {
+            var bbox = new BoundingBox(new Point3d(0, 0, 0), new Point3d(10, 10, 3));
+            var box = new Box(bbox);
+            var room = box.ToBrep().ToRoomGeo(Guid.NewGuid());
+            var newRoom = room.DuplicateBrep();
+
+            var ent = room.TryGetRoomEntity();
+            var newEnt = newRoom.TryGetRoomEntity();
+            var srfNames = room.Surfaces.Select(_ => _.TryGetFaceEntity().HBObject.Name).Distinct().ToArray();
+            var newSrfNames = room.Surfaces.Select(_ => _.TryGetFaceEntity().HBObject.Name).Distinct().ToArray();
+            try
+            {
+                Assert.AreEqual(ent.HBObject.Faces.Count, newEnt.HBObject.Faces.Count);
+                Assert.IsTrue(ent.HostGeoID == newEnt.HostGeoID);
+                Assert.AreEqual(srfNames[1], newSrfNames[1]);
+            }
+            catch (AssertionException e)
+            {
+                throw e;
+            }
+
+        }
+
+        [Test]
+        public void Test_Room_DuplicateBrep_Parallel()
+        {
+            var bbox = new BoundingBox(new Point3d(0, 0, 0), new Point3d(10, 10, 3));
+            var box = new Box(bbox);
+            var room = box.ToBrep().ToRoomGeo(Guid.NewGuid());
+            var rooms = new Brep[50];
+
+            Parallel.For(0, 50, i =>
+            {
+                rooms[i] = room.DuplicateBrep();
+            });
+         
+            var ents = rooms.Select(_=>_.TryGetRoomEntity());
+            
+            try
+            {
+                Assert.IsTrue(ents.All(_=>_.HBObject!= null));
+            }
+            catch (AssertionException e)
+            {
+                throw e;
+            }
+
+        }
+
+        [Test]
         public void Test_RingFiveRooms()
         {
             string file = @"D:\Dev\honeybee-rhino-plugin\src\HoneybeeRhino.Test\TestModels\RingFiveBreps.json";
@@ -82,6 +133,7 @@ namespace HoneybeeRhino.Test
 
             try
             {
+                Assert.IsTrue(rooms.Count() ==5);
                 Assert.IsTrue(ents.All(_=>_.IsValid));
                 Assert.IsTrue(ents.All(_=>_.HostGeoID != Guid.Empty));
                 for (int i = 0; i < breps.Count(); i++)
@@ -218,8 +270,8 @@ namespace HoneybeeRhino.Test
 
             try
             {
-                Assert.IsTrue(faceNames_first.Count() == faceNames_first.Distinct().Count());
-                Assert.IsTrue(faceNames_second.Count() == faceNames_second.Distinct().Count());
+                Assert.IsTrue(faceNames_first.Count() - faceNames_first.Distinct().Count() == 1);
+                Assert.IsTrue(faceNames_second.Count() - faceNames_second.Distinct().Count() == 1);
             }
             catch (AssertionException e)
             {
@@ -328,6 +380,43 @@ namespace HoneybeeRhino.Test
             //var center_second = AreaMassProperties.Compute(indoorFace_second).Centroid;
             //Assert.IsTrue(center_first.DistanceToSquared(center_second) < Math.Pow(_tol, 2));
             //throw new Exception("dddd");
+
+        }
+
+        [Test]
+        public void Test_ParallelIntersectMass_28Breps()
+        {
+
+            string file = @"D:\Dev\honeybee-rhino-plugin\src\HoneybeeRhino.Test\TestModels\28Breps.json";
+            var breps = LoadBoxesFromJson(file);
+            var rooms = breps.Select(_ => _.ToRoomGeo(Guid.NewGuid()));
+
+            var intersectedBreps = rooms.Select(_ => _.DuplicateBrep());
+            intersectedBreps = rooms.IntersectMasses(_tol, true);
+
+            //check if there is a new face created
+            try
+            {
+                Assert.IsTrue(intersectedBreps.All(_ => _.IsSolid));
+                Assert.IsTrue(intersectedBreps.All(_ => _.IsRoom()));
+            }
+            catch (AssertionException e)
+            {
+                throw e;
+            }
+
+
+            ////Check if all face names are identical
+            var names = intersectedBreps.Select(b => b.Surfaces.Select(_ => _.TryGetFaceEntity().HBObject.Name));
+        
+            try
+            {
+                Assert.IsTrue(names.Sum(_ => _.Count()) == intersectedBreps.Sum(_ => _.Faces.Count()));
+            }
+            catch (AssertionException e)
+            {
+                throw e;
+            }
 
         }
 
