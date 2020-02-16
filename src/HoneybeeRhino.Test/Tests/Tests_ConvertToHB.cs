@@ -12,7 +12,7 @@ using System.IO;
 namespace HoneybeeRhino.Test
 {
     [TestFixture]
-    public class ConvertToHB
+    public class Tests_ConvertToHB
     {
         [Test]
         public void Test_PlanerSurface()

@@ -5,11 +5,12 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using Rhino.Geometry;
 using HoneybeeSchema;
+using Rhino.Runtime.InProcess;
 
 namespace HoneybeeRhino.Test
 {
     [TestFixture]
-    public class TestClass
+    public class Tests_TestClass
     {
         /// <summary>
         /// Transform a brep using a translation
@@ -17,6 +18,7 @@ namespace HoneybeeRhino.Test
         [Test]
         public void Init_RhinoObj_Test()
         {
+            
             // Arrange
             var bb = new BoundingBox(new Point3d(0, 0, 0), new Point3d(100, 100, 100));
             var brep = bb.ToBrep();

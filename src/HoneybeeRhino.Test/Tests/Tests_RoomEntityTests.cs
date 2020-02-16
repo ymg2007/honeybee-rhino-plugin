@@ -12,7 +12,7 @@ using Rhino.DocObjects;
 namespace HoneybeeRhino.Test
 {
     [TestFixture]
-    public class RoomEntityTests
+    public class Tests_RoomEntityTests
     {
         RhinoDoc _doc = RhinoDoc.ActiveDoc;
         double _tol = 0.0001;
@@ -56,17 +56,10 @@ namespace HoneybeeRhino.Test
 
             var ent = room.TryGetRoomEntity();
             var srfNames = room.Surfaces.Select(_ => _.TryGetFaceEntity().HBObject.Name);
-            try
-            {
-                Assert.AreEqual(ent.HBObject.Faces.Count, 6);
-                Assert.IsTrue(ent.HostGeoID != Guid.Empty);
-                Assert.AreEqual(srfNames.Count(), 6);
-            }
-            catch (AssertionException e)
-            {
-                throw e;
-            }
-           
+            Assert.AreEqual(ent.HBObject.Faces.Count, 6);
+            Assert.IsTrue(ent.HostGeoID != Guid.Empty);
+            Assert.AreEqual(srfNames.Count(), 5);
+
         }
 
         [Test]
@@ -81,16 +74,9 @@ namespace HoneybeeRhino.Test
             var newEnt = newRoom.TryGetRoomEntity();
             var srfNames = room.Surfaces.Select(_ => _.TryGetFaceEntity().HBObject.Name).Distinct().ToArray();
             var newSrfNames = room.Surfaces.Select(_ => _.TryGetFaceEntity().HBObject.Name).Distinct().ToArray();
-            try
-            {
-                Assert.AreEqual(ent.HBObject.Faces.Count, newEnt.HBObject.Faces.Count);
-                Assert.IsTrue(ent.HostGeoID == newEnt.HostGeoID);
-                Assert.AreEqual(srfNames[1], newSrfNames[1]);
-            }
-            catch (AssertionException e)
-            {
-                throw e;
-            }
+            Assert.AreEqual(ent.HBObject.Faces.Count, newEnt.HBObject.Faces.Count);
+            Assert.IsTrue(ent.HostGeoID == newEnt.HostGeoID);
+            Assert.AreEqual(srfNames[1], newSrfNames[1]);
 
         }
 
@@ -108,15 +94,8 @@ namespace HoneybeeRhino.Test
             });
          
             var ents = rooms.Select(_=>_.TryGetRoomEntity());
-            
-            try
-            {
-                Assert.IsTrue(ents.All(_=>_.HBObject!= null));
-            }
-            catch (AssertionException e)
-            {
-                throw e;
-            }
+
+            Assert.IsTrue(ents.All(_ => _.HBObject != null));
 
         }
 
@@ -131,19 +110,12 @@ namespace HoneybeeRhino.Test
             var ents = rooms.Select(_=>_.TryGetRoomEntity());
             var srfNames = rooms.Select(rm=>rm.Surfaces.Select(_ => _.TryGetFaceEntity().HBObject.Name)).ToList();
 
-            try
+            Assert.IsTrue(rooms.Count() == 5);
+            Assert.IsTrue(ents.All(_ => _.IsValid));
+            Assert.IsTrue(ents.All(_ => _.HostGeoID != Guid.Empty));
+            for (int i = 0; i < breps.Count(); i++)
             {
-                Assert.IsTrue(rooms.Count() ==5);
-                Assert.IsTrue(ents.All(_=>_.IsValid));
-                Assert.IsTrue(ents.All(_=>_.HostGeoID != Guid.Empty));
-                for (int i = 0; i < breps.Count(); i++)
-                {
-                    Assert.IsTrue(srfNames[i].Count() == breps[i].Faces.Count);
-                }
-            }
-            catch (AssertionException e)
-            {
-                throw e;
+                Assert.IsTrue(srfNames[i].Count() == breps[i].Faces.Count);
             }
 
         }
@@ -160,17 +132,10 @@ namespace HoneybeeRhino.Test
             var newObj = _doc.Objects.FindId(rhinoObj.Id);
             var ent = newObj.TryGetRoomEntity();
 
-            try
-            {
-                Assert.IsTrue(ent.IsValid);
-                Assert.AreEqual(ent.HBObject.Faces.Count, 6);
-                Assert.IsTrue(ent.HostGeoID == rhinoObj.Id);
-            }
-            catch (AssertionException e)
-            {
-                throw e;
-            }
-            
+            Assert.IsTrue(ent.IsValid);
+            Assert.AreEqual(ent.HBObject.Faces.Count, 6);
+            Assert.IsTrue(ent.HostGeoID == rhinoObj.Id);
+
             _doc.Views.Redraw();
             _doc.Objects.Purge(newObj);
             _doc.Objects.Purge(rhinoObj);
@@ -190,15 +155,8 @@ namespace HoneybeeRhino.Test
             var ent = dupGeo.TryGetRoomEntity();
             ent.UpdateHostFrom(newObj);
 
-            try
-            {
-                Assert.AreEqual(ent.HBObject.Faces.Count, 6);
-                Assert.IsTrue(ent.HostGeoID == id);
-            }
-            catch (AssertionException e)
-            {
-                throw e;
-            }
+            Assert.AreEqual(ent.HBObject.Faces.Count, 6);
+            Assert.IsTrue(ent.HostGeoID == id);
 
             _doc.Objects.Purge(rhinoObj);
             _doc.Objects.Purge(newObj);
@@ -218,18 +176,11 @@ namespace HoneybeeRhino.Test
             var cutters = firstB.GetAdjFaces(secondB, _tol);
 
 
-            try
-            {
-                Assert.AreEqual(cutters.Count(), 1);
+            Assert.AreEqual(cutters.Count(), 1);
 
-                var cutterProp = AreaMassProperties.Compute(cutters.First().matchedCutters.First());
-                Assert.IsTrue(Math.Abs(cutterProp.Area - 4 * 3.5) < _tol);
-                Assert.IsTrue(cutterProp.Centroid.DistanceToSquared(new Point3d(2, 0, 1.75)) < Math.Pow(_tol, 2));
-            }
-            catch (AssertionException e)
-            {
-                throw e;
-            }
+            var cutterProp = AreaMassProperties.Compute(cutters.First().matchedCutters.First());
+            Assert.IsTrue(Math.Abs(cutterProp.Area - 4 * 3.5) < _tol);
+            Assert.IsTrue(cutterProp.Centroid.DistanceToSquared(new Point3d(2, 0, 1.75)) < Math.Pow(_tol, 2));
 
 
         }
@@ -248,18 +199,11 @@ namespace HoneybeeRhino.Test
             var secondB = intersectedBreps[1];
 
             //check if there is a new face created
-            try
-            {
-                Assert.IsTrue(firstB.IsSolid);
-                Assert.AreEqual(firstB.Faces.Count, 7);
-                Assert.IsTrue(secondB.IsSolid);
-                Assert.AreEqual(secondB.Faces.Count, 7);
-            }
-            catch (AssertionException e)
-            {
-                throw e;
-            }
-           
+            Assert.IsTrue(firstB.IsSolid);
+            Assert.AreEqual(firstB.Faces.Count, 7);
+            Assert.IsTrue(secondB.IsSolid);
+            Assert.AreEqual(secondB.Faces.Count, 7);
+
 
             //Check if all face names are identical
             var hbObjs_first = firstB.Surfaces.Select(_ => _.TryGetFaceEntity().HBObject);
@@ -268,16 +212,9 @@ namespace HoneybeeRhino.Test
             var faceNames_first = hbObjs_first.Select(_ => _.Name);
             var faceNames_second = hbObjs_second.Select(_ => _.Name);
 
-            try
-            {
-                Assert.IsTrue(faceNames_first.Count() - faceNames_first.Distinct().Count() == 1);
-                Assert.IsTrue(faceNames_second.Count() - faceNames_second.Distinct().Count() == 1);
-            }
-            catch (AssertionException e)
-            {
-                throw e;
-            }
-           
+            Assert.IsTrue(faceNames_first.Count() - faceNames_first.Distinct().Count() == 1);
+            Assert.IsTrue(faceNames_second.Count() - faceNames_second.Distinct().Count() == 1);
+
 
             //check adjacent face property: match center point
             var indoorFace_first = firstB.Faces.First(_ => Math.Abs(AreaMassProperties.Compute(_).Area - 12) < _tol);
@@ -286,15 +223,8 @@ namespace HoneybeeRhino.Test
             var center_first = AreaMassProperties.Compute(indoorFace_first).Centroid;
             var center_second = AreaMassProperties.Compute(indoorFace_second).Centroid;
 
-            try
-            {
-                Assert.IsTrue(center_first.DistanceToSquared(center_second) < Math.Pow(_tol, 2));
-            }
-            catch (AssertionException e)
-            {
-                throw e;
-            }
-           
+            Assert.IsTrue(center_first.DistanceToSquared(center_second) < Math.Pow(_tol, 2));
+
 
         }
 
@@ -309,14 +239,7 @@ namespace HoneybeeRhino.Test
             var intersectedBreps = rooms.Select(_ => _.DuplicateBrep());
             var isNewRoomSurfacesOK = rooms.Select(_ => _.Surfaces.All(s => s.TryGetFaceEntity().IsValid));
 
-            try
-            {
-                Assert.IsTrue(isNewRoomSurfacesOK.All(_ => _));
-            }
-            catch (AssertionException e)
-            {
-                throw e;
-            }
+            Assert.IsTrue(isNewRoomSurfacesOK.All(_ => _));
         }
 
         [Test]
@@ -341,29 +264,16 @@ namespace HoneybeeRhino.Test
             //_doc.Views.Redraw();
 
             //check if there is a new face created
-            try
-            {
-                Assert.IsTrue(intersectedBreps.All(_ => _.IsSolid));
-                Assert.IsTrue(intersectedBreps.All(_ => _.Faces.Count == 8));
-                Assert.IsTrue(intersectedBreps.All(_ => _.IsRoom()));
-            }
-            catch (AssertionException e)
-            {
-                throw e;
-            }
+            Assert.IsTrue(intersectedBreps.All(_ => _.IsSolid));
+            Assert.IsTrue(intersectedBreps.All(_ => _.Faces.Count == 8));
+            Assert.IsTrue(intersectedBreps.All(_ => _.IsRoom()));
 
 
             ////Check if all face names are identical
             var names = intersectedBreps.Select(b => b.Surfaces.Select(_ => _.TryGetFaceEntity().HBObject.Name));
             var diffNames = names.Distinct();
-            try
-            {
-                Assert.IsTrue(names.Sum(_=>_.Count()) == diffNames.Sum(_ => _.Count()));
-            }
-            catch (AssertionException e)
-            {
-                throw e;
-            }
+            Assert.IsTrue(names.Sum(_ => _.Count()) == diffNames.Sum(_ => _.Count()));
+
             //var hbObjs_second = secondB.Surfaces.Select(_ => _.TryGetFaceEntity().HBObject);
 
             //var faceNames_first = hbObjs_first.Select(_ => _.Name).Distinct();
@@ -395,28 +305,14 @@ namespace HoneybeeRhino.Test
             intersectedBreps = rooms.IntersectMasses(_tol, true);
 
             //check if there is a new face created
-            try
-            {
-                Assert.IsTrue(intersectedBreps.All(_ => _.IsSolid));
-                Assert.IsTrue(intersectedBreps.All(_ => _.IsRoom()));
-            }
-            catch (AssertionException e)
-            {
-                throw e;
-            }
+            Assert.IsTrue(intersectedBreps.All(_ => _.IsSolid));
+            Assert.IsTrue(intersectedBreps.All(_ => _.IsRoom()));
 
 
             ////Check if all face names are identical
             var names = intersectedBreps.Select(b => b.Surfaces.Select(_ => _.TryGetFaceEntity().HBObject.Name));
-        
-            try
-            {
-                Assert.IsTrue(names.Sum(_ => _.Count()) == intersectedBreps.Sum(_ => _.Faces.Count()));
-            }
-            catch (AssertionException e)
-            {
-                throw e;
-            }
+
+            Assert.IsTrue(names.Sum(_ => _.Count()) == intersectedBreps.Sum(_ => _.Faces.Count()));
 
         }
 
