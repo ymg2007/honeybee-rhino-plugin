@@ -54,7 +54,7 @@ namespace HoneybeeRhino.Test
             // Add hook for .Net assmbly resolve (for RhinoCommmon.dll)
             AppDomain.CurrentDomain.AssemblyResolve += ResolveRhinoCommon;
 
-            Assembly.LoadFrom(@"D:\Dev\honeybee-rhino-plugin\src\HoneybeeRhino.Test\bin\Debug\HoneybeeRhino.dll");
+            //Assembly.LoadFrom(@"D:\Dev\honeybee-rhino-plugin\src\HoneybeeRhino.Test\bin\Debug\HoneybeeRhino.dll");
             // Start headless Rhino process
             LaunchInProcess(0, 0);
         }
