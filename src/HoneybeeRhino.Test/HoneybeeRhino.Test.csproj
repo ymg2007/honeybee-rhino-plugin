@@ -45,6 +45,7 @@
     <Compile Include="Tests\Tests_TestClass.cs" />
     <Compile Include="Testinit.cs" />
     <Compile Include="Tests\Tests_ConvertToHB.cs" />
+    <Compile Include="Tests\Tests_Utility.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="RhinoCommon" Version="6.22.20028.13281" />
