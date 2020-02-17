@@ -5,6 +5,7 @@ using Rhino;
 using Rhino.DocObjects;
 using Rhino.UI;
 using Rhino.ApplicationSettings;
+using HoneybeeRhino.Entities;
 
 namespace HoneybeeRhino
 {
@@ -18,7 +19,7 @@ namespace HoneybeeRhino
             base.OnMouseDoubleClick(e);
             
             var doc = RhinoDoc.ActiveDoc;
-            var selectedRoom = doc.Objects.GetSelectedObjects(false, false).FirstOrDefault(_=>_.IsRoom());
+            var selectedRoom = doc.Objects.GetSelectedObjects(false, false).FirstOrDefault(_=>_.Geometry.IsRoom());
             //var greiedOutObjs = new List<RhinoObject>();
             if (selectedRoom == null)
             {
@@ -31,7 +32,7 @@ namespace HoneybeeRhino
                 return;
 
 
-            var ent = Entities.RoomEntity.TryGetFrom(selectedRoom.Geometry);
+            var ent = HoneybeeRhino.Entities.RoomEntity.TryGetFrom(selectedRoom.Geometry);
             if (ent.IsValid)
             {
                 RhinoApp.EscapeKeyPressed += RhinoApp_EscapeKeyPressed;

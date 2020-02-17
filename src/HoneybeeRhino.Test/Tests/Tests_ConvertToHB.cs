@@ -20,7 +20,7 @@ namespace HoneybeeRhino.Test
             var p = Plane.WorldXY;
             var srf = new PlaneSurface(p, new Interval(0, 1), new Interval(0, 2));
 
-            var face3D = srf.ToHBFace3D();
+            var face3D =  srf.ToHBFace3D();
             var boudary = face3D.Boundary;
 
             TestContext.WriteLine(string.Join(",", boudary[2]));

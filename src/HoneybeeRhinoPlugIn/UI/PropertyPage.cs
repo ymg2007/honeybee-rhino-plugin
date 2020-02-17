@@ -1,11 +1,6 @@
-﻿using System;
-using Rhino;
-using Rhino.Commands;
-using Rhino.DocObjects;
+﻿using Rhino.DocObjects;
 using Rhino.UI;
-using HB = HoneybeeSchema;
-using System.Linq;
-using System.Collections.Generic;
+using HoneybeeRhino.Entities;
 
 namespace HoneybeeRhino.UI
 {
@@ -36,7 +31,7 @@ namespace HoneybeeRhino.UI
             var selectedObj = e.Objects[0].Geometry;
             if (selectedObj.HasHBObjEntity())
             {
-                var room = Entities.RoomEntity.TryGetFrom(selectedObj).HBObject;
+                var room = RoomEntity.TryGetFrom(selectedObj).HBObject;
                 this.panelUI.updateRoomPanel(room);
             }
         }

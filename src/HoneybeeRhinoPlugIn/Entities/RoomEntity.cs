@@ -2,6 +2,7 @@
 using Rhino.DocObjects;
 using Rhino.DocObjects.Custom;
 using Rhino.FileIO;
+using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,27 +25,27 @@ namespace HoneybeeRhino.Entities
         {
         }
 
-        public RoomEntity(HB.Room room, Guid hostID)
+        public RoomEntity(HB.Room room, Guid hostID, GroupEntityTable documentGroupEntityTable)
         {
             this.HBObject = room;
             this.HostGeoID = hostID;
             this.GroupEntityID = hostID;
 
             var ent = new GroupEntity(hostID);
-            ent.AddToDocument();
+            ent.AddToDocument(documentGroupEntityTable);
         }
         /// <summary>
         /// Use this for objects were duplicated alone with RhinoObject, but Ids were still referencing old Rhino object ID.
         /// </summary>
         /// <param name="roomObj"></param>
-        public RoomEntity UpdateHostFrom(RhinoObject newRoomObj)
+        public RoomEntity UpdateHostID(Guid newObjID, GroupEntityTable documentGroupEntityTable)
         {
-            var hostID = newRoomObj.Id;
+            var hostID = newObjID;
             this.HostGeoID = hostID;
             this.GroupEntityID = hostID;
 
             var ent = new GroupEntity(hostID);
-            ent.AddToDocument();
+            ent.AddToDocument(documentGroupEntityTable);
             return this;
         }
         public void Duplicate(RoomEntity otherRoomEntityToCopyFrom)

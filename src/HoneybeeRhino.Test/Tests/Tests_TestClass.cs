@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using Rhino.Geometry;
 using HoneybeeSchema;
-using Rhino.Runtime.InProcess;
 
 namespace HoneybeeRhino.Test
 {

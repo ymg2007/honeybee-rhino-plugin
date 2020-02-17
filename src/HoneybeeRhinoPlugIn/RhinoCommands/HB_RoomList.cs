@@ -28,7 +28,7 @@ namespace HoneybeeRhino.RhinoCommands
 
         protected override Result RunCommand(RhinoDoc doc, RunMode mode)
         {
-            var groups = HoneybeeRhinoPlugIn.Instance.GroupEntityTable;
+            var groups = global::HoneybeeRhino.HoneybeeRhinoPlugIn.Instance.GroupEntityTable;
             var groupZoneNames = groups.Select(_ => _.Key.ToString());
             Rhino.UI.Dialogs.ShowEditBox("Ladybug Tools", "All Honeybee Rooms:", string.Join("\n", groupZoneNames), true, out string outJson);
             return Result.Success;

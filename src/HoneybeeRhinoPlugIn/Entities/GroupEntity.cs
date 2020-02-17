@@ -26,9 +26,9 @@ namespace HoneybeeRhino.Entities
             this.RoomID = roomID;
         }
 
-        public void AddToDocument()
+        public void AddToDocument(GroupEntityTable documentGroupEntityTable)
         {
-            var table = HoneybeeRhinoPlugIn.Instance.GroupEntityTable;
+            var table = documentGroupEntityTable;
             var exist = table.Keys.Any(_ => _ == this.RoomID);
             if (!exist)
             {
@@ -213,14 +213,14 @@ namespace HoneybeeRhino.Entities
         //    return ent;
         //}
 
-        public static GroupEntity TryGetFromID(Guid roomID)
+        public static GroupEntity TryGetFromID(Guid roomID, GroupEntityTable groupEntityTable)
         {
             GroupEntity rc = new GroupEntity();
-            var found = HoneybeeRhinoPlugIn.Instance.GroupEntityTable.TryGetValue(roomID, out GroupEntity ent);
+            var found = groupEntityTable.TryGetValue(roomID, out GroupEntity ent);
             return found ? ent : rc;
         }
 
-        public static GroupEntity TryGetFrom(GeometryBase obj)
+        public static GroupEntity TryGetFrom(GeometryBase obj, GroupEntityTable groupEntityTable)
         {
             GroupEntity rc = new GroupEntity();
             if (obj == null)
@@ -253,7 +253,7 @@ namespace HoneybeeRhino.Entities
 
           
             //if object is copied, this saved Entity ID will not be valid.
-            var found = HoneybeeRhinoPlugIn.Instance.GroupEntityTable.TryGetValue(groupEntityId, out GroupEntity ent);
+            var found = groupEntityTable.TryGetValue(groupEntityId, out GroupEntity ent);
             return found ? ent : rc;
 
 

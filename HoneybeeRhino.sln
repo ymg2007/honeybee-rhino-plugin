@@ -1,13 +1,14 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29709.97
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HoneybeeRhino", "src\HoneybeeRhino\HoneybeeRhino.csproj", "{E0B1CE7D-FDC1-436D-B676-0BE1C462E8B5}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HoneybeeRhino.Test", "src\HoneybeeRhino.Test\HoneybeeRhino.Test.csproj", "{8EDF4429-251A-416D-BB68-93F227191BCF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RhinoNUnitTestRunner", "src\NUnitTestRunner\RhinoNUnitTestRunner.csproj", "{A2F987A6-1603-4318-92A5-3E3F80C43313}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{DFA03746-74BD-44F0-9D1A-F4B61E55C1FC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HoneybeeRhinoPlugIn", "src\HoneybeeRhinoPlugIn\HoneybeeRhinoPlugIn.csproj", "{8B32D89C-3455-4C21-8FD7-7364C32A6FEB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,10 +16,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{E0B1CE7D-FDC1-436D-B676-0BE1C462E8B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E0B1CE7D-FDC1-436D-B676-0BE1C462E8B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E0B1CE7D-FDC1-436D-B676-0BE1C462E8B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E0B1CE7D-FDC1-436D-B676-0BE1C462E8B5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8EDF4429-251A-416D-BB68-93F227191BCF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8EDF4429-251A-416D-BB68-93F227191BCF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8EDF4429-251A-416D-BB68-93F227191BCF}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -27,9 +24,17 @@ Global
 		{A2F987A6-1603-4318-92A5-3E3F80C43313}.Debug|Any CPU.Build.0 = Debug64|Any CPU
 		{A2F987A6-1603-4318-92A5-3E3F80C43313}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A2F987A6-1603-4318-92A5-3E3F80C43313}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8B32D89C-3455-4C21-8FD7-7364C32A6FEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B32D89C-3455-4C21-8FD7-7364C32A6FEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B32D89C-3455-4C21-8FD7-7364C32A6FEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B32D89C-3455-4C21-8FD7-7364C32A6FEB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{8EDF4429-251A-416D-BB68-93F227191BCF} = {DFA03746-74BD-44F0-9D1A-F4B61E55C1FC}
+		{A2F987A6-1603-4318-92A5-3E3F80C43313} = {DFA03746-74BD-44F0-9D1A-F4B61E55C1FC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9ED6A33E-EDE4-421C-A701-D96842064AA2}

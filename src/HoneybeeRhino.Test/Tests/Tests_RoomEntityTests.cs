@@ -8,6 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Rhino;
 using Rhino.DocObjects;
+using HoneybeeRhino.Entities;
+using HoneybeeRhino;
 
 namespace HoneybeeRhino.Test
 {
@@ -16,6 +18,7 @@ namespace HoneybeeRhino.Test
     {
         RhinoDoc _doc = RhinoDoc.ActiveDoc;
         double _tol = 0.0001;
+        public GroupEntityTable GroupEntityTable { get; private set; } = new GroupEntityTable();
         public RhinoObject InitRoomBox()
         {
             var allObjs = _doc.Objects;
@@ -23,7 +26,7 @@ namespace HoneybeeRhino.Test
             var bbox = new BoundingBox(new Point3d(0, 0, 0), new Point3d(10, 10, 3));
             var box = new Box(bbox);
             var id = _doc.Objects.Add(box.ToBrep());
-            var newHBGeo = box.ToBrep().ToRoomGeo(id);
+            var newHBGeo = box.ToBrep().ToRoomBrep(id, GroupEntityTable);
             _doc.Objects.Replace(id, newHBGeo);
             var rhinoObj = _doc.Objects.FindId(id);
 
@@ -52,13 +55,13 @@ namespace HoneybeeRhino.Test
         {
             var bbox = new BoundingBox(new Point3d(0, 0, 0), new Point3d(10, 10, 3));
             var box = new Box(bbox);
-            var room = box.ToBrep().ToRoomGeo(Guid.NewGuid());
+            var room = box.ToBrep().ToRoomBrep(Guid.NewGuid(), GroupEntityTable);
 
             var ent = room.TryGetRoomEntity();
             var srfNames = room.Surfaces.Select(_ => _.TryGetFaceEntity().HBObject.Name);
             Assert.AreEqual(ent.HBObject.Faces.Count, 6);
             Assert.IsTrue(ent.HostGeoID != Guid.Empty);
-            Assert.AreEqual(srfNames.Count(), 5);
+            Assert.AreEqual(srfNames.Count(), 6);
 
         }
 
@@ -67,7 +70,7 @@ namespace HoneybeeRhino.Test
         {
             var bbox = new BoundingBox(new Point3d(0, 0, 0), new Point3d(10, 10, 3));
             var box = new Box(bbox);
-            var room = box.ToBrep().ToRoomGeo(Guid.NewGuid());
+            var room = box.ToBrep().ToRoomBrep(Guid.NewGuid(), GroupEntityTable);
             var newRoom = room.DuplicateBrep();
 
             var ent = room.TryGetRoomEntity();
@@ -85,7 +88,7 @@ namespace HoneybeeRhino.Test
         {
             var bbox = new BoundingBox(new Point3d(0, 0, 0), new Point3d(10, 10, 3));
             var box = new Box(bbox);
-            var room = box.ToBrep().ToRoomGeo(Guid.NewGuid());
+            var room = box.ToBrep().ToRoomBrep(Guid.NewGuid(), GroupEntityTable);
             var rooms = new Brep[50];
 
             Parallel.For(0, 50, i =>
@@ -105,7 +108,7 @@ namespace HoneybeeRhino.Test
             string file = @"D:\Dev\honeybee-rhino-plugin\src\HoneybeeRhino.Test\TestModels\RingFiveBreps.json";
             var breps = LoadBoxesFromJson(file);
             //breps = _doc.Objects.Where(_ => _.IsSelected(true) >= 1).Select(_=>Brep.TryConvertBrep(_.Geometry)).ToList();
-            var rooms = breps.Select(_=>_.ToRoomGeo(Guid.NewGuid()));
+            var rooms = breps.Select(_=>_.ToRoomBrep(Guid.NewGuid(), GroupEntityTable));
 
             var ents = rooms.Select(_=>_.TryGetRoomEntity());
             var srfNames = rooms.Select(rm=>rm.Surfaces.Select(_ => _.TryGetFaceEntity().HBObject.Name)).ToList();
@@ -153,7 +156,7 @@ namespace HoneybeeRhino.Test
             var newObj = _doc.Objects.FindId(id);
 
             var ent = dupGeo.TryGetRoomEntity();
-            ent.UpdateHostFrom(newObj);
+            ent.UpdateHostID(newObj.Id, GroupEntityTable);
 
             Assert.AreEqual(ent.HBObject.Faces.Count, 6);
             Assert.IsTrue(ent.HostGeoID == id);
@@ -192,8 +195,10 @@ namespace HoneybeeRhino.Test
             string file = @"D:\Dev\honeybee-rhino-plugin\src\HoneybeeRhino.Test\TestModels\TwoSimpleBreps.json";
             var breps = LoadBoxesFromJson(file);
 
-            var rooms = breps.Select(_ => _.ToRoomGeo(Guid.NewGuid()));
-            var intersectedBreps = rooms.IntersectMasses(_tol).ToList();
+            var rooms = breps.Select(_ => _.ToRoomBrep(Guid.NewGuid(), GroupEntityTable));
+            var solver = new AdjacencySolver(rooms);
+           
+            var intersectedBreps = solver.ExecuteIntersectMasses(_tol).ToList();
 
             var firstB = intersectedBreps[0];
             var secondB = intersectedBreps[1];
@@ -233,7 +238,7 @@ namespace HoneybeeRhino.Test
         {
             string file = @"D:\Dev\honeybee-rhino-plugin\src\HoneybeeRhino.Test\TestModels\RingFiveBreps.json";
             var breps = LoadBoxesFromJson(file);
-            var rooms = breps.Select(_ => _.ToRoomGeo(Guid.NewGuid()));
+            var rooms = breps.Select(_ => _.ToRoomBrep(Guid.NewGuid(), GroupEntityTable));
             var isRoom = rooms.Select(_ => _.Surfaces.All(s => s.TryGetFaceEntity().IsValid));
 
             var intersectedBreps = rooms.Select(_ => _.DuplicateBrep());
@@ -248,20 +253,12 @@ namespace HoneybeeRhino.Test
 
             string file = @"D:\Dev\honeybee-rhino-plugin\src\HoneybeeRhino.Test\TestModels\RingFiveBreps.json";
             var breps = LoadBoxesFromJson(file);
-            var rooms = breps.Select(_ => _.ToRoomGeo(Guid.NewGuid()));
+            var rooms = breps.Select(_ => _.ToRoomBrep(Guid.NewGuid(), GroupEntityTable));
 
-            var intersectedBreps = rooms.Select(_ => _.DuplicateBrep());
-            intersectedBreps = rooms.IntersectMasses(_tol);
+            var dupBreps = rooms.Select(_ => _.DuplicateBrep());
+            var adjSolver = new AdjacencySolver(dupBreps);
 
-            //foreach (var item in intersectedBreps)
-            //{
-            //    if (item.Faces.Count !=8)
-            //    {
-            //        _doc.Objects.Add(item);
-            //    }
-
-            //}
-            //_doc.Views.Redraw();
+            var intersectedBreps = adjSolver.Execute(_tol);
 
             //check if there is a new face created
             Assert.IsTrue(intersectedBreps.All(_ => _.IsSolid));
@@ -299,10 +296,12 @@ namespace HoneybeeRhino.Test
 
             string file = @"D:\Dev\honeybee-rhino-plugin\src\HoneybeeRhino.Test\TestModels\28Breps.json";
             var breps = LoadBoxesFromJson(file);
-            var rooms = breps.Select(_ => _.ToRoomGeo(Guid.NewGuid()));
+            var rooms = breps.Select(_ => _.ToRoomBrep(Guid.NewGuid(), GroupEntityTable));
 
-            var intersectedBreps = rooms.Select(_ => _.DuplicateBrep());
-            intersectedBreps = rooms.IntersectMasses(_tol, true);
+            var dupBreps = rooms.Select(_ => _.DuplicateBrep());
+            var adjSolver = new AdjacencySolver(dupBreps);
+            
+            var intersectedBreps = adjSolver.Execute(_tol, true);
 
             //check if there is a new face created
             Assert.IsTrue(intersectedBreps.All(_ => _.IsSolid));

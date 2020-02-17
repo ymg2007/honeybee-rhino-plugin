@@ -1,10 +1,9 @@
 ﻿using HoneybeeRhino.Entities;
+using HoneybeeRhino;
 using Rhino;
-using Rhino.Collections;
 using Rhino.DocObjects;
 using Rhino.FileIO;
 using Rhino.UI;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -25,8 +24,6 @@ namespace HoneybeeRhino
         public override Rhino.PlugIns.PlugInLoadTime LoadTime => Rhino.PlugIns.PlugInLoadTime.AtStartup;
         public string ObjectSelectMode { get; set; } = "GroupEntity";
 
-        //only for holding temp entity data, which will not be saved to file.
-        public Dictionary<Guid, HBObjEntity> TempEntityHolder = new Dictionary<Guid, HBObjEntity>();
         public HoneybeeRhinoPlugIn()
         {
             Instance = this;
@@ -36,7 +33,7 @@ namespace HoneybeeRhino
             Rhino.RhinoDoc.BeginOpenDocument += RhinoDoc_BeginOpenDocument;
             Rhino.RhinoDoc.CloseDocument += RhinoDoc_OnCloseDocument;
 
-            
+
             if (m_mc == null)
             {
                 m_mc = new RoomEntityMouseCallback();
@@ -45,7 +42,7 @@ namespace HoneybeeRhino
 
         }
 
-        
+
 
         private bool _isObjectCopied = false;
         private int _mergedCounts = 0;
@@ -94,9 +91,9 @@ namespace HoneybeeRhino
 
         private void RhinoDoc_SelectObjects(object sender, RhinoObjectSelectionEventArgs e)
         {
-            var selectedObjs = e.RhinoObjects.Select(_=>_);
+            var selectedObjs = e.RhinoObjects.Select(_ => _);
 
-            if (this._mergedCounts>0)
+            if (this._mergedCounts > 0)
             {
                 //Get all pasted in objects one by one.
                 while (this._mergedCounts > _rhinoObjectsMergedIn.Count + 1)
@@ -115,8 +112,8 @@ namespace HoneybeeRhino
             }
 
             //var selectedGroupEntities = selectedObjs.Select(_ => GroupEntity.TryGet(_));
-            var selectedRooms = selectedObjs.Where(_ => _.IsRoom());
-            var selectedApertures = selectedObjs.Where(_ => _.IsAperture());
+            var selectedRooms = selectedObjs.Where(_ => _.Geometry.IsRoom());
+            var selectedApertures = selectedObjs.Where(_ => _.Geometry.IsAperture());
             //TODO: work on this later
             //var selectedShds = selectedObjs.Where(_ => _.IsShade());
 
@@ -129,9 +126,9 @@ namespace HoneybeeRhino
                 foreach (var newroom in selectedRooms)
                 {
                     var roomEnt = newroom.TryGetRoomEntity();
-                    roomEnt.UpdateHostFrom(newroom);
+                    roomEnt.UpdateHostID(newroom.Id, Instance.GroupEntityTable);
 
-                    var grpEnt = GroupEntity.TryGetFromID(newroom.Id);
+                    var grpEnt = GroupEntity.TryGetFromID(newroom.Id, Instance.GroupEntityTable);
                     grpEnt.AddApertures(newApertures);
                 }
                 //reset the flag.
@@ -148,12 +145,12 @@ namespace HoneybeeRhino
             {
                 return;
             }
-            
+
 
             //Only make the room obj as the entry point for selecting the entire group entity.
             foreach (var room in selectedRooms)
             {
-                var entity = GroupEntity.TryGetFrom(room.Geometry);
+                var entity = room.Geometry.TryGetGroupEntity(Instance.GroupEntityTable);
                 if (entity.IsValid)
                 {
                     entity.SelectEntireEntity();
@@ -168,7 +165,7 @@ namespace HoneybeeRhino
             }
             foreach (var apt in selectedApertures)
             {
-                var entity = GroupEntity.TryGetFrom(apt.Geometry);
+                var entity = apt.Geometry.TryGetGroupEntity(Instance.GroupEntityTable);
                 if (entity.IsValid)
                 {
                     entity.SelectRoom();
@@ -193,7 +190,7 @@ namespace HoneybeeRhino
 
         protected override void ObjectPropertiesPages(List<ObjectPropertiesPage> pages)
         {
-            var page = new UI.PropertyPage();
+            var page = new HoneybeeRhino.UI.PropertyPage();
             pages.Add(page);
         }
 
@@ -207,7 +204,7 @@ namespace HoneybeeRhino
         protected override void ReadDocument(RhinoDoc doc, BinaryArchiveReader archive, FileReadOptions options)
         {
             archive.Read3dmChunkVersion(out var major, out var minor);
-            if (major ==1  &&  minor == 0)
+            if (major == 1 && minor == 0)
             {
                 var t = new GroupEntityTable();
                 t.ReadDocument(archive);

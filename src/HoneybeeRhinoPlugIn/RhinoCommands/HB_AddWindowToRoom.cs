@@ -6,6 +6,8 @@ using Rhino.DocObjects;
 using Rhino.Input.Custom;
 using Rhino.Geometry;
 using System.Collections.Generic;
+using HoneybeeRhino.Entities;
+using HoneybeeRhino;
 
 namespace HoneybeeRhino.RhinoCommands
 {
@@ -99,7 +101,7 @@ namespace HoneybeeRhino.RhinoCommands
                     //add to groupEntity.
                     if (roomApertures.Any())
                     {
-                        var groupEntity = Entities.GroupEntity.TryGetFrom(room.Geometry());
+                        var groupEntity = room.Geometry().TryGetGroupEntity(global::HoneybeeRhino.HoneybeeRhinoPlugIn.Instance.GroupEntityTable);
                         if (groupEntity.IsValid)
                         {
                             groupEntity.AddApertures(roomApertures);

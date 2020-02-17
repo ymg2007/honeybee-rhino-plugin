@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using HoneybeeRhino;
 using Rhino;
 using Rhino.Commands;
 using Rhino.DocObjects;
@@ -47,7 +48,12 @@ namespace HoneybeeRhino.RhinoCommands
 
                 foreach (var item in go.Objects())
                 {
-                    var geo = item.Geometry().ToRoomGeo(item.ObjectId);
+                    //var geo = item.Geometry();
+                    //var userdata = geo.UserData;
+                    //var ent = new HoneybeeRhino.Entities.RoomEntity();
+                    //geo.UserDictionary.Set("aaa", "gdsdf");
+                    //userdata.Add(ent);
+                    var geo = item.Geometry().ToRoomBrep(item.ObjectId, HoneybeeRhinoPlugIn.Instance.GroupEntityTable);
                     doc.Objects.Replace(item.ObjectId, geo);
                 }
                 
