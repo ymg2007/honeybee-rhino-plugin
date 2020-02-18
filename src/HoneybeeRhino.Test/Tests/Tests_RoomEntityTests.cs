@@ -10,6 +10,7 @@ using Rhino;
 using Rhino.DocObjects;
 using HoneybeeRhino.Entities;
 using HoneybeeRhino;
+using HB = HoneybeeSchema;
 
 namespace HoneybeeRhino.Test
 {
@@ -322,11 +323,27 @@ namespace HoneybeeRhino.Test
             var rhinoObj = InitRoomBox();
             var geo = rhinoObj.Geometry as Brep;
 
-            var type = Utility.DefaultProgramTypes.First();
-            geo = HoneybeeRhino.SetRoomProgramType(geo, type);
+            var constructionset = EnergyLibrary.DefaultConstructionSets.First();
+            var programtype = EnergyLibrary.DefaultProgramTypes.First();
+            var hvac = EnergyLibrary.DefaultHVACs.First();
 
-            var typeName = geo.TryGetRoomEntity().HBObject.Properties.Energy.ProgramType;
+            var enertyProp = new HB.RoomEnergyPropertiesAbridged
+                (
+                constructionSet: constructionset.Name, 
+                programType: programtype.Name, 
+                hvac: hvac.Name
+                );
+
+            geo = HoneybeeRhino.SetRoomEnergyProperties(geo, enertyProp);
+
+            var checkEnergyProp = geo.TryGetRoomEntity().HBObject.Properties.Energy;
+            var constName = checkEnergyProp.ConstructionSet;
+            var typeName = checkEnergyProp.ProgramType;
+            var hvacName = checkEnergyProp.Hvac;
+            Assert.IsTrue(!string.IsNullOrEmpty(constName));
             Assert.IsTrue(!string.IsNullOrEmpty(typeName));
+            Assert.IsTrue(!string.IsNullOrEmpty(hvacName));
+
 
         }
 
