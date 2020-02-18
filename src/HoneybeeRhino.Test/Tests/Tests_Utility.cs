@@ -16,7 +16,7 @@ namespace HoneybeeRhino.Test.Tests
         public void DownLoadDefaultLibrary()
         {
             var url = Utility.HoneybeeStandardURL;
-            var jsonFile = HoneybeeRhino.Utility.DownLoadDefaultLibrary(url);
+            var jsonFile = global::HoneybeeRhino.Utility.DownLoadDefaultLibrary(url);
             
             Assert.IsTrue(File.Exists(jsonFile));
         }
@@ -26,7 +26,7 @@ namespace HoneybeeRhino.Test.Tests
         {
             var file = Path.Combine(Utility.HoneybeeStandardFolder, "programtypes.json");
             var hbObj = Utility.LoadProgramTypes(file).ToList();
-            Assert.IsTrue(hbObj.First().Name == "Plenum");
+            Assert.IsTrue(hbObj[0].Name == "Plenum");
             Assert.IsTrue(hbObj[1].People != null);
             Assert.IsTrue(hbObj[1].Lighting != null);
             Assert.IsTrue(hbObj[1].ElectricEquipment != null);

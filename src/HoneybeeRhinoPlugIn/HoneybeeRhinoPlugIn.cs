@@ -190,7 +190,7 @@ namespace HoneybeeRhino
 
         protected override void ObjectPropertiesPages(List<ObjectPropertiesPage> pages)
         {
-            var page = new HoneybeeRhino.UI.PropertyPage();
+            var page = new global::HoneybeeRhino.UI.PropertyPage();
             pages.Add(page);
         }
 

@@ -315,5 +315,20 @@ namespace HoneybeeRhino.Test
 
         }
 
+
+        [Test]
+        public void Test_SetProgramType()
+        {
+            var rhinoObj = InitRoomBox();
+            var geo = rhinoObj.Geometry as Brep;
+
+            var type = Utility.DefaultProgramTypes.First();
+            geo = HoneybeeRhino.SetRoomProgramType(geo, type);
+
+            var typeName = geo.TryGetRoomEntity().HBObject.Properties.Energy.ProgramType;
+            Assert.IsTrue(!string.IsNullOrEmpty(typeName));
+
+        }
+
     }
 }

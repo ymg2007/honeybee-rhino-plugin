@@ -32,7 +32,7 @@ namespace HoneybeeRhino
                 return;
 
 
-            var ent = HoneybeeRhino.Entities.RoomEntity.TryGetFrom(selectedRoom.Geometry);
+            var ent = global::HoneybeeRhino.Entities.RoomEntity.TryGetFrom(selectedRoom.Geometry);
             if (ent.IsValid)
             {
                 RhinoApp.EscapeKeyPressed += RhinoApp_EscapeKeyPressed;

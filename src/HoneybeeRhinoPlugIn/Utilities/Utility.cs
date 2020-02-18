@@ -14,6 +14,24 @@ namespace HoneybeeRhino
     {
         public static string HoneybeeStandardURL { get; } = @"https://raw.githubusercontent.com/ladybug-tools/honeybee-standards/master/honeybee_standards/data/programtypes/default.json";
         public static string HoneybeeStandardFolder { get; } = Path.Combine(Path.GetTempPath(), "Ladybug", "Library");
+
+        private static IEnumerable<HB.ProgramTypeAbridged> _defaultProgramTypes;
+        public static IEnumerable<HB.ProgramTypeAbridged> DefaultProgramTypes
+        {
+            get
+            {
+                if (_defaultProgramTypes == null)
+                {
+                    _defaultProgramTypes = LoadProgramTypes(Path.Combine(HoneybeeStandardFolder, "programtypes.json"));
+                }
+                return _defaultProgramTypes;
+            }
+           
+        }
+
+
+
+
         public static string DownLoadDefaultLibrary(string standardsUrl)
         {
             var url = standardsUrl;

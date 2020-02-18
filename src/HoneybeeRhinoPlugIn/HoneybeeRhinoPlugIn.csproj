@@ -59,6 +59,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AdjacencySolver.cs" />
+    <Compile Include="Extensions\HoneybeeRhino.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Converter\Convert.ToHBRhinoObj.cs" />
     <Compile Include="Converter\Convert.ToHB.cs" />
@@ -76,9 +77,11 @@
     <Compile Include="RhinoCommands\HB_EditRoom.cs" />
     <Compile Include="RhinoCommands\HB_GetInfo.cs" />
     <Compile Include="RhinoCommands\HB_MassToRoom.cs" />
+    <Compile Include="RhinoCommands\HB_SetProgramType.cs" />
     <Compile Include="RhinoCommands\HB_RoomList.cs" />
     <Compile Include="RhinoCommands\HB_SolveAdjacency.cs" />
     <Compile Include="HoneybeeRhinoPlugIn.cs" />
+    <Compile Include="UI\ProgramTypesDialog.cs" />
     <Compile Include="UI\PropertyPage.cs" />
     <Compile Include="UI\PropertyPanel.cs" />
     <Compile Include="RoomEntityMouseCallback.cs" />
