@@ -24,7 +24,7 @@ namespace HoneybeeRhino.UI
             Resizable = true;
             Title = "Honeybee Rhino PlugIn";
             WindowStyle = WindowStyle.Default;
-            MinimumSize = new Size(450, 600);
+            MinimumSize = new Size(450, 620);
 
             DefaultButton = new Button { Text = "OK" };
             DefaultButton.Click += (sender, e)
@@ -47,27 +47,22 @@ namespace HoneybeeRhino.UI
             AbortButton.Click += (sender, e) => Close();
 
             //Get constructions
-            var constructions = EnergyLibrary.DefaultConstructionSets.Select(_ => new ListItem() { Text = _.Name, Tag = _ }).OrderBy(_ => _.Text);
-            var constructionSetDropdown = new DropDown();
-            constructionSetDropdown.Items.AddRange(constructions);
-            constructionSetDropdown.SelectedIndexChanged +=
-                (s, e) => this._constructionSet = (constructionSetDropdown.Items[constructionSetDropdown.SelectedIndex] as ListItem).Tag as HB.ConstructionSetAbridged;
+            var constructionSetDP = MakeDropDown(EnergyLibrary.DefaultConstructionSets, "By Global Default ConstructionSet");
+            constructionSetDP.SelectedIndexChanged +=
+                (s, e) => this._constructionSet = (constructionSetDP.Items[constructionSetDP.SelectedIndex] as ListItem).Tag as HB.ConstructionSetAbridged;
 
 
             //Get programs
-            var programs = EnergyLibrary.DefaultProgramTypes.Select(_ => new ListItem() { Text = _.Name, Tag = _ }).OrderBy(_ => _.Text);
-            var programTypesDropdown = new DropDown();
-            programTypesDropdown.Items.AddRange(programs);
-            programTypesDropdown.SelectedIndexChanged +=
-                (s, e) => this._programType = (programTypesDropdown.Items[programTypesDropdown.SelectedIndex] as ListItem).Tag as HB.ProgramTypeAbridged;
+            var programTypesDP = MakeDropDown(EnergyLibrary.DefaultProgramTypes, "Generic Office Program");
+            programTypesDP.SelectedIndexChanged +=
+                (s, e) => this._programType = (programTypesDP.Items[programTypesDP.SelectedIndex] as ListItem).Tag as HB.ProgramTypeAbridged;
 
 
             //Get HVACs
-            var hvacs = EnergyLibrary.DefaultHVACs.Select(_ => new ListItem() { Text = _.Name, Tag = _ }).OrderBy(_ => _.Text);
-            var hvacsDropdown = new DropDown();
-            hvacsDropdown.Items.AddRange(hvacs);
-            hvacsDropdown.SelectedIndexChanged +=
-                (s, e) => this._idealAirSystem = (hvacsDropdown.Items[hvacsDropdown.SelectedIndex] as ListItem).Tag as HB.IdealAirSystemAbridged;
+            var hvacDP = MakeDropDown(EnergyLibrary.DefaultHVACs);
+            hvacDP.SelectedIndexChanged +=
+                (s, e) => this._idealAirSystem = (hvacDP.Items[hvacDP.SelectedIndex] as ListItem).Tag as HB.IdealAirSystemAbridged;
+
 
             var defaultByProgramType = "By Default Program Type";
             //Get people
@@ -116,18 +111,18 @@ namespace HoneybeeRhino.UI
             //Create layout
             Content = new TableLayout
             {
-                Padding = new Padding(5),
+                Padding = new Padding(10),
                 Spacing = new Size(5, 5),
                 Rows =
                 {
                     new Label(){ Text = "Default Room ConstructionSet:"},
-                    constructionSetDropdown,
+                    constructionSetDP,
                     new Label(){ Text = "Default Program Type:"},
-                    programTypesDropdown,
-                    new Label(){ Text = "Default HVAC:"},
-                    hvacsDropdown,
+                    programTypesDP,
+                    new Label(){ Text = "Default Zone HVAC:"},
+                    hvacDP,
                     new Label(){ Text = " "},
-                    new Label(){ Text = "People [ppl/m2]:"}, peopleDP,
+                    new Label(){ Text = "People [ppl/m2]:",}, peopleDP,
                     new Label(){ Text = "Lighting [W/m2]:"}, lightingDP,
                     new Label(){ Text = "Electric Equipment [W/m2]:"}, elecEqpDP,
                     new Label(){ Text = "Gas Equipment [W/m2]:"}, gasEqpDP,
@@ -142,20 +137,33 @@ namespace HoneybeeRhino.UI
 
         }
 
-        private DropDown MakeDropDown<T>(IEnumerable<T> Library, string defaultItem) where T : HB.IAbridged
+        private DropDown MakeDropDown<T>(IEnumerable<T> Library, string defaultItemName = default) where T : HB.IAbridged
         {
 
-            var dropdownItems = Library.Select(_ => new ListItem() { Text = _.Name, Tag = _ }).OrderBy(_ => _.Text);
+            var dropdownItems = Library.Select(_ => new ListItem() { Text = _.Name, Tag = _ }).OrderBy(_ => _.Text).ToList();
             var dp = new DropDown();
 
-            if (!string.IsNullOrEmpty(defaultItem))
+            if (!string.IsNullOrEmpty(defaultItemName))
             {
-                dp.Items.Add(defaultItem);
-                dp.SelectedIndex = 0;
+                var foundIndex = dropdownItems.FindIndex(_ => _.Text == defaultItemName);
+                
+                if (foundIndex > -1)
+                {
+                    //Add exist item from list
+                    dp.Items.Add(dropdownItems[foundIndex]);
+                    dropdownItems.RemoveAt(foundIndex);
+                }
+                else
+                {
+                    //Add a default None item with a name
+                    dp.Items.Add(defaultItemName);
+                }
+
             }
             
             dp.Items.AddRange(dropdownItems);
-           
+            dp.SelectedIndex = 0;
+
             return dp;
         }
     }
