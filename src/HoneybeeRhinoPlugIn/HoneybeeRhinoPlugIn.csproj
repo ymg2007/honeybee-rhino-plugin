@@ -38,7 +38,8 @@
       <HintPath>..\..\packages\RhinoCommon.6.22.20028.13281\lib\net45\Eto.dll</HintPath>
     </Reference>
     <Reference Include="HoneybeeSchema, Version=1.16.1.4729, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\HoneybeeSchema.1.16.1.4729\lib\net45\HoneybeeSchema.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\honeybee-schema-dotnet\src\HoneybeeSchema\bin\Debug\HoneybeeSchema.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -50,6 +51,7 @@
       <HintPath>..\..\packages\RhinoCommon.6.22.20028.13281\lib\net45\RhinoCommon.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="Microsoft.CSharp" />
@@ -60,7 +62,7 @@
   <ItemGroup>
     <Compile Include="AdjacencySolver.cs" />
     <Compile Include="Extensions\HoneybeeRhino.cs" />
-    <Compile Include="HoneybeeRhino\Library.cs" />
+    <Compile Include="HoneybeeRhino\EnergyLibrary.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Converter\Convert.ToHBRhinoObj.cs" />
     <Compile Include="Converter\Convert.ToHB.cs" />
