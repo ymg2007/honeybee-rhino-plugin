@@ -39,7 +39,7 @@ namespace HoneybeeRhino.UI
                     gasEquipment: this._gasEqp,
                     infiltration: this._infilt,
                     ventilation: this._vent,
-                    setpoint: this._setpoint
+                    setpoint: this._setpoint 
                     )
                 );
 
@@ -47,13 +47,13 @@ namespace HoneybeeRhino.UI
             AbortButton.Click += (sender, e) => Close();
 
             //Get constructions
-            var constructionSetDP = MakeDropDown(EnergyLibrary.DefaultConstructionSets, "By Global Default ConstructionSet");
+            var constructionSetDP = MakeDropDown(EnergyLibrary.DefaultConstructionSets, "By Global Model ConstructionSet");
             constructionSetDP.SelectedIndexChanged +=
                 (s, e) => this._constructionSet = (constructionSetDP.Items[constructionSetDP.SelectedIndex] as ListItem).Tag as HB.ConstructionSetAbridged;
 
 
             //Get programs
-            var programTypesDP = MakeDropDown(EnergyLibrary.DefaultProgramTypes, "Generic Office Program");
+            var programTypesDP = MakeDropDown(EnergyLibrary.DefaultProgramTypes, "Unoccupied, NoLoads");
             programTypesDP.SelectedIndexChanged +=
                 (s, e) => this._programType = (programTypesDP.Items[programTypesDP.SelectedIndex] as ListItem).Tag as HB.ProgramTypeAbridged;
 
@@ -64,7 +64,7 @@ namespace HoneybeeRhino.UI
                 (s, e) => this._idealAirSystem = (hvacDP.Items[hvacDP.SelectedIndex] as ListItem).Tag as HB.IdealAirSystemAbridged;
 
 
-            var defaultByProgramType = "By Default Program Type";
+            var defaultByProgramType = "By Room Program Type";
             //Get people
             var peopleDP = MakeDropDown(EnergyLibrary.DefaultPeopleLoads, defaultByProgramType);
             peopleDP.SelectedIndexChanged +=
@@ -115,11 +115,11 @@ namespace HoneybeeRhino.UI
                 Spacing = new Size(5, 5),
                 Rows =
                 {
-                    new Label(){ Text = "Default Room ConstructionSet:"},
+                    new Label(){ Text = "Room ConstructionSet:"},
                     constructionSetDP,
-                    new Label(){ Text = "Default Program Type:"},
+                    new Label(){ Text = "Room Program Type:"},
                     programTypesDP,
-                    new Label(){ Text = "Default Zone HVAC:"},
+                    new Label(){ Text = "Room HVAC:"},
                     hvacDP,
                     new Label(){ Text = " "},
                     new Label(){ Text = "People [ppl/m2]:",}, peopleDP,
@@ -137,7 +137,7 @@ namespace HoneybeeRhino.UI
 
         }
 
-        private DropDown MakeDropDown<T>(IEnumerable<T> Library, string defaultItemName = default) where T : HB.IAbridged
+        private DropDown MakeDropDown<T>(IEnumerable<T> Library, string defaultItemName = default) where T : HB.INamed
         {
 
             var dropdownItems = Library.Select(_ => new ListItem() { Text = _.Name, Tag = _ }).OrderBy(_ => _.Text).ToList();
