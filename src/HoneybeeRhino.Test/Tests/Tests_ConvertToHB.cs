@@ -42,17 +42,32 @@ namespace HoneybeeRhino.Test
         }
 
         [Test]
-        public void Test_Brep()
+        public void Test_BrepToHBFace3Ds()
         {
-            TestContext.WriteLine($"Testing: {nameof(Test_Brep)}");
+            TestContext.WriteLine($"Testing: {nameof(Test_BrepToHBFace3Ds)}");
             BoundingBox box = new BoundingBox(new Point3d(0, 0, 0), new Point3d(1, 1, 1));
             Brep brep = box.ToBrep();
             var face3D = brep.ToHBFace3Ds();
             var boudary = face3D.First().Boundary;
 
-            TestContext.WriteLine(string.Join(",", boudary[2]));
             Assert.AreEqual(boudary[2], new List<decimal> { 1, 0, 1 });
         }
+
+        [Test]
+        public void Test_RoomBrepFacesToHBFaces()
+        {
+            TestContext.WriteLine($"Testing: {nameof(Test_RoomBrepFacesToHBFaces)}");
+            var bbox = new BoundingBox(new Point3d(0, 0, 0), new Point3d(10, 10, 3));
+            var box = new Box(bbox).ToBrep();
+            var hbFaces = box.Faces.Select(_ => _.ToHBFace(maxRoofFloorAngle: 30)).ToList();
+            var walls = hbFaces.Where(_ => _.FaceType == HoneybeeSchema.Face.FaceTypeEnum.Wall);
+            var floor = hbFaces.Where(_ => _.FaceType == HoneybeeSchema.Face.FaceTypeEnum.Floor);
+            var ceiling = hbFaces.Where(_ => _.FaceType == HoneybeeSchema.Face.FaceTypeEnum.RoofCeiling);
+            Assert.AreEqual(walls.Count(), 4);
+            Assert.AreEqual(floor.Count(), 1);
+            Assert.AreEqual(ceiling.Count(), 1);
+        }
+
 
         [Test]
         public void Test_AllPlaneBrep()

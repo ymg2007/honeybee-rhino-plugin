@@ -100,12 +100,12 @@ namespace HoneybeeRhino
                 face.BoundaryCondition = new HB.Ground();
             }
 
-
-            if (CalAngle(norm, floorBaseNorm) <= maxRoofFloorAngle)
+            var maxRoofFloorAngleRad = maxRoofFloorAngle * Math.PI / 180;
+            if (CalAngle(norm, floorBaseNorm) <= maxRoofFloorAngleRad)
             {
                 face.FaceType = HB.Face.FaceTypeEnum.Floor;
             }
-            else if (CalAngle(norm, roofBaseNorm) <= maxRoofFloorAngle)
+            else if (CalAngle(norm, roofBaseNorm) <= maxRoofFloorAngleRad)
             {
                 face.FaceType = HB.Face.FaceTypeEnum.RoofCeiling;
             }
