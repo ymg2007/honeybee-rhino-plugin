@@ -34,6 +34,8 @@ namespace HoneybeeRhino.Entities
             var ent = new GroupEntity(hostID);
             ent.AddToDocument(documentGroupEntityTable);
         }
+
+   
         /// <summary>
         /// Use this for objects were duplicated alone with RhinoObject, but Ids were still referencing old Rhino object ID.
         /// </summary>

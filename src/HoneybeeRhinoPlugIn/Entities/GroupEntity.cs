@@ -12,6 +12,7 @@ using Rhino.FileIO;
 using System.Runtime.InteropServices;
 using Rhino.Collections;
 using Rhino.Geometry;
+using HB = HoneybeeSchema;
 
 namespace HoneybeeRhino.Entities
 {
@@ -47,6 +48,52 @@ namespace HoneybeeRhino.Entities
 
         public bool IsValid => RhinoDoc.ActiveDoc.Objects.FindId(this.RoomID) != null;
 
+        /// <summary>
+        /// Use this method to update honeybee geometry based on its rhino object holder.
+        /// </summary>
+        public HB.Room GetCompleteHBRoom()
+        {
+            var doc = RhinoDoc.ActiveDoc.Objects;
+            var rmID = this.RoomID;
+            var apertureIDs = this.ApertureIDs;
+            //TODO: get room 
+
+            //TODO: update room
+            //TODO: get apertures
+            //TODO: add apertures to room.
+            //TODO: get shades
+            //TODO: add shades to room.
+
+
+
+            //Get read rhino brep
+
+            var roomBrep = Brep.TryConvertBrep(doc.FindId(rmID).Geometry);
+            var room = roomBrep.TryGetRoomEntity().HBObject;
+
+            //check all subfaces
+            var brepFaces = roomBrep.Faces;
+            var checkedHBFaces = new List<HB.Face>();
+            foreach (var bFace in brepFaces)
+            {
+                var face = bFace.UnderlyingSurface().TryGetFaceEntity().HBObject;
+                var face3d = bFace.ToHBFace3D();
+                face.Geometry = face3d;
+                //TODO: make sure all other meta data still exists in face.
+                checkedHBFaces.Add(face);
+            }
+
+            room.Faces = checkedHBFaces;
+
+            //check apertures:
+            var apertureBreps = apertureIDs.Select(_=> Brep.TryConvertBrep(doc.FindId(_).Geometry));
+            var aperture = apertureBreps.Select(_ => _.TryGetApertureEntity().HBObject);
+            var apertureFace3Ds = apertureBreps.Select(_ => _.ToHBFace3Ds().First());
+            //TODO: add aperture to its host face.
+
+            return room;
+
+        }
 
         protected override void OnDuplicate(UserData source)
         {

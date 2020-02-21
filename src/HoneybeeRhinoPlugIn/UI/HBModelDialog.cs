@@ -47,6 +47,7 @@ namespace HoneybeeRhino.UI
                 Spacing = new Size(5, 5),
                 Rows =
                 {
+                    new Label(){ Text = $"Model ID:{hbModel.Name}"},
                     new Label(){ Text = "Model Name:"},
                     modelNameTextBox,
                     new Label(){ Text = "North Angle:"},
