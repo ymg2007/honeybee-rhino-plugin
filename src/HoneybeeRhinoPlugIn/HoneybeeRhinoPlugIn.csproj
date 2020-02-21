@@ -61,6 +61,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AdjacencySolver.cs" />
+    <Compile Include="Entities\ModelEntityTable.cs" />
+    <Compile Include="Entities\ModelEntity.cs" />
     <Compile Include="Extensions\HoneybeeRhino.cs" />
     <Compile Include="HoneybeeRhino\EnergyLibrary.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -76,7 +78,7 @@
     <Compile Include="Extensions\GeometryBaseExtension.cs" />
     <Compile Include="RhinoCommands\BrepJson.cs" />
     <Compile Include="RhinoCommands\HB_AddWindowToRoom.cs" />
-    <Compile Include="RhinoCommands\HB_CreateHBModel.cs" />
+    <Compile Include="RhinoCommands\HB_Model.cs" />
     <Compile Include="RhinoCommands\HB_EditRoom.cs" />
     <Compile Include="RhinoCommands\HB_GetInfo.cs" />
     <Compile Include="RhinoCommands\HB_MassToRoom.cs" />
@@ -85,6 +87,7 @@
     <Compile Include="RhinoCommands\HB_SolveAdjacency.cs" />
     <Compile Include="HoneybeeRhinoPlugIn.cs" />
     <Compile Include="Runner.cs" />
+    <Compile Include="UI\HBModelDialog.cs" />
     <Compile Include="UI\EnergyPropertyDialog.cs" />
     <Compile Include="UI\PropertyPage.cs" />
     <Compile Include="UI\PropertyPanel.cs" />
