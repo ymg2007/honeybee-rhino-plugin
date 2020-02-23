@@ -63,63 +63,60 @@ namespace HoneybeeRhino.RhinoCommands
 
                 //Check intersection, maybe provide an option for use to split window surfaces for zones.
                 //TODO: do this later
-                //TODO: match windows to rooms 
+           
                 //add HBdata to window geometry 
                 var WinObjs = SelectedObjs.Select(objref => objref.Object());
-                
+                var room = rooms.First();
+                var dupRoomBrep = room.Brep().DuplicateBrep();
+
+                var validRoomApertures = new List<(Guid id, Brep brep)>();
                 foreach (var aperture in WinObjs)
                 {
-                    //Check aperture surface
-                    var apertureBrep = Brep.TryConvertBrep(aperture.Geometry).DuplicateBrep();
-                    apertureBrep.Faces.ShrinkFaces();
-                    var apertureSrf = apertureBrep.Surfaces.First() as PlaneSurface;
-                    apertureSrf.TryGetPlane(out Plane aptPlane);
-                    var apertureBBox = apertureBrep.GetBoundingBox(false);
-
-                    //Get room surfaces
-                    var room = rooms.First();
-                    var isRoomContainsAperture = room.Brep().GetBoundingBox(false).Contains(apertureBBox);
-                    if (!isRoomContainsAperture)
+                    //match window to room 
+                    var matchedRoomApt = dupRoomBrep.AddAperture((Brep.TryConvertBrep(aperture.Geometry), aperture.Id));
+                    if (matchedRoomApt.aperture == null)
                         continue;
 
-                    //Check with room surface contains this aperture.
-                    var roomSrfs = Brep.TryConvertBrep( room.Geometry()).DuplicateBrep().Surfaces;
-                    var roomApertures = new List<Brep>();
-                    foreach (var roomSrf in roomSrfs)
-                    {
-                        var srfBBox = roomSrf.GetBoundingBox(false);
-                        //TODO: need to test following method performance
-                        var isInside = srfBBox.Contains(apertureBBox, false);
-                        var isIntersected = srfBBox.Contains(apertureBBox.Max, false) || srfBBox.Contains(apertureBBox.Min, false);
-                        var isCoPlanner = roomSrf.IsCoplanar(apertureSrf, RhinoMath.ZeroTolerance, true, true);
-                        if (isInside)
-                        {
-                            var apertureGeo = aperture.Geometry.ToApertureGeo(aperture.Id);
-                            roomApertures.Add(apertureGeo);
-                        }
-                    }
-                    //add to groupEntity.
-                    if (roomApertures.Any())
-                    {
-                        var groupEntity = room.Geometry().TryGetGroupEntity(global::HoneybeeRhino.HoneybeeRhinoPlugIn.Instance.GroupEntityTable);
-                        if (groupEntity.IsValid)
-                        {
-                            groupEntity.AddApertures(roomApertures);
-                        }
-                        else
-                        {
-                            //this shouldn't be happening, because all honeybee room must have to be part of group entity.
-                        }
-                    }
-
+                    dupRoomBrep = matchedRoomApt.room;
+                    validRoomApertures.Add((aperture.Id, matchedRoomApt.aperture));
                 }
 
-                
+                if (!validRoomApertures.Any())
+                    return Result.Failure;
 
+#if DEBUG
+                if (!dupRoomBrep.Surfaces.Where(_ => _.TryGetFaceEntity().Apertures.Any()).Any())
+                    throw new ArgumentException("some thing wrong with assigning aperture!");
+#endif
+                //add to groupEntity.
+                var groupEntity = dupRoomBrep.TryGetGroupEntity(HoneybeeRhinoPlugIn.Instance.GroupEntityTable);
+#if DEBUG
+                //this shouldn't be happening, because all honeybee room must have to be part of a group entity.
+                if (!groupEntity.IsValid)
+                    throw new ArgumentException("Failed to get valid group entity from room!");
+#endif
+                groupEntity.AddApertures(validRoomApertures.Select(_=>_.brep));
 
-                //TODO: replace the rhino object in order to be able to undo/redo
+                //Replace the rhino object in order to be able to undo/redo
+                foreach (var apt in validRoomApertures)
+                {
+                    doc.Objects.Replace(apt.id, apt.brep);
+                }
+
+             
+                doc.Objects.Replace(room.ObjectId, dupRoomBrep);
 
                 doc.Views.Redraw();
+
+
+#if DEBUG
+                var newRoom = Brep.TryConvertBrep(doc.Objects.FindId(room.ObjectId).Geometry);
+                if (!newRoom.Surfaces.Where(_ => _.TryGetFaceEntity().Apertures.Any()).Any())
+                    throw new ArgumentException("some thing wrong with assigning aperture!");
+#endif
+               
+                
+
                 return Result.Success;
             }
         }
