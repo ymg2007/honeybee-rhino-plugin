@@ -67,8 +67,11 @@ namespace HoneybeeRhino.Entities
 
 
             //Get read rhino brep
-
-            var roomBrep = Brep.TryConvertBrep(doc.FindId(rmID).Geometry);
+            var roomObj = doc.FindId(rmID);
+            if (roomObj == null)
+                throw new ArgumentNullException("Room object has been deleted!, this group entity is not valid");
+            
+            var roomBrep = Brep.TryConvertBrep(roomObj.Geometry);
             var room = roomBrep.TryGetRoomEntity().HBObject;
 
             //check all subfaces
@@ -76,20 +79,33 @@ namespace HoneybeeRhino.Entities
             var checkedHBFaces = new List<HB.Face>();
             foreach (var bFace in brepFaces)
             {
-                var face = bFace.UnderlyingSurface().TryGetFaceEntity().HBObject;
+                var faceEnt = bFace.UnderlyingSurface().TryGetFaceEntity();
+                var HBFace = faceEnt.HBObject;
                 var face3d = bFace.ToHBFace3D();
-                face.Geometry = face3d;
+                HBFace.Geometry = face3d;
+
+                //check apertures
+                var apertureBreps = faceEnt.Apertures;
+                var checkedHBApertures = new List<HB.Aperture>();
+                foreach (var apertureBrep in apertureBreps)
+                {
+                    //update aperture geometry
+                    var aptFace3D = apertureBrep.ToHBFace3Ds().First();
+                    var HBAperture = apertureBrep.TryGetApertureEntity().HBObject;
+                    HBAperture.Geometry = aptFace3D;
+                    checkedHBApertures.Add(HBAperture);
+                }
+                HBFace.Apertures = checkedHBApertures;
+
+                //TODO: check shades
+
                 //TODO: make sure all other meta data still exists in face.
-                checkedHBFaces.Add(face);
+                checkedHBFaces.Add(HBFace);
             }
 
             room.Faces = checkedHBFaces;
 
-            //check apertures:
-            var apertureBreps = apertureIDs.Select(_=> Brep.TryConvertBrep(doc.FindId(_).Geometry));
-            var aperture = apertureBreps.Select(_ => _.TryGetApertureEntity().HBObject);
-            var apertureFace3Ds = apertureBreps.Select(_ => _.ToHBFace3Ds().First());
-            //TODO: add aperture to its host face.
+      
 
             return room;
 
@@ -123,7 +139,7 @@ namespace HoneybeeRhino.Entities
         {
             foreach (var win in apertureObjs)
             {
-                var ent = Entities.ApertureEntity.TryGetFrom(win);
+                var ent = win.TryGetApertureEntity();
                 if (ent.IsValid)
                 {
                     ent.GroupEntityID = this.RoomID;

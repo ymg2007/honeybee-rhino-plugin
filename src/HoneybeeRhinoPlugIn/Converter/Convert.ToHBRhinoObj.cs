@@ -75,7 +75,7 @@ namespace HoneybeeRhino
         //    return apertureObj;
         //}
 
-        public static RH.Brep ToApertureGeo(this RH.GeometryBase apertureGeo, Guid hostID)
+        public static RH.Brep ToApertureBrep(this RH.GeometryBase apertureGeo, Guid hostID)
         {
             var geo = Rhino.Geometry.Brep.TryConvertBrep(apertureGeo);
            
