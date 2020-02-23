@@ -49,7 +49,7 @@ namespace HoneybeeRhino
                         var isPoly = loop.To3dCurve().TryGetPolyline(out RH.Polyline polyline);
                         if (isPoly)
                         {
-                            var loopPts = polyline.Select(pt => pt.ToDecimalList()).ToList();
+                            var loopPts = polyline.Distinct().Select(pt => pt.ToDecimalList()).ToList();
                             pts.Add(loopPts);
                         }
                         else
