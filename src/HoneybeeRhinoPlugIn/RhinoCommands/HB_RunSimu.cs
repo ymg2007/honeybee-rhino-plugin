@@ -33,7 +33,7 @@ namespace HoneybeeRhino.RhinoCommands
         {
 
             var groupEntities = HoneybeeRhinoPlugIn.Instance.GroupEntityTable.Select(_ => _.Value);
-            var rooms = groupEntities.Select(_ => _.GetCompleteHBRoom()).ToList();
+            var rooms = groupEntities.Where(_=>_.IsValid).Select(_ => _.GetCompleteHBRoom()).ToList();
 
 
             var model = HoneybeeRhinoPlugIn.Instance.ModelEntityTable.First().Value.HBObject;
