@@ -11,17 +11,20 @@ namespace HoneybeeRhino
 {
     public static class HoneybeeRhinoExtension
     {
-        public static (Brep room, Brep aperture) AddAperture(this Brep roomBrep, (Brep Brep, Guid HostID) apertureObject)
+        public static (Brep room, Brep aperture) AddAperture(this ObjRef roomObjRef, ObjRef apertureObjRef)
         {
             Brep validApertureBrep = null;
             var tol = 0.0001;
+            var roomBrep = roomObjRef.Brep();
+            var apertureObject = apertureObjRef.Brep();
+            var apertureHostID = apertureObjRef.ObjectId;
 
             //Only add to valid room obj
-            if (!roomBrep.TryGetRoomEntity().IsValid)
+            if (!roomBrep.IsRoom())
                 throw new ArgumentException("Cannot assign aperture to non-room object!");
 
             //Check aperture surface
-            var apertureBrep = apertureObject.Brep.DuplicateBrep();
+            var apertureBrep = apertureObject.DuplicateBrep();
             apertureBrep.Faces.ShrinkFaces();
             //TODO: make sure this apertureBrep is single surface
             var apertureSrf = apertureBrep.Surfaces.First() as PlaneSurface;
@@ -47,12 +50,21 @@ namespace HoneybeeRhino
                     continue;
 
                 //Convert to Aperture Brep
-                validApertureBrep = apertureBrep.ToApertureBrep(apertureObject.HostID);
+                validApertureBrep = apertureBrep.ToApertureBrep(apertureHostID);
                 //add to room face brep
                 var roomSrfEnt = roomSrf.TryGetFaceEntity();
                 roomSrfEnt.AddAperture(validApertureBrep);
-           
+
+                //add to groupEntity.
+                var groupEntity = dupRoom.TryGetGroupEntity(HoneybeeRhinoPlugIn.Instance.GroupEntityTable);
+
+                //this shouldn't be happening, because all honeybee room must have to be part of a group entity.
+                if (!groupEntity.IsValid)
+                    throw new ArgumentException("Failed to get valid group entity from room!");
+
+                groupEntity.AddApertures(new (Brep, ObjRef)[] {(validApertureBrep, new ObjRef(apertureHostID)) });
             }
+
 
 #if DEBUG
             if (!dupRoom.Surfaces.Where(_ => _.TryGetFaceEntity().Apertures.Any()).Any())
@@ -63,7 +75,7 @@ namespace HoneybeeRhino
                 throw new ArgumentException("some thing wrong with assigning aperture!");
 
             //ensure aperture's hostId is valid
-            if (validApertureBrep.TryGetApertureEntity().HostGeoID == Guid.Empty)
+            if (validApertureBrep.TryGetApertureEntity().HostObjRef == null)
                 throw new ArgumentException("some thing wrong with assigning aperture!");
 
 #endif

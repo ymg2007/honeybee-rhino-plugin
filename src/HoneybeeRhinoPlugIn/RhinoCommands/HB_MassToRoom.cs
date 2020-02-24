@@ -55,7 +55,7 @@ namespace HoneybeeRhino.RhinoCommands
                         var b = Brep.TryConvertBrep(ex.Geometry);
                         doc.Objects.Replace(item, b);
                     }
-                    (item.Object() as BrepObject).ToRoomBrepObj(func, groupEntTable);
+                    item.ToRoomBrepObj(func, groupEntTable);
 
                 }
                 

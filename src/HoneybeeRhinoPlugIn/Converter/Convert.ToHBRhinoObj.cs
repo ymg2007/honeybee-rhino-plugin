@@ -14,7 +14,7 @@ namespace HoneybeeRhino
 {
     public static partial class Convert
     {
-        public static BrepObject ToRoomBrepObj(this BrepObject roomBrepObj, Func<RH.Brep, bool> objectReplaceFunc, GroupEntityTable documentGroupEntityTable, double maxRoofFloorAngle = 30, double tolerance = 0.0001)
+        public static ObjRef ToRoomBrepObj(this ObjRef roomBrepObj, Func<RH.Brep, bool> objectReplaceFunc, GroupEntityTable documentGroupEntityTable, double maxRoofFloorAngle = 30, double tolerance = 0.0001)
         {
            
             var roomEnt = new Entities.RoomEntity(roomBrepObj, objectReplaceFunc);
@@ -23,7 +23,7 @@ namespace HoneybeeRhino
             var ent = new GroupEntity(roomBrepObj);
             ent.AddToDocument(documentGroupEntityTable);
             
-            return roomEnt.HostRhinoObject;
+            return roomEnt.HostObjRef;
         }
 
         
@@ -51,7 +51,7 @@ namespace HoneybeeRhino
                 //TODO: shinkFace
                 var hbobj = geo.Faces.First().UnderlyingSurface().ToAperture();
                 var ent = new Entities.ApertureEntity(hbobj);
-                ent.HostGeoID = hostID;
+                ent.HostObjRef = new ObjRef( hostID);
                 geo.UserData.Add(ent);
                 return geo;
             }

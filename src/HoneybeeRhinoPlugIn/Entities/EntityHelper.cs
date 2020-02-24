@@ -7,35 +7,26 @@ namespace HoneybeeRhino.Entities
 {
     public static class EntityHelper
     {
-        //public static bool IsRoom(this ObjRef rhinoRef) => rhinoRef.Geometry().IsRoom();
-        //public static bool IsRoom(this RhinoObject rhinoRef) => rhinoRef.Geometry.IsRoom();
-        public static bool IsRoom(this GeometryBase geometry)
-        {
-            var ent = geometry.TryGetRoomEntity();
-            return ent.IsValid;
+        public static bool IsRoom(this ObjRef rhinoRef) => rhinoRef.Geometry().IsRoom();
+        public static bool IsRoom(this GeometryBase geometry) => geometry.TryGetRoomEntity().IsValid;
 
-        }
+        public static bool IsAperture(this ObjRef rhinoRef) => rhinoRef.Geometry().IsAperture();
+        public static bool IsAperture(this GeometryBase geometry) => ApertureEntity.TryGetFrom(geometry).IsValid;
 
-        //public static bool IsAperture(this ObjRef rhinoRef) => rhinoRef.Geometry().IsAperture();
-        //public static bool IsAperture(this RhinoObject rhinoRef) => rhinoRef.Geometry.IsAperture();
-        public static bool IsAperture(this GeometryBase geometry)
-        {
-            var ent = Entities.ApertureEntity.TryGetFrom(geometry);
-            return ent.IsValid;
 
-        }
+        public static RoomEntity TryGetRoomEntity(this ObjRef rhinoRef) => RoomEntity.TryGetFrom(rhinoRef.Geometry());
+        public static RoomEntity TryGetRoomEntity(this GeometryBase rhinoRef) => RoomEntity.TryGetFrom(rhinoRef);
 
-        public static Entities.ApertureEntity TryGetApertureEntity(this RhinoObject rhinoRef) => Entities.ApertureEntity.TryGetFrom(rhinoRef.Geometry);
-        public static Entities.RoomEntity TryGetRoomEntity(this RhinoObject rhinoRef) => Entities.RoomEntity.TryGetFrom(rhinoRef.Geometry);
-        public static Entities.ApertureEntity TryGetApertureEntity(this GeometryBase rhinoRef) => Entities.ApertureEntity.TryGetFrom(rhinoRef);
-        public static Entities.RoomEntity TryGetRoomEntity(this GeometryBase rhinoRef) => Entities.RoomEntity.TryGetFrom(rhinoRef);
+        public static ApertureEntity TryGetApertureEntity(this ObjRef rhinoRef) => ApertureEntity.TryGetFrom(rhinoRef.Geometry());
+        public static ApertureEntity TryGetApertureEntity(this GeometryBase rhinoRef) => ApertureEntity.TryGetFrom(rhinoRef);
 
-        public static Entities.FaceEntity TryGetFaceEntity(this GeometryBase rhinoRef) => Entities.FaceEntity.TryGetFrom(rhinoRef);
 
-        public static Entities.HBObjEntity TryGetHBObjEntity(this GeometryBase rhinoRef) => Entities.HBObjEntity.TryGetFrom(rhinoRef);
+        public static FaceEntity TryGetFaceEntity(this GeometryBase rhinoRef) => FaceEntity.TryGetFrom(rhinoRef);
+
+        public static HBObjEntity TryGetHBObjEntity(this GeometryBase rhinoRef) => HBObjEntity.TryGetFrom(rhinoRef);
         public static GroupEntity TryGetGroupEntity(this GeometryBase rhinoRef, GroupEntityTable documentGroupEntityTable)
         {
-            return Entities.GroupEntity.TryGetFrom(rhinoRef, documentGroupEntityTable);
+            return GroupEntity.TryGetFrom(rhinoRef, documentGroupEntityTable);
    
         }
         //public static string GetHBJson(this GeometryBase geometry)

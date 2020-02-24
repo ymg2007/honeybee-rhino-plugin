@@ -19,25 +19,25 @@ namespace HoneybeeRhino.Test
     {
         RhinoDoc _doc = RhinoDoc.ActiveDoc;
         double _tol = 0.0001;
-        public GroupEntityTable GroupEntityTable { get; private set; } = new GroupEntityTable();
+        public GroupEntityTable GroupEntityTable => HoneybeeRhinoPlugIn.Instance.GroupEntityTable;
 
-        public BrepObject InitRoomBrepObject(Brep brep)
+        public ObjRef InitRoomBrepObject(Brep brep)
         {
             var id = _doc.Objects.Add(brep);
-            var rhinoObj = _doc.Objects.FindId(id) as BrepObject;
-
-            var a = rhinoObj.ToRoomBrepObj((Brep b) => _doc.Objects.Replace(id, b), GroupEntityTable);
+            //var rhinoObj = _doc.Objects.FindId(id);
+            var rhinoObj = new ObjRef(id);
+            var a =  rhinoObj.ToRoomBrepObj((Brep b) => _doc.Objects.Replace(id, b), GroupEntityTable);
             
-            return Rhino.RhinoDoc.ActiveDoc.Objects.FindId(id) as BrepObject;
+            return rhinoObj;
         }
-        public BrepObject InitBrepObject(Brep brep)
+        public ObjRef InitBrepObject(Brep brep)
         {
             var id = _doc.Objects.Add(brep);
-            var rhinoObj = _doc.Objects.FindId(id) as BrepObject;
+            var rhinoObj = new ObjRef(id);
             return rhinoObj;
         }
 
-        public BrepObject InitRoomBox()
+        public ObjRef InitRoomBox()
         {
             var allObjs = _doc.Objects;
 
@@ -68,7 +68,7 @@ namespace HoneybeeRhino.Test
         public void Test_BoxToRoom()
         {
             var rhinoObj = InitRoomBox();
-            var room = rhinoObj.BrepGeometry;
+            var room = rhinoObj.Brep();
 
             var ent = room.TryGetRoomEntity();
             Assert.IsTrue(ent.IsValid);
@@ -83,7 +83,7 @@ namespace HoneybeeRhino.Test
         public void Test_Room_DuplicateBrep()
         {
             var rhinoObj = InitRoomBox();
-            var room = rhinoObj.BrepGeometry;
+            var room = rhinoObj.Brep();
             var newRoom = room.DuplicateBrep();
 
             var ent = room.TryGetRoomEntity();
@@ -91,7 +91,7 @@ namespace HoneybeeRhino.Test
             var srfNames = room.Surfaces.Select(_ => _.TryGetFaceEntity().HBObject.Name).Distinct().ToArray();
             var newSrfNames = room.Surfaces.Select(_ => _.TryGetFaceEntity().HBObject.Name).Distinct().ToArray();
             Assert.AreEqual(ent.HBFaces.Count(), newEnt.HBFaces.Count());
-            Assert.IsTrue(ent.HostGeoID == newEnt.HostGeoID);
+            Assert.IsTrue(ent.HostObjRef == newEnt.HostObjRef);
             Assert.AreEqual(srfNames[1], newSrfNames[1]);
 
         }
@@ -100,7 +100,7 @@ namespace HoneybeeRhino.Test
         public void Test_Room_DuplicateBrep_Parallel()
         {
             var rhinoObj = InitRoomBox();
-            var room = rhinoObj.BrepGeometry;
+            var room = rhinoObj.Brep();
             var rooms = new Brep[50];
 
             Parallel.For(0, 50, i =>
@@ -120,14 +120,14 @@ namespace HoneybeeRhino.Test
             string file = @"D:\Dev\honeybee-rhino-plugin\src\HoneybeeRhino.Test\TestModels\RingFiveBreps.json";
             var breps = LoadBrepsFromJson(file);
             //breps = _doc.Objects.Where(_ => _.IsSelected(true) >= 1).Select(_=>Brep.TryConvertBrep(_.Geometry)).ToList();
-            var rooms = breps.Select(_=> InitRoomBrepObject(_).BrepGeometry);
+            var rooms = breps.Select(_=> InitRoomBrepObject(_).Brep());
 
             var ents = rooms.Select(_=>_.TryGetRoomEntity());
             var srfNames = rooms.Select(rm=>rm.Surfaces.Select(_ => _.TryGetFaceEntity().HBObject.Name)).ToList();
 
             Assert.IsTrue(rooms.Count() == 5);
             Assert.IsTrue(ents.All(_ => _.IsValid));
-            Assert.IsTrue(ents.All(_ => _.HostGeoID != Guid.Empty));
+            Assert.IsTrue(ents.All(_ => _.HostObjRef != null));
             for (int i = 0; i < breps.Count(); i++)
             {
                 Assert.IsTrue(srfNames[i].Count() == breps[i].Faces.Count);
@@ -138,23 +138,21 @@ namespace HoneybeeRhino.Test
         [Test]
         public void Test_MoveRoom()
         {
-            var rhinoObj = InitRoomBox();
+            var rhinoObj = InitRoomBox().Object() as BrepObject;
             var geo = rhinoObj.Geometry;
 
             var t = Transform.Translation(new Vector3d(10, 10, 0));
             geo.Transform(t);
             _doc.Objects.Replace(rhinoObj.Id, Brep.TryConvertBrep(geo));
-            var newObj = _doc.Objects.FindId(rhinoObj.Id);
+            var newObj = new ObjRef(_doc.Objects.FindId(rhinoObj.Id));
             var ent = newObj.TryGetRoomEntity();
 
             Assert.IsTrue(ent.IsValid);
             Assert.AreEqual(ent.HBFaces.Count, 6);
-            Assert.IsTrue(ent.HostGeoID == rhinoObj.Id);
+            Assert.IsTrue(ent.HostObjRef.ObjectId == rhinoObj.Id);
 
-            _doc.Views.Redraw();
-            _doc.Objects.Purge(newObj);
+            _doc.Objects.Purge(newObj.Object());
             _doc.Objects.Purge(rhinoObj);
-            _doc.Views.Redraw();
         }
 
         [Test]
@@ -163,18 +161,18 @@ namespace HoneybeeRhino.Test
             var rhinoObj = InitRoomBox();
 
 
-            var dupGeo = rhinoObj.DuplicateBrepGeometry();
+            var dupGeo = rhinoObj.Brep().DuplicateBrep();
 
             var newObj = InitRoomBrepObject(dupGeo);
 
             var ent = dupGeo.TryGetRoomEntity();
-            ent.UpdateHostID(newObj, GroupEntityTable);
+            ent.UpdateHost(newObj, GroupEntityTable);
 
             Assert.AreEqual(ent.HBFaces.Count, rhinoObj.TryGetRoomEntity().HBFaces.Count);
-            Assert.IsTrue(ent.HostGeoID == newObj.Id);
+            Assert.IsTrue(ent.HostObjRef.ObjectId == newObj.ObjectId);
 
-            _doc.Objects.Purge(rhinoObj);
-            _doc.Objects.Purge(newObj);
+            _doc.Objects.Purge(rhinoObj.Object());
+            _doc.Objects.Purge(newObj.Object());
 
         }
 
@@ -207,7 +205,7 @@ namespace HoneybeeRhino.Test
             string file = @"D:\Dev\honeybee-rhino-plugin\src\HoneybeeRhino.Test\TestModels\TwoSimpleBreps.json";
             var breps = LoadBrepsFromJson(file);
 
-            var rooms = breps.Select(_ => InitRoomBrepObject(_).BrepGeometry);
+            var rooms = breps.Select(_ => InitRoomBrepObject(_).Brep());
             var solver = new AdjacencySolver(rooms);
            
             var intersectedBreps = solver.ExecuteIntersectMasses(_tol).ToList();
@@ -250,7 +248,7 @@ namespace HoneybeeRhino.Test
         {
             string file = @"D:\Dev\honeybee-rhino-plugin\src\HoneybeeRhino.Test\TestModels\RingFiveBreps.json";
             var breps = LoadBrepsFromJson(file);
-            var rooms = breps.Select(_ => InitRoomBrepObject(_).BrepGeometry);
+            var rooms = breps.Select(_ => InitRoomBrepObject(_).Brep());
             var isRoom = rooms.Select(_ => _.Surfaces.All(s => s.TryGetFaceEntity().IsValid));
 
             var intersectedBreps = rooms.Select(_ => _.DuplicateBrep());
@@ -265,7 +263,7 @@ namespace HoneybeeRhino.Test
 
             string file = @"D:\Dev\honeybee-rhino-plugin\src\HoneybeeRhino.Test\TestModels\RingFiveBreps.json";
             var breps = LoadBrepsFromJson(file);
-            var rooms = breps.Select(_ => InitRoomBrepObject(_).BrepGeometry);
+            var rooms = breps.Select(_ => InitRoomBrepObject(_).Brep());
 
             var dupBreps = rooms.Select(_ => _.DuplicateBrep());
             var adjSolver = new AdjacencySolver(dupBreps);
@@ -308,7 +306,7 @@ namespace HoneybeeRhino.Test
 
             string file = @"D:\Dev\honeybee-rhino-plugin\src\HoneybeeRhino.Test\TestModels\28Breps.json";
             var breps = LoadBrepsFromJson(file);
-            var rooms = breps.Select(_ => InitRoomBrepObject(_).BrepGeometry);
+            var rooms = breps.Select(_ => InitRoomBrepObject(_).Brep());
 
             var dupBreps = rooms.Select(_ => _.DuplicateBrep());
             var adjSolver = new AdjacencySolver(dupBreps);
@@ -332,7 +330,7 @@ namespace HoneybeeRhino.Test
         public void Test_SetProgramType()
         {
             var rhinoObj = InitRoomBox();
-            var geo = rhinoObj.Geometry as Brep;
+            var geo = rhinoObj.Brep();
 
             var constructionset = EnergyLibrary.DefaultConstructionSets.First();
             var programtype = EnergyLibrary.DefaultProgramTypes.First();
@@ -357,6 +355,42 @@ namespace HoneybeeRhino.Test
 
 
         }
+        [Test]
+        public void Test_GroupEntity()
+        {
+            var file = @"D:\Dev\honeybee-rhino-plugin\src\HoneybeeRhino.Test\TestModels\SingleRoomAndWindow.json";
+            var breps = LoadBrepsFromJson(file);
+
+
+            var roomObj = InitBrepObject(breps.First(_ => _.IsSolid));
+            var windowObj = InitBrepObject(breps.First(_ => _.IsSurface));
+
+            //make room
+            var roomBrepObj = roomObj.ToRoomBrepObj((Brep b) => _doc.Objects.Replace(roomObj.ObjectId, b), GroupEntityTable);
+            var groupID = roomBrepObj.Geometry().TryGetRoomEntity().GroupEntityID;
+            var groupEnt = GroupEntityTable[groupID];
+            Assert.IsTrue(groupID != Guid.Empty);
+            Assert.IsTrue(groupEnt != null);
+
+            //make window //add to groupEntity
+            var processedObj = roomBrepObj.AddAperture(windowObj);
+            Assert.IsTrue(processedObj.aperture != null);
+
+            var done = _doc.Objects.Replace(roomObj.ObjectId, processedObj.room);
+            done &= _doc.Objects.Replace(windowObj.ObjectId, processedObj.aperture);
+            Assert.IsTrue(done);
+  
+            var newRoom = new ObjRef(roomObj.ObjectId).Object() as BrepObject;
+            if (!newRoom.BrepGeometry.Surfaces.Where(_ => _.TryGetFaceEntity().Apertures.Any()).Any())
+                throw new ArgumentException("some thing wrong with assigning aperture!");
+
+            //recheck if aperture is added to groupEntity
+            groupEnt = GroupEntityTable[groupID];
+            Assert.IsTrue(groupEnt.Apertures.First().ObjectId == windowObj.ObjectId);
+
+         
+        }
+
 
         [Test]
         public void Test_AddSingleWindow()
@@ -368,13 +402,11 @@ namespace HoneybeeRhino.Test
             var windowBrep = breps.First(_ => _.IsSurface);
 
             var roomObj = InitRoomBrepObject(roomBrep);
-            var roomID = roomObj.Id;
-            var windID = InitBrepObject((windowBrep)).Id;
+            var roomID = roomObj.ObjectId;
+            var windObj = InitBrepObject((windowBrep));
+            var windID = windObj.ObjectId;
 
-            var dupRoomBrep = roomObj.BrepGeometry.DuplicateBrep();
-
-
-            var matchedRoomWindow = dupRoomBrep.AddAperture((windowBrep, windID));
+            var matchedRoomWindow = roomObj.AddAperture(windObj);
 
             var faceEnts = matchedRoomWindow.room.Surfaces.Select(_ => _.TryGetFaceEntity());
             if (!faceEnts.Where(_=>_.Apertures.Any()).Any())

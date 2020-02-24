@@ -13,9 +13,9 @@ namespace HoneybeeRhino.Entities
     [Guid("D9C8832F-EE24-4834-A443-AC981B8D9921")]
     public abstract class HBObjEntity: UserData
     {
-        public Guid HostGeoID { get; set; } = Guid.Empty;
+        public ObjRef HostObjRef { get; set; }
         public Guid GroupEntityID { get; set; } = Guid.Empty;
-        public virtual bool IsValid => this.HostGeoID != Guid.Empty;
+        public virtual bool IsValid => this.HostObjRef != null;
         public override bool ShouldWrite => IsValid;
         public override string Description => this.IsValid ? "Honeybee Object Entity" : "An Invalid Honeybee Object Entity";
         public override string ToString() => this.Description;
@@ -24,7 +24,7 @@ namespace HoneybeeRhino.Entities
         {
             if (source is HBObjEntity src)
             {
-                this.HostGeoID = src.HostGeoID;
+                this.HostObjRef = src.HostObjRef;
                 this.GroupEntityID = src.GroupEntityID;
             }
 
@@ -50,14 +50,14 @@ namespace HoneybeeRhino.Entities
         private protected virtual ArchivableDictionary Serialize() 
         {
             var dic = new ArchivableDictionary();
-            dic.Set(nameof(HostGeoID), HostGeoID);
+            dic.Set(nameof(HostObjRef), HostObjRef);
             dic.Set(nameof(GroupEntityID), GroupEntityID);
             return dic;
         }
         private protected virtual void Deserialize(ArchivableDictionary dictionary) 
         {
             var dic = dictionary;
-            this.HostGeoID = dic.GetGuid(nameof(HostGeoID));
+            this.HostObjRef = dic[nameof(HostObjRef)] as ObjRef;
             this.GroupEntityID = dic.GetGuid(nameof(GroupEntityID));
 
         }

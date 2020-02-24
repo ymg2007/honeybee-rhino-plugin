@@ -39,10 +39,9 @@ namespace HoneybeeRhino.Entities
             }
         }
 
-        public ApertureEntity UpdateHostFrom(RhinoObject newApertureObj)
+        public ApertureEntity UpdateHostFrom(ObjRef newApertureObj)
         {
-            var hostID = newApertureObj.Id;
-            this.HostGeoID = hostID;
+            this.HostObjRef = newApertureObj;
             return this;
         }
 

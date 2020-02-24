@@ -9,7 +9,7 @@ using HoneybeeRhino.Entities;
 
 namespace HoneybeeRhino
 {
-    public class RoomEntityMouseCallback : Rhino.UI.MouseCallback
+    public class RoomEntityMouseCallback : MouseCallback
     {
         private List<RhinoObject> greiedOutObjs = new List<RhinoObject>();
         public Guid EditingObj { get; private set; } = Guid.Empty;
@@ -32,12 +32,12 @@ namespace HoneybeeRhino
                 return;
 
 
-            var ent = global::HoneybeeRhino.Entities.RoomEntity.TryGetFrom(selectedRoom.Geometry);
+            var ent = RoomEntity.TryGetFrom(selectedRoom.Geometry);
             if (ent.IsValid)
             {
                 RhinoApp.EscapeKeyPressed += RhinoApp_EscapeKeyPressed;
                 RhinoApp.WriteLine($"Double clicked on: {ent.GroupEntityID}");
-                EditingObj = ent.HostGeoID;
+                EditingObj = ent.HostObjRef.ObjectId;
                 greiedOutObjs = doc.Objects.Where(_ => (!_.IsHidden) && (!_.IsLocked) && (_.IsSelected(true) == 0)).ToList();
 
                 foreach (var item in greiedOutObjs)
@@ -73,7 +73,6 @@ namespace HoneybeeRhino
                 return;
 
             ExitGroupEntity(RhinoDoc.ActiveDoc);
-
 
         }
     }

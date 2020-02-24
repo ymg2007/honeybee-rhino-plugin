@@ -19,14 +19,15 @@ namespace HoneybeeRhino.Entities
     [Guid("B0508C74-707F-4D5C-B218-AEF3B4EEF06B")]
     public class GroupEntity : UserData
     {
-        public BrepObject Room { get; private set; }
-        public List<BrepObject> Apertures { get; private set; } = new List<BrepObject>();
-        public List<BrepObject> Shades { get; private set; } = new List<BrepObject>();
+        public ObjRef Room { get; private set; }
+        public List<ObjRef> Apertures { get; private set; } = new List<ObjRef>();
+        public List<ObjRef> Shades { get; private set; } = new List<ObjRef>();
 
-        public Guid Guid => Room.Id;
+        public Guid Guid => Room.ObjectId;
+        
         public GroupEntity() { }
 
-        public GroupEntity(BrepObject room) 
+        public GroupEntity(ObjRef room) 
         {
             this.Room = room;
         }
@@ -41,15 +42,20 @@ namespace HoneybeeRhino.Entities
         public void AddToDocument(GroupEntityTable documentGroupEntityTable)
         {
             var table = documentGroupEntityTable;
+            var found = table.TryGetValue(this.Guid, out GroupEntity ent);
             var exist = table.Keys.Any(_ => _ == this.Guid);
-            if (!exist)
+            if (!found)
             {
                 table.Add(this.Guid, this);
             }
             else
             {
-                //TODO: maybe need to clear all child ids.
-                throw new NotImplementedException();
+            
+                ent = new GroupEntity(this.Room);
+                ent.Shades.Clear();
+                ent.Apertures.Clear();
+                table[this.Guid] = ent;
+
             }
         }
 
@@ -61,7 +67,7 @@ namespace HoneybeeRhino.Entities
                 if (this.Room == null)
                     return false;
 
-                return this.Room.IsValid; 
+                return this.Room.Brep().IsValid; 
             }
         }
         /// <summary>
@@ -73,7 +79,7 @@ namespace HoneybeeRhino.Entities
 
             //Get room 
             //Get read rhino brep
-            var roomObj = this.Room;
+            var roomObj = this.Room.Brep();
             if (roomObj == null)
                 throw new ArgumentNullException("Room object has been deleted!, this group entity is not valid");
 
@@ -99,26 +105,40 @@ namespace HoneybeeRhino.Entities
 
         public int ApertureCount => this.Apertures.Count;
 
-        public void AddApertures(IEnumerable<BrepObject> apertureObjs)
+        public void AddApertures(IEnumerable<(Brep brep, ObjRef hostObj)> apertures)
         {
             //var docObjs = RhinoDoc.ActiveDoc.Objects;
-            foreach (var aperture in apertureObjs)
+
+            foreach (var apt in apertures)
             {
-                var aptEnt = aperture.TryGetApertureEntity();
+                //var aperture = docObjs.FindId(id) as BrepObject;
+                var aptEnt = apt.brep.TryGetApertureEntity();
                 if (!aptEnt.IsValid)
                     throw new ArgumentException("Some input geometries are not valid aperture object!");
 
-                aptEnt.GroupEntityID = this.Room.Id;
-                this.Apertures.Add(aperture);
+                aptEnt.GroupEntityID = this.Room.ObjectId;
+                this.Apertures.Add(new ObjRef(apt.hostObj.Object()));
+            }
+
+        }
+        public void AddApertures(IEnumerable<ObjRef> apertures)
+        {
+            foreach (var apt in apertures)
+            {
+                var aptEnt = apt.TryGetApertureEntity();
+                if (!aptEnt.IsValid)
+                    throw new ArgumentException("Some input geometries are not valid aperture object!");
+
+                aptEnt.GroupEntityID = this.Room.ObjectId;
+                this.Apertures.Add(apt);
             }
 
         }
 
-
         //========================= Select and highlight ========================
         #region Select and highlight
 
-        public bool SelectRoom() => SelectHighlight(new BrepObject[] { this.Room });
+        public bool SelectRoom() => SelectHighlight(new ObjRef[] { this.Room });
 
         public bool SelectApertures() => SelectHighlight(this.Apertures);
 
@@ -131,13 +151,14 @@ namespace HoneybeeRhino.Entities
                 this.SelectShades();
         }
 
-        private bool SelectHighlight(IEnumerable<BrepObject> brepObjects)
+        private bool SelectHighlight(IEnumerable<ObjRef> objects)
         {
+            
             var rc = true;
-            foreach (var item in brepObjects)
+            foreach (var item in objects)
             {
                 //Check if object is visible or locked. deleted
-                var obj = item;
+                var obj = item.Object();
                 if (obj.IsValid || obj.IsLocked || obj.IsDeleted || obj.IsHidden)
                     continue;
 
@@ -147,7 +168,7 @@ namespace HoneybeeRhino.Entities
                     continue;
 
                 //Select and highlight obj
-                rc = rc && RhinoDoc.ActiveDoc.Objects.Select(item.Id, true, true);
+                rc = rc && RhinoDoc.ActiveDoc.Objects.Select(item.ObjectId, true, true);
 
             }
             return rc;
@@ -191,18 +212,18 @@ namespace HoneybeeRhino.Entities
         private ArchivableDictionary Serialize()
         {
             var dic = new ArchivableDictionary();
-            dic.Set(nameof(this.Room), new ObjRef(Room));
-            dic.Set(nameof(this.Apertures), this.Apertures.Select(_ => new ObjRef(_)));
-            dic.Set(nameof(this.Shades), this.Shades.Select(_ => new ObjRef(_)));
+            dic.Set(nameof(this.Room), Room);
+            dic.Set(nameof(this.Apertures), this.Apertures);
+            dic.Set(nameof(this.Shades), this.Shades);
             return dic;
         }
 
         private void Deserialize(ArchivableDictionary dictionary)
         {
             var dic = dictionary;
-            this.Room = (dic[nameof(this.Room)] as ObjRef).Object() as BrepObject;
-            this.Apertures = (dic[nameof(this.Apertures)] as IEnumerable<ObjRef>).Select(_ => _.Object() as BrepObject).ToList();
-            this.Shades = (dic[nameof(this.Shades)] as IEnumerable<ObjRef>).Select(_ => _.Object() as BrepObject).ToList();
+            this.Room = dic[nameof(this.Room)] as ObjRef;
+            this.Apertures = (dic[nameof(this.Apertures)] as IEnumerable<ObjRef>).ToList();
+            this.Shades = (dic[nameof(this.Shades)] as IEnumerable<ObjRef>).ToList();
         }
         #endregion
 
@@ -239,7 +260,7 @@ namespace HoneybeeRhino.Entities
                 if (!roomEnt.IsValid)
                     return rc;
 
-                groupEntityId = roomEnt.HostRhinoObject.Id;
+                groupEntityId = roomEnt.HostObjRef.ObjectId;
 
                 //TODO: check if this saved Id == obj.GeometryID
             }

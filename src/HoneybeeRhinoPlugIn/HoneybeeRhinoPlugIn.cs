@@ -116,8 +116,8 @@ namespace HoneybeeRhino
             }
 
             //var selectedGroupEntities = selectedObjs.Select(_ => GroupEntity.TryGet(_));
-            var selectedRooms = selectedObjs.Where(_ => _.Geometry.IsRoom()).Select(_ => _ as BrepObject);
-            var selectedApertures = selectedObjs.Where(_ => _.Geometry.IsAperture()).Select(_=>_ as BrepObject);
+            var selectedRooms = selectedObjs.Where(_ => _.Geometry.IsRoom()).Select(_ => new ObjRef(_));
+            var selectedApertures = selectedObjs.Where(_ => _.Geometry.IsAperture()).Select(_=> new ObjRef(_));
             //TODO: work on this later
             //var selectedShds = selectedObjs.Where(_ => _.IsShade());
 
@@ -135,10 +135,10 @@ namespace HoneybeeRhino
                 //TODO: figure out all new copied windows' ownership
                 foreach (var newroom in selectedRooms)
                 {
-                    var roomEnt = newroom.TryGetRoomEntity();
-                    roomEnt.UpdateHostID(newroom, Instance.GroupEntityTable);
+                    var roomEnt = newroom.Brep().TryGetRoomEntity();
+                    roomEnt.UpdateHost(newroom, Instance.GroupEntityTable);
                     
-                    var grpEnt = GroupEntity.TryGetFromID(newroom.Id, Instance.GroupEntityTable);
+                    var grpEnt = GroupEntity.TryGetFromID(newroom.ObjectId, Instance.GroupEntityTable);
                     grpEnt.AddApertures(selectedApertures);
                 }
                 //reset the flag.
@@ -160,7 +160,7 @@ namespace HoneybeeRhino
             //Only make the room obj as the entry point for selecting the entire group entity.
             foreach (var room in selectedRooms)
             {
-                var entity = room.Geometry.TryGetGroupEntity(Instance.GroupEntityTable);
+                var entity = room.Geometry().TryGetGroupEntity(Instance.GroupEntityTable);
                 if (entity.IsValid)
                 {
                     entity.SelectEntireEntity();
@@ -174,7 +174,7 @@ namespace HoneybeeRhino
             }
             foreach (var apt in selectedApertures)
             {
-                var entity = apt.Geometry.TryGetGroupEntity(Instance.GroupEntityTable);
+                var entity = apt.Geometry().TryGetGroupEntity(Instance.GroupEntityTable);
                 if (entity.IsValid)
                 {
                     entity.SelectRoom();

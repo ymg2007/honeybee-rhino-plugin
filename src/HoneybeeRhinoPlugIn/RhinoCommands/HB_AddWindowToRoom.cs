@@ -63,60 +63,32 @@ namespace HoneybeeRhino.RhinoCommands
 
                 //Check intersection, maybe provide an option for use to split window surfaces for zones.
                 //TODO: do this later
-           
-                //add HBdata to window geometry 
-                var WinObjs = SelectedObjs.Select(objref => objref.Object());
-                var room = rooms.First();
-                var dupRoomBrep = room.Brep().DuplicateBrep();
 
-                var validRoomApertures = new List<(Guid id, Brep brep)>();
-                var validApertureBrepObjects = new List<BrepObject>();
+                //prepare BrepObjects
+                var WinObjs = SelectedObjs;
+                var room = rooms.First();
+                var roomBrep = room.Brep();
+                Brep newRoomWithApt = null;
+
                 foreach (var aperture in WinObjs)
                 {
                     //match window to room 
-                    var matchedRoomApt = dupRoomBrep.AddAperture((Brep.TryConvertBrep(aperture.Geometry), aperture.Id));
+                    var matchedRoomApt = room.AddAperture(aperture);
                     if (matchedRoomApt.aperture == null)
                         continue;
 
-                    dupRoomBrep = matchedRoomApt.room;
-                    validRoomApertures.Add((aperture.Id, matchedRoomApt.aperture));
-                    validApertureBrepObjects.Add(aperture as BrepObject);
+                    newRoomWithApt = matchedRoomApt.room;
+                    doc.Objects.Replace(aperture.ObjectId, matchedRoomApt.aperture);
                 }
-
-                if (!validRoomApertures.Any())
+              
+                if (newRoomWithApt != null)
                     return Result.Failure;
 
                 //Replace the rhino object in order to be able to undo/redo
-                foreach (var apt in validRoomApertures)
-                {
-                    doc.Objects.Replace(apt.id, apt.brep);
-                }
-                doc.Objects.Replace(room.ObjectId, dupRoomBrep);
-
-
-#if DEBUG
-                if (!dupRoomBrep.Surfaces.Where(_ => _.TryGetFaceEntity().Apertures.Any()).Any())
-                    throw new ArgumentException("some thing wrong with assigning aperture!");
-#endif
-                //add to groupEntity.
-                var groupEntity = dupRoomBrep.TryGetGroupEntity(HoneybeeRhinoPlugIn.Instance.GroupEntityTable);
-#if DEBUG
-                //this shouldn't be happening, because all honeybee room must have to be part of a group entity.
-                if (!groupEntity.IsValid)
-                    throw new ArgumentException("Failed to get valid group entity from room!");
-#endif
-                groupEntity.AddApertures(validApertureBrepObjects);
-
+                doc.Objects.Replace(room.ObjectId, newRoomWithApt);
+             
                 doc.Views.Redraw();
 
-
-#if DEBUG
-                var newRoom = Brep.TryConvertBrep(doc.Objects.FindId(room.ObjectId).Geometry);
-                if (!newRoom.Surfaces.Where(_ => _.TryGetFaceEntity().Apertures.Any()).Any())
-                    throw new ArgumentException("some thing wrong with assigning aperture!");
-#endif
-               
-                
 
                 return Result.Success;
             }
