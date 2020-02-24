@@ -117,6 +117,7 @@ namespace HoneybeeRhino
         {
             var tol = tolerance;
             var surfs = roomBrep.Faces;
+            surfs.ShrinkFaces();
             var checkedSrfs = new List<Brep>();
        
             foreach (var srf in surfs)

@@ -116,8 +116,8 @@ namespace HoneybeeRhino
             }
 
             //var selectedGroupEntities = selectedObjs.Select(_ => GroupEntity.TryGet(_));
-            var selectedRooms = selectedObjs.Where(_ => _.Geometry.IsRoom());
-            var selectedApertures = selectedObjs.Where(_ => _.Geometry.IsAperture());
+            var selectedRooms = selectedObjs.Where(_ => _.Geometry.IsRoom()).Select(_ => _ as BrepObject);
+            var selectedApertures = selectedObjs.Where(_ => _.Geometry.IsAperture()).Select(_=>_ as BrepObject);
             //TODO: work on this later
             //var selectedShds = selectedObjs.Where(_ => _.IsShade());
 
@@ -125,15 +125,21 @@ namespace HoneybeeRhino
             if (this._isObjectCopied)
             {
                 //check all group entities for new copied objects.
-                var newApertures = selectedApertures.Select(_ => _.TryGetApertureEntity().UpdateHostFrom(_));
+                foreach (var newAperture in selectedApertures)
+                {
+                    //TODO: refactor this later 
+                    newAperture.TryGetApertureEntity().UpdateHostFrom(newAperture);
+                }
+              
+
                 //TODO: figure out all new copied windows' ownership
                 foreach (var newroom in selectedRooms)
                 {
                     var roomEnt = newroom.TryGetRoomEntity();
-                    roomEnt.UpdateHostID(newroom.Id, Instance.GroupEntityTable);
-
+                    roomEnt.UpdateHostID(newroom, Instance.GroupEntityTable);
+                    
                     var grpEnt = GroupEntity.TryGetFromID(newroom.Id, Instance.GroupEntityTable);
-                    grpEnt.AddApertures(newApertures);
+                    grpEnt.AddApertures(selectedApertures);
                 }
                 //reset the flag.
                 this._isObjectCopied = false;
@@ -159,13 +165,12 @@ namespace HoneybeeRhino
                 {
                     entity.SelectEntireEntity();
                     entity.SelectShades();
-
                 }
                 else
                 {
                     //ignore
                 }
-                RhinoApp.WriteLine($"Room: {entity.RoomID.ToString()}; Window: {entity.ApertureCount}");
+                RhinoApp.WriteLine($"Room: {entity.Guid.ToString()}; Window: {entity.ApertureCount}");
             }
             foreach (var apt in selectedApertures)
             {

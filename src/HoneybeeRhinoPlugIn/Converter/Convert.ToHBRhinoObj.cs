@@ -14,53 +14,20 @@ namespace HoneybeeRhino
 {
     public static partial class Convert
     {
-
-        public static RH.Brep ToRoomBrep(this RH.GeometryBase roomGeo, Guid hostID, GroupEntityTable documentGroupEntityTable,  double maxRoofFloorAngle = 30, double tolerance = 0.0001)
+        public static BrepObject ToRoomBrepObj(this BrepObject roomBrepObj, Func<RH.Brep, bool> objectReplaceFunc, GroupEntityTable documentGroupEntityTable, double maxRoofFloorAngle = 30, double tolerance = 0.0001)
         {
-            //var geo = roomGeo;
-            var brep = RH.Brep.TryConvertBrep(roomGeo);
-            if (brep != null)
-            {
-                return brep.ToRoomBrep(hostID, documentGroupEntityTable, maxRoofFloorAngle, tolerance);
-            }
-            else
-            {
-                throw new ArgumentException("Input geometry is not a valid object to convert to honeybee room!");
-            }
+           
+            var roomEnt = new Entities.RoomEntity(roomBrepObj, objectReplaceFunc);
 
+            //Create new Group Entity
+            var ent = new GroupEntity(roomBrepObj);
+            ent.AddToDocument(documentGroupEntityTable);
+            
+            return roomEnt.HostRhinoObject;
         }
 
-        private static RH.Brep ToRoomBrep(this RH.Brep closedBrep, Guid hostID, GroupEntityTable documentGroupEntityTable, double maxRoofFloorAngle = 30, double tolerance = 0.0001)
-        {
-            if (closedBrep.IsSolid)
-            {
-                var dupBrep = closedBrep.ToAllPlaneBrep(tolerance);
-                var subFaces = dupBrep.Faces;
-                subFaces.ShrinkFaces();
+        
 
-                var hbFaces = subFaces.Select(_ => _.ToHBFace(maxRoofFloorAngle)).ToList();
-                //var testEnt = new Entities.FaceEntity(hbFaces[0]);
-
-                for (int i = 0; i < hbFaces.Count; i++)
-                {
-                    var faceEnt = new Entities.FaceEntity(hbFaces[i]);
-                    var bFace = dupBrep.Surfaces[i];
-                    bFace.UserData.Add(faceEnt);
-                }
-
-                var room = new HB.Room($"Room_{Guid.NewGuid()}".ToString(), hbFaces, new HB.RoomPropertiesAbridged());
-                var roomEnt = new Entities.RoomEntity(room, hostID, documentGroupEntityTable);
-                dupBrep.UserData.Add(roomEnt);
-
-                return dupBrep;
-
-            }
-            else
-            {
-                throw new ArgumentException("This rhino object is not a water-tight solid!");
-            }
-
-        }
         //public static RH.GeometryBase ToRoomGeo(this RhinoObject roomObj, double maxRoofFloorAngle = 30)
         //{
         //    var id = roomObj.Id;

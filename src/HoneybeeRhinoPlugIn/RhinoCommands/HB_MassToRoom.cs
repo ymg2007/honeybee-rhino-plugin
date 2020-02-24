@@ -45,11 +45,18 @@ namespace HoneybeeRhino.RhinoCommands
                 if (go.ObjectCount == 0)
                     return go.CommandResult();
 
-
+                var groupEntTable = HoneybeeRhinoPlugIn.Instance.GroupEntityTable;
                 foreach (var item in go.Objects())
                 {
-                    var geo = item.Geometry().ToRoomBrep(item.ObjectId, HoneybeeRhinoPlugIn.Instance.GroupEntityTable);
-                    doc.Objects.Replace(item.ObjectId, geo);
+                    Func<Brep, bool> func = (b) => doc.Objects.Replace(item, b);
+                    var brepO = item.Object();
+                    if (brepO is ExtrusionObject ex)
+                    {
+                        var b = Brep.TryConvertBrep(ex.Geometry);
+                        doc.Objects.Replace(item, b);
+                    }
+                    (item.Object() as BrepObject).ToRoomBrepObj(func, groupEntTable);
+
                 }
                 
                 doc.Views.Redraw();

@@ -31,7 +31,7 @@ namespace HoneybeeRhino.UI
             var selectedObj = e.Objects[0].Geometry;
             if (selectedObj.HasHBObjEntity())
             {
-                var room = RoomEntity.TryGetFrom(selectedObj).HBObject;
+                var room = selectedObj.TryGetRoomEntity().GetHBRoom();
                 this.panelUI.updateRoomPanel(room);
             }
         }

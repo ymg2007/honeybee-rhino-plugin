@@ -38,14 +38,14 @@ namespace HoneybeeRhino.RhinoCommands
                 go.GeometryFilter = ObjectType.Brep;
                 go.GroupSelect = false;
                 go.Get();
-                 if (go.CommandResult() != Result.Success)
+                if (go.CommandResult() != Result.Success)
                     return go.CommandResult();
 
                 if (go.ObjectCount == 0)
                     return go.CommandResult();
 
                 //Check if all selected geoes are hb rooms.
-                var rooms = go.Objects().Where(_ => _.Geometry().IsRoom());
+                var rooms = go.Objects().Where(_ => _.Object().Geometry.IsRoom());
                 if (go.ObjectCount != rooms.Count())
                     return Result.Failure;
 
@@ -70,6 +70,7 @@ namespace HoneybeeRhino.RhinoCommands
                 var dupRoomBrep = room.Brep().DuplicateBrep();
 
                 var validRoomApertures = new List<(Guid id, Brep brep)>();
+                var validApertureBrepObjects = new List<BrepObject>();
                 foreach (var aperture in WinObjs)
                 {
                     //match window to room 
@@ -79,10 +80,19 @@ namespace HoneybeeRhino.RhinoCommands
 
                     dupRoomBrep = matchedRoomApt.room;
                     validRoomApertures.Add((aperture.Id, matchedRoomApt.aperture));
+                    validApertureBrepObjects.Add(aperture as BrepObject);
                 }
 
                 if (!validRoomApertures.Any())
                     return Result.Failure;
+
+                //Replace the rhino object in order to be able to undo/redo
+                foreach (var apt in validRoomApertures)
+                {
+                    doc.Objects.Replace(apt.id, apt.brep);
+                }
+                doc.Objects.Replace(room.ObjectId, dupRoomBrep);
+
 
 #if DEBUG
                 if (!dupRoomBrep.Surfaces.Where(_ => _.TryGetFaceEntity().Apertures.Any()).Any())
@@ -95,16 +105,7 @@ namespace HoneybeeRhino.RhinoCommands
                 if (!groupEntity.IsValid)
                     throw new ArgumentException("Failed to get valid group entity from room!");
 #endif
-                groupEntity.AddApertures(validRoomApertures.Select(_=>_.brep));
-
-                //Replace the rhino object in order to be able to undo/redo
-                foreach (var apt in validRoomApertures)
-                {
-                    doc.Objects.Replace(apt.id, apt.brep);
-                }
-
-             
-                doc.Objects.Replace(room.ObjectId, dupRoomBrep);
+                groupEntity.AddApertures(validApertureBrepObjects);
 
                 doc.Views.Redraw();
 

@@ -220,8 +220,8 @@ namespace HoneybeeRhino
 
                     var adjEnt = adjBrep.Surfaces[matchedAdjFace.SurfaceIndex].TryGetFaceEntity();
                     var curEnt = currentBrep.Surfaces[matchedSubFace.SurfaceIndex].TryGetFaceEntity();
-                    adjEnt.HBObject.BoundaryCondition = new HoneybeeSchema.Surface(new List<string>(2) { curEnt.HBObject.Name, currentRoomEnt.HBObject.Name });
-                    curEnt.HBObject.BoundaryCondition = new HoneybeeSchema.Surface(new List<string>(2) { adjEnt.HBObject.Name, adjRoomEnt.HBObject.Name });
+                    adjEnt.HBObject.BoundaryCondition = new HoneybeeSchema.Surface(new List<string>(2) { curEnt.HBObject.Name, currentRoomEnt.Name });
+                    curEnt.HBObject.BoundaryCondition = new HoneybeeSchema.Surface(new List<string>(2) { adjEnt.HBObject.Name, adjRoomEnt.Name });
                 }
 
             }

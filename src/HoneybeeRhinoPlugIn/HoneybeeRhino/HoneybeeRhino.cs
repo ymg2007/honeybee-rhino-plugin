@@ -57,6 +57,15 @@ namespace HoneybeeRhino
 #if DEBUG
             if (!dupRoom.Surfaces.Where(_ => _.TryGetFaceEntity().Apertures.Any()).Any())
                 throw new ArgumentException("some thing wrong with assigning aperture!");
+
+            //ensure aperture's id has been added to group
+            if (validApertureBrep.TryGetApertureEntity().GroupEntityID == Guid.Empty)
+                throw new ArgumentException("some thing wrong with assigning aperture!");
+
+            //ensure aperture's hostId is valid
+            if (validApertureBrep.TryGetApertureEntity().HostGeoID == Guid.Empty)
+                throw new ArgumentException("some thing wrong with assigning aperture!");
+
 #endif
 
             return (dupRoom, validApertureBrep);

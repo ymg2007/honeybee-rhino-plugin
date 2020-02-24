@@ -16,37 +16,143 @@ namespace HoneybeeRhino.Entities
     [Guid("D0F6A6F9-0CE0-41B7-8029-AB67F6B922AD")]
     public class RoomEntity : HBObjEntity
     {
-        public HB.Room HBObject { get; private set; }
+        private HB.Room HBObject { get; set; }
+
+        public BrepObject HostRhinoObject { get; private set; }
+
+        public Brep BrepGeomerty => this.HostRhinoObject.BrepGeometry;
+        public string Name => this.HBObject.Name;
+        public List<HB.Face> HBFaces => this.HBObject.Faces;
+
 
         //TODO: override isValid to check if hostID exists
-        public override bool IsValid => this.HBObject != null && this.HostGeoID != Guid.Empty;
+        public override bool IsValid
+        {
+            get
+            {
+                if (this.HostRhinoObject == null)
+                    return false;
+
+                return this.HostRhinoObject.IsValid 
+                    && this.HBObject != null
+                    && this.HostRhinoObject.BrepGeometry == BrepGeomerty;
+            }
+        }
+
         public override string Description => this.IsValid ? $"HBRoomEntity: {HBObject.Name}" : base.Description;
         public RoomEntity()
         {
         }
+        public RoomEntity(BrepObject brepObject, Func<Brep, bool> objectReplaceFunc,  double maxRoofFloorAngle = 30, double tolerance = 0.0001)
+        {
+            //check if Null, valid, solid
+            if (!CheckIfBrepObjectValid(brepObject))
+                throw new ArgumentException("Input geometry is not a valid object to convert to honeybee room!");
 
-        public RoomEntity(HB.Room room, Guid hostID, GroupEntityTable documentGroupEntityTable)
+            //Create honeybee room object here.
+            var closedBrep = brepObject.BrepGeometry.DuplicateBrep();
+            var dupBrep = closedBrep.ToAllPlaneBrep(tolerance);
+            var subFaces = dupBrep.Faces;
+
+            var hbFaces = subFaces.Select(_ => _.ToHBFace(maxRoofFloorAngle)).ToList();
+
+            for (int i = 0; i < hbFaces.Count; i++)
+            {
+                var faceEnt = new FaceEntity(hbFaces[i]);
+                var bFace = dupBrep.Surfaces[i];
+                bFace.UserData.Add(faceEnt);
+            }
+
+
+            dupBrep.UserData.Add(this);
+            this.HBObject = new HB.Room($"Room_{Guid.NewGuid()}".ToString(), hbFaces, new HB.RoomPropertiesAbridged());
+            this.HostRhinoObject = brepObject;
+
+            //Make sure the underneath brep geometry is replaced.
+            var success = objectReplaceFunc(dupBrep);
+            objectReplaceFunc.Invoke(dupBrep);
+            if (!success)
+                throw new ArgumentException("Failed to convert to honeybee room!");
+
+#if DEBUG
+            
+            if (!dupBrep.TryGetRoomEntity().IsValid)
+                throw new ArgumentException("Failed to convert to honeybee room!");
+
+            var refreshedObj = Rhino.RhinoDoc.ActiveDoc.Objects.FindId(brepObject.Id);
+            if (!refreshedObj.Geometry.TryGetRoomEntity().IsValid)
+                throw new ArgumentException("Failed to convert to honeybee room!");
+            if (!refreshedObj.TryGetRoomEntity().IsValid)
+                throw new ArgumentException("Failed to convert to honeybee room!");
+    
+#endif
+        }
+
+        //TODO: remove this later
+        public RoomEntity(HB.Room room, Guid hostID)
         {
             this.HBObject = room;
             this.HostGeoID = hostID;
             this.GroupEntityID = hostID;
 
-            var ent = new GroupEntity(hostID);
-            ent.AddToDocument(documentGroupEntityTable);
         }
+
+        public HB.Room GetHBRoom(bool recomputeGeometry = false)
+        {
+            if (!recomputeGeometry)
+                return this.HBObject;
+
+            //recompute all rhino geometries to hbFace3D
+            var roomBrep = Brep.TryConvertBrep(this.BrepGeomerty);
+            var room = this.HBObject;
+
+            //check all subfaces
+            var brepFaces = roomBrep.Faces;
+            var checkedHBFaces = new List<HB.Face>();
+            foreach (var bFace in brepFaces)
+            {
+                var faceEnt = bFace.UnderlyingSurface().TryGetFaceEntity();
+                var HBFace = faceEnt.HBObject;
+                var face3d = bFace.ToHBFace3D();
+                HBFace.Geometry = face3d;
+
+                //check apertures
+                var apertureBreps = faceEnt.Apertures;
+                var checkedHBApertures = new List<HB.Aperture>();
+                foreach (var apertureBrep in apertureBreps)
+                {
+                    //update aperture geometry
+                    var aptFace3D = apertureBrep.ToHBFace3Ds().First();
+                    var HBAperture = apertureBrep.TryGetApertureEntity().HBObject;
+                    HBAperture.Geometry = aptFace3D;
+                    checkedHBApertures.Add(HBAperture);
+                }
+                HBFace.Apertures = checkedHBApertures;
+
+                //TODO: check shades
+
+                //TODO: make sure all other meta data still exists in face.
+                checkedHBFaces.Add(HBFace);
+            }
+
+            room.Faces = checkedHBFaces;
+            return room;
+        }
+
 
    
         /// <summary>
         /// Use this for objects were duplicated alone with RhinoObject, but Ids were still referencing old Rhino object ID.
         /// </summary>
         /// <param name="roomObj"></param>
-        public RoomEntity UpdateHostID(Guid newObjID, GroupEntityTable documentGroupEntityTable)
+        public RoomEntity UpdateHostID(BrepObject newObj, GroupEntityTable documentGroupEntityTable)
         {
-            var hostID = newObjID;
+            this.HostRhinoObject = newObj;
+            var hostID = newObj.Id;
             this.HostGeoID = hostID;
             this.GroupEntityID = hostID;
 
-            var ent = new GroupEntity(hostID);
+            var ent = new GroupEntity(newObj);
             ent.AddToDocument(documentGroupEntityTable);
             return this;
         }
@@ -65,7 +171,7 @@ namespace HoneybeeRhino.Entities
                 base.OnDuplicate(source);
                 var json = src.HBObject.ToJson();
                 this.HBObject = HB.Room.FromJson(json);
-
+                this.HostRhinoObject = src.HostRhinoObject;
             }
             
         }
@@ -76,6 +182,7 @@ namespace HoneybeeRhino.Entities
             var dic = dictionary;
             var json = dic.GetString("HBData");
             this.HBObject = HB.Room.FromJson(json);
+            
         }
 
         private protected override ArchivableDictionary Serialize()
@@ -99,6 +206,33 @@ namespace HoneybeeRhino.Entities
             var ent = roomGeo.UserData.Find(typeof(RoomEntity)) as RoomEntity;
 
             return ent == null ? rc : ent;
+        }
+
+
+        
+        public void SetEnergyProp(HB.RoomEnergyPropertiesAbridged roomEnergyProp)
+        {
+            this.HBObject.Properties.Energy = roomEnergyProp;
+        }
+        public HB.RoomEnergyPropertiesAbridged GetEnergyProp()
+        {
+            return this.HBObject.Properties.Energy;
+        }
+
+        private static bool CheckIfBrepObjectValid(BrepObject roomBrepObj)
+        {
+            if (roomBrepObj == null)
+                throw new NullReferenceException();
+
+            if (!roomBrepObj.IsValid)
+                throw new ArgumentException("Input geometry is not a valid object to convert to honeybee room!");
+
+            var brep = roomBrepObj.BrepGeometry;
+
+            if (!brep.IsSolid)
+                throw new ArgumentException("This rhino object is not a water-tight solid!");
+
+            return true;
         }
     }
 }

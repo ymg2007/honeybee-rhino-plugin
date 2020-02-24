@@ -11,7 +11,7 @@ namespace HoneybeeRhino.Entities
         //public static bool IsRoom(this RhinoObject rhinoRef) => rhinoRef.Geometry.IsRoom();
         public static bool IsRoom(this GeometryBase geometry)
         {
-            var ent = Entities.RoomEntity.TryGetFrom(geometry);
+            var ent = geometry.TryGetRoomEntity();
             return ent.IsValid;
 
         }
