@@ -63,23 +63,22 @@ namespace HoneybeeRhino.Entities
             }
 
 
-            dupBrep.UserData.Add(this);
             this.HBObject = new HB.Room($"Room_{Guid.NewGuid()}".ToString(), hbFaces, new HB.RoomPropertiesAbridged());
             this.HostObjRef = brepObject;
             this.GroupEntityID = brepObject.ObjectId;
-            
+
+            //Add this RoomEntity to brep's userdata at the end.
+            dupBrep.UserData.Add(this);
             //Make sure the underneath brep geometry is replaced.
             var success = objectReplaceFunc(dupBrep);
             if (!success)
                 throw new ArgumentException("Failed to convert to honeybee room!");
-            ////update hostObject
-            //this.HostRhinoObject = Rhino.RhinoDoc.ActiveDoc.Objects.FindId(brepObject.Id) as BrepObject;
 #if DEBUG
 
             if (!dupBrep.TryGetRoomEntity().IsValid)
                 throw new ArgumentException("Failed to convert to honeybee room!");
 
-            var refreshedObj = Rhino.RhinoDoc.ActiveDoc.Objects.FindId(brepObject.ObjectId);
+            var refreshedObj = new ObjRef(brepObject.ObjectId).Object();
             if (!refreshedObj.Geometry.TryGetRoomEntity().IsValid)
                 throw new ArgumentException("Failed to convert to honeybee room!");
             if (refreshedObj.Geometry.TryGetRoomEntity().GroupEntityID == Guid.Empty)
