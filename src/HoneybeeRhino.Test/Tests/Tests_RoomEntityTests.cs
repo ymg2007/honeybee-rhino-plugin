@@ -355,6 +355,9 @@ namespace HoneybeeRhino.Test
 
 
         }
+
+
+
         [Test]
         public void Test_GroupEntity()
         {
@@ -392,8 +395,91 @@ namespace HoneybeeRhino.Test
             Assert.IsTrue(groupEnt.Room.Object().IsDeleted == false);
             Assert.IsTrue(groupEnt.Apertures.All(_=>_.Object().IsDeleted == false));
 
+        }
+
+        [Test]
+        public void Test_SelectGroupEntity()
+        {
+            var file = @"D:\Dev\honeybee-rhino-plugin\src\HoneybeeRhino.Test\TestModels\SingleRoomAndWindow.json";
+            var breps = LoadBrepsFromJson(file);
+
+
+            var roomObj = InitBrepObject(breps.First(_ => _.IsSolid));
+            var windowObj = InitBrepObject(breps.First(_ => _.IsSurface));
+
+            //make room
+            var roomBrepObj = roomObj.ToRoomBrepObj((Brep b) => _doc.Objects.Replace(roomObj.ObjectId, b), GroupEntityTable);
+            var groupID = roomBrepObj.Geometry().TryGetRoomEntity().GroupEntityID;
+            var groupEnt = GroupEntityTable[groupID];
+
+            //make window //add to groupEntity
+            var processedObj = roomBrepObj.AddAperture(windowObj);
+            var done = _doc.Objects.Replace(roomObj.ObjectId, processedObj.room);
+            done &= _doc.Objects.Replace(windowObj.ObjectId, processedObj.aperture);
+
+
+            var newRoom = new ObjRef(roomObj.ObjectId);
+            _doc.Objects.Select(newRoom, true, true);
+            var selectedObjs = _doc.Objects.GetSelectedObjects(false, false);
+            var counts = selectedObjs.Count();
+
+            _doc.Objects.UnselectAll();
+            selectedObjs = _doc.Objects.GetSelectedObjects(false, false);
+            foreach (var item in selectedObjs)
+            {
+                _doc.Objects.Purge(item);
+            }
+            Assert.IsTrue(counts == 2);
 
         }
+
+        [Test]
+        public void Test_CopyGroupEntity()
+        {
+            throw new ArgumentException("Cannot implement Ctrl+C and Ctrl+V, and also cannot do RhinoApp.ExecuteCommand()");
+            //var file = @"D:\Dev\honeybee-rhino-plugin\src\HoneybeeRhino.Test\TestModels\SingleRoomAndWindow.json";
+            //var breps = LoadBrepsFromJson(file);
+
+
+            //var roomObj = InitBrepObject(breps.First(_ => _.IsSolid));
+            //var windowObj = InitBrepObject(breps.First(_ => _.IsSurface));
+
+            ////make room
+            //var roomBrepObj = roomObj.ToRoomBrepObj((Brep b) => _doc.Objects.Replace(roomObj.ObjectId, b), GroupEntityTable);
+            //var groupID = roomBrepObj.Geometry().TryGetRoomEntity().GroupEntityID;
+            //var groupEnt = GroupEntityTable[groupID];
+
+            ////make window //add to groupEntity
+            //var processedObj = roomBrepObj.AddAperture(windowObj);
+            //var done = _doc.Objects.Replace(roomObj.ObjectId, processedObj.room);
+            //done &= _doc.Objects.Replace(windowObj.ObjectId, processedObj.aperture);
+
+
+            //var newRoom = new ObjRef(roomObj.ObjectId);
+            //_doc.Objects.Select(newRoom, true, true);
+            //var selectedObjs = _doc.Objects.GetSelectedObjects(false, false);
+            //_doc.Views.Redraw();
+           
+            ////var copied = RhinoApp.RunScript("_-CopyToClipboard", false);
+            ////var pasted = RhinoApp.RunScript("_-Paste", false);
+            ////var a =  RhinoApp.RunScript("_-Line 0,0,0 10,10,10", false);
+            //////var counts = selectedObjs.Count();
+            ////var rs = RhinoApp.ExecuteCommand(this._doc, "_CopyToClipboard");
+
+            //var importFile = @"D:\Dev\Test\boxWithHbData.3dm";
+            ////var command = $"_-Import {importFile} _Enter";
+            ////var rs = RhinoApp.ExecuteCommand(this._doc, command);
+            ////rs = RhinoApp.ExecuteCommand(this._doc, "Line 0,0,0 10,10,10");
+
+            //var fileReadMode = new Rhino.FileIO.FileReadOptions();
+            //fileReadMode.ImportMode = true;
+            ////Rhino.RhinoDoc.ReadFile(importFile, fileReadMode);
+            //var dddoc = RhinoDoc.Open(importFile, out bool isOpened);
+            ////command = "_-Line 0,0,0 10,10,10";
+            ////var ranResults = RhinoApp.RunScript(command, false);
+
+        }
+  
 
 
         [Test]
