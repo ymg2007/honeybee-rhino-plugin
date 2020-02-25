@@ -60,6 +60,10 @@ namespace HoneybeeRhino
                 this._isObjectCopied = isCopied;
                 Rhino.RhinoApp.WriteLine($"{e.ObjectCount} will be copied: {e.ObjectsWillBeCopied}");
             }
+            else
+            {
+             
+            }
 
         }
         private void RhinoDoc_BeginOpenDocument(object sender, DocumentOpenEventArgs e)
@@ -68,17 +72,17 @@ namespace HoneybeeRhino
         }
         private void RhinoDoc_EndOpenDocument(object sender, DocumentOpenEventArgs e)
         {
+            //reset flags
+            this._isObjectCopied = false;
+            this._mergedCounts = 0;
+
+            //Check if object is copied 
             if (e.FileName.EndsWith("tmp") && e.Merge)
             {
                 //this is a copy/paste action
                 this._isObjectCopied = true;
                 this._mergedCounts = e.Document.Objects.Count - this._mergedCounts;
                 Rhino.RhinoApp.WriteLine($"Total {this._mergedCounts} objects merged");
-            }
-            else
-            {
-                this._isObjectCopied = true;
-                this._mergedCounts = 0;
             }
         }
 
@@ -116,8 +120,8 @@ namespace HoneybeeRhino
             }
 
             //var selectedGroupEntities = selectedObjs.Select(_ => GroupEntity.TryGet(_));
-            var selectedRooms = selectedObjs.Where(_ => _.Geometry.IsRoom()).Select(_ => new ObjRef(_));
-            var selectedApertures = selectedObjs.Where(_ => _.Geometry.IsAperture()).Select(_=> new ObjRef(_));
+            var selectedRooms = selectedObjs.Where(_ => _.Geometry.IsRoom()).Select(_ => new ObjRef(_.Id));
+            var selectedApertures = selectedObjs.Where(_ => _.Geometry.IsAperture()).Select(_=> new ObjRef(_.Id));
             //TODO: work on this later
             //var selectedShds = selectedObjs.Where(_ => _.IsShade());
 
