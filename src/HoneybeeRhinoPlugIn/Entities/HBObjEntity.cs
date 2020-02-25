@@ -50,14 +50,25 @@ namespace HoneybeeRhino.Entities
         private protected virtual ArchivableDictionary Serialize() 
         {
             var dic = new ArchivableDictionary();
-            dic.Set(nameof(HostObjRef), HostObjRef);
+            if (HostObjRef!=null)
+            {
+                //Subsurfaces have no host ObjRef object
+                dic.Set(nameof(HostObjRef), HostObjRef);
+            }
+           
             dic.Set(nameof(GroupEntityID), GroupEntityID);
             return dic;
         }
         private protected virtual void Deserialize(ArchivableDictionary dictionary) 
         {
             var dic = dictionary;
-            this.HostObjRef = dic[nameof(HostObjRef)] as ObjRef;
+            var hashost = dic.TryGetValue(nameof(HostObjRef), out object obj);
+            if (hashost)
+            {
+                //Subsurfaces have no host ObjRef object
+                this.HostObjRef = obj as ObjRef;
+            }
+           
             this.GroupEntityID = dic.GetGuid(nameof(GroupEntityID));
 
         }
