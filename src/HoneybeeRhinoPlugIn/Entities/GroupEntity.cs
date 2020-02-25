@@ -66,7 +66,10 @@ namespace HoneybeeRhino.Entities
             {
                 if (this.Room == null)
                     return false;
-
+                if (this.Room.Object() == null)
+                    return false;
+                if (this.Room.Object().IsDeleted)
+                    return false;
                 return this.Room.Brep().IsValid; 
             }
         }
