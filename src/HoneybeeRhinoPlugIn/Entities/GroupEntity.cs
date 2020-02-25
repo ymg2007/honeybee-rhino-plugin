@@ -117,7 +117,7 @@ namespace HoneybeeRhino.Entities
                     throw new ArgumentException("Some input geometries are not valid aperture object!");
 
                 aptEnt.GroupEntityID = this.Room.ObjectId;
-                this.Apertures.Add(new ObjRef(apt.hostObj.Object()));
+                this.Apertures.Add(apt.hostObj);
             }
 
         }
@@ -159,7 +159,11 @@ namespace HoneybeeRhino.Entities
             {
                 //Check if object is visible or locked. deleted
                 var obj = item.Object();
-                if (obj.IsValid || obj.IsLocked || obj.IsDeleted || obj.IsHidden)
+
+                if (!obj.IsValid)
+                    continue;
+                
+                if (obj.IsLocked || obj.IsDeleted || obj.IsHidden)
                     continue;
 
                 //the entire object (including subobjects) is already selected

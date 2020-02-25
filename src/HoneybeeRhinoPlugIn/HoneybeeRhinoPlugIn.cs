@@ -161,29 +161,21 @@ namespace HoneybeeRhino
             foreach (var room in selectedRooms)
             {
                 var entity = room.Geometry().TryGetGroupEntity(Instance.GroupEntityTable);
-                if (entity.IsValid)
-                {
-                    entity.SelectEntireEntity();
-                    entity.SelectShades();
-                }
-                else
-                {
-                    //ignore
-                }
+                if (!entity.IsValid)
+                    continue;
+
+                entity.SelectEntireEntity();
                 RhinoApp.WriteLine($"Room: {entity.Guid.ToString()}; Window: {entity.ApertureCount}");
+
             }
             foreach (var apt in selectedApertures)
             {
                 var entity = apt.Geometry().TryGetGroupEntity(Instance.GroupEntityTable);
-                if (entity.IsValid)
-                {
-                    entity.SelectRoom();
+                if (!entity.IsValid)
+                    continue;
 
-                }
-                else
-                {
-                    //ignore
-                }
+                entity.SelectRoom();
+               
             }
 
 

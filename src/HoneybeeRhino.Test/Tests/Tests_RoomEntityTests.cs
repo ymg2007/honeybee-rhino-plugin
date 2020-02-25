@@ -379,7 +379,9 @@ namespace HoneybeeRhino.Test
             var done = _doc.Objects.Replace(roomObj.ObjectId, processedObj.room);
             done &= _doc.Objects.Replace(windowObj.ObjectId, processedObj.aperture);
             Assert.IsTrue(done);
-  
+            Assert.IsTrue(roomObj.Object().IsDeleted == false);
+            Assert.IsTrue(windowObj.Object().IsDeleted == false);
+
             var newRoom = new ObjRef(roomObj.ObjectId).Object() as BrepObject;
             if (!newRoom.BrepGeometry.Surfaces.Where(_ => _.TryGetFaceEntity().Apertures.Any()).Any())
                 throw new ArgumentException("some thing wrong with assigning aperture!");
@@ -387,8 +389,10 @@ namespace HoneybeeRhino.Test
             //recheck if aperture is added to groupEntity
             groupEnt = GroupEntityTable[groupID];
             Assert.IsTrue(groupEnt.Apertures.First().ObjectId == windowObj.ObjectId);
+            Assert.IsTrue(groupEnt.Room.Object().IsDeleted == false);
+            Assert.IsTrue(groupEnt.Apertures.All(_=>_.Object().IsDeleted == false));
 
-         
+
         }
 
 
