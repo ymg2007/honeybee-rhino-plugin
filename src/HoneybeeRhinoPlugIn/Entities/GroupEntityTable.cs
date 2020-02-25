@@ -24,10 +24,12 @@ namespace HoneybeeRhino.Entities
                 try
                 {
                     archive.Write3dmChunkVersion(MAJOR, MINOR);
-                    archive.WriteInt(Count);
-                    for (var i = 0; i < Count; i++)
+                    //Filter out invalid groups.
+                    var validGroups = this.Where(_ => _.Value.IsValid);
+                    var counts = validGroups.Count();
+                    archive.WriteInt(counts);
+                    foreach (var item in validGroups)
                     {
-                        var item = this.ElementAt(i);
                         archive.WriteGuid(item.Key);
                         item.Value.WriteToArchive(archive);
                     }
