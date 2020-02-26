@@ -23,7 +23,7 @@ namespace HoneybeeRhino.RhinoCommands
 
         public override string EnglishName
         {
-            get { return "HB_AnalyticalModel"; }
+            get { return "HB_Model"; }
         }
 
         protected override Result RunCommand(RhinoDoc doc, RunMode mode)
@@ -37,18 +37,18 @@ namespace HoneybeeRhino.RhinoCommands
                 modelEnt.AddToDocument(tb);
             }
 
-            var hbModel = tb.First().Value.HBObject;
+            var modelEntity = tb.First().Value;
             
             var rc = Result.Cancel;
             if (mode == RunMode.Interactive)
             {
-                var dialog = new UI.HBModelDialog(hbModel);
+                var dialog = new UI.HBModelDialog(modelEntity);
                 dialog.RestorePosition();
                 var dialog_rc = dialog.ShowSemiModal(doc, RhinoEtoApp.MainWindow);
                 dialog.SavePosition();
                 if (dialog_rc != null)
                 {
-                    tb[hbModel.Name] = new Entities.ModelEntity(dialog_rc);
+                    tb[dialog_rc.ModelNameID] = dialog_rc;
                     rc = Result.Success;
                 }
 

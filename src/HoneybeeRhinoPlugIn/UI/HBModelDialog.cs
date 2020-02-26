@@ -6,12 +6,14 @@ using HB = HoneybeeSchema;
 
 namespace HoneybeeRhino.UI
 {
-    public class HBModelDialog: Dialog<HB.Model>
+    public class HBModelDialog: Dialog<Entities.ModelEntity>
     {
        
-        public HBModelDialog(HB.Model hbModel)
+        public HBModelDialog(Entities.ModelEntity modelEntity)
         {
-            
+            var dup = modelEntity.Duplicate();
+            var hbModel = dup.HBObject;
+
             Padding = new Padding(5);
             Resizable = true;
             Title = "Honeybee Rhino PlugIn";
@@ -20,7 +22,7 @@ namespace HoneybeeRhino.UI
 
             DefaultButton = new Button { Text = "OK" };
             DefaultButton.Click += (sender, e)
-                => Close(hbModel);
+                => Close(dup);
 
             AbortButton = new Button { Text = "Cancel" };
             AbortButton.Click += (sender, e) => Close();
@@ -33,13 +35,21 @@ namespace HoneybeeRhino.UI
                 Rows = { new TableRow(null, this.DefaultButton, this.AbortButton, null) }
             };
 
-            hbModel.DisplayName = hbModel.DisplayName ?? hbModel.Name; 
+            hbModel.DisplayName = hbModel.DisplayName ?? "My Honeybee Model"; 
             var modelNameTextBox = new TextBox() { };
             modelNameTextBox.TextBinding.Bind(hbModel, m => m.DisplayName);
 
             var northNum = new NumericMaskedTextBox<double>() { };
             northNum.TextBinding.Bind(Binding.Delegate(() => hbModel.NorthAngle.ToString(), v => hbModel.NorthAngle = CheckIfNum(v)));
 
+            var rooms = dup.RoomGroupEntities.Where(_ => _.Value.IsValid);
+            var roomListBox = new ListBox();
+            roomListBox.Height = 100;
+            foreach (var item in rooms)
+            {
+                roomListBox.Items.Add(new ListItem() { Text = $"Room_{ item.Value.Guid }" });
+            }
+           
             //Create layout
             Content = new TableLayout
             {
@@ -47,11 +57,13 @@ namespace HoneybeeRhino.UI
                 Spacing = new Size(5, 5),
                 Rows =
                 {
-                    new Label(){ Text = $"Model ID:{hbModel.Name}"},
+                    new Label(){ Text = $"ID: {hbModel.Name}"},
                     new Label(){ Text = "Model Name:"},
                     modelNameTextBox,
                     new Label(){ Text = "North Angle:"},
                     northNum,
+                    new Label(){ Text = $"Rooms: [total: {rooms.Count()}]"},
+                    roomListBox,
                     new TableRow(buttons),
                     null
                 }

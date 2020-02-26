@@ -16,8 +16,7 @@ using HB = HoneybeeSchema;
 
 namespace HoneybeeRhino.Entities
 {
-    [Guid("52E4D8D9-C8F2-46F0-89A3-7441BC418020")]
-    public class ModelEntity : UserData
+    public class ModelEntity
     {
         public string ModelNameID { get; private set; }
         public HB.Model HBObject { get; private set; }
@@ -44,15 +43,27 @@ namespace HoneybeeRhino.Entities
         }
 
 
-        public List<Guid> RoomGroupEntityIDs { get; private set; } = new List<Guid>();
-        public List<Guid> OrphanedFaceIDs { get; private set; } = new List<Guid>();
-        public List<Guid> OrphanedShadeIDs { get; private set; } = new List<Guid>();
-        public List<Guid> OrphanedApertureIDs { get; private set; } = new List<Guid>();
-        public List<Guid> OrphanedDoorIDs { get; private set; } = new List<Guid>();
+        public GroupEntityTable RoomGroupEntities { get; private set; } = new GroupEntityTable();
+        public List<ObjRef> OrphanedFaces { get; private set; } = new List<ObjRef>();
+        public List<ObjRef> OrphanedShades { get; private set; } = new List<ObjRef>();
+        public List<ObjRef> OrphanedApertures { get; private set; } = new List<ObjRef>();
+        public List<ObjRef> OrphanedDoors { get; private set; } = new List<ObjRef>();
 
         public bool IsValid => true;
 
+        public ModelEntity Duplicate()
+        {
+            var json = this.HBObject.ToJson();
+            var model = HB.Model.FromJson(json);
+            var newEnt = new ModelEntity(model);
+            newEnt.RoomGroupEntities = this.RoomGroupEntities.Duplicate();
+            newEnt.OrphanedFaces = new List<ObjRef>(this.OrphanedFaces);
+            newEnt.OrphanedShades = new List<ObjRef>(this.OrphanedShades);
+            newEnt.OrphanedApertures = new List<ObjRef>(this.OrphanedApertures);
+            newEnt.OrphanedDoors = new List<ObjRef>(this.OrphanedDoors);
 
+            return newEnt;
+        }
         //protected override void OnDuplicate(UserData source)
         //{
         //    var s = source as GroupEntity;
@@ -149,17 +160,8 @@ namespace HoneybeeRhino.Entities
 
         //========================= Read/Write ===================================
 
-        public override bool ShouldWrite => this.IsValid;
+        //public bool ShouldWrite => this.IsValid;
 
-
-        protected override bool Read(BinaryArchiveReader archive)
-        {
-            return ReadArchive(archive);
-        }
-        protected override bool Write(BinaryArchiveWriter archive)
-        {
-            return WriteToArchive(archive);
-        }
 
         public bool ReadArchive(BinaryArchiveReader archive)
         {
@@ -168,6 +170,11 @@ namespace HoneybeeRhino.Entities
             {
                 var dic = archive.ReadDictionary();
                 Deserialize(dic);
+
+                //Takes care of GroupEntityTable
+                var t = new GroupEntityTable();
+                t.ReadDocument(archive);
+                this.RoomGroupEntities = t;
             }
             return !archive.ReadErrorOccured;
         }
@@ -178,28 +185,30 @@ namespace HoneybeeRhino.Entities
 
             var dic = Serialize();
             archive.WriteDictionary(dic);
+
+            //Takes care of GroupEntityTable
+            RoomGroupEntities.WriteDocument(archive);
             return !archive.WriteErrorOccured;
         }
 
         private ArchivableDictionary Serialize()
         {
             var dic = new ArchivableDictionary();
-            dic.Set(nameof(RoomGroupEntityIDs), RoomGroupEntityIDs);
-            dic.Set(nameof(OrphanedApertureIDs), OrphanedApertureIDs);
-            dic.Set(nameof(OrphanedDoorIDs), OrphanedDoorIDs);
-            dic.Set(nameof(OrphanedFaceIDs), OrphanedFaceIDs);
-            dic.Set(nameof(OrphanedShadeIDs), OrphanedShadeIDs);
+            dic.Set(nameof(OrphanedApertures), OrphanedApertures);
+            dic.Set(nameof(OrphanedDoors), OrphanedDoors);
+            dic.Set(nameof(OrphanedFaces), OrphanedFaces);
+            dic.Set(nameof(OrphanedShades), OrphanedShades);
             return dic;
         }
 
         private void Deserialize(ArchivableDictionary dictionary)
         {
             var dic = dictionary;
-            this.RoomGroupEntityIDs = (dic[nameof(RoomGroupEntityIDs)] as IEnumerable<Guid>).ToList();
-            this.OrphanedApertureIDs = (dic[nameof(OrphanedApertureIDs)] as IEnumerable<Guid>).ToList();
-            this.OrphanedDoorIDs = (dic[nameof(OrphanedDoorIDs)] as IEnumerable<Guid>).ToList();
-            this.OrphanedFaceIDs = (dic[nameof(OrphanedFaceIDs)] as IEnumerable<Guid>).ToList();
-            this.OrphanedShadeIDs = (dic[nameof(OrphanedShadeIDs)] as IEnumerable<Guid>).ToList();
+            this.OrphanedApertures = (dic[nameof(OrphanedApertures)] as IEnumerable<ObjRef>).ToList();
+            this.OrphanedDoors = (dic[nameof(OrphanedDoors)] as IEnumerable<ObjRef>).ToList();
+            this.OrphanedFaces = (dic[nameof(OrphanedFaces)] as IEnumerable<ObjRef>).ToList();
+            this.OrphanedShades = (dic[nameof(OrphanedShades)] as IEnumerable<ObjRef>).ToList();
+            
         }
 
         //========================= Helpers ===================================

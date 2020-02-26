@@ -45,7 +45,18 @@ namespace HoneybeeRhino.RhinoCommands
                 if (go.ObjectCount == 0)
                     return go.CommandResult();
 
-                var groupEntTable = HoneybeeRhinoPlugIn.Instance.GroupEntityTable;
+                //get current working model, and its GroupEntityTable for roomEntity to add
+                var tb = HoneybeeRhinoPlugIn.Instance.ModelEntityTable;
+                if (!tb.Any())
+                {
+                    var modelName = $"Model_{Guid.NewGuid()}";
+                    var hbModel = new HoneybeeSchema.Model(modelName, new HoneybeeSchema.ModelProperties(energy: HoneybeeSchema.ModelEnergyProperties.Default));
+                    var modelEnt = new Entities.ModelEntity(hbModel);
+                    modelEnt.AddToDocument(tb);
+                }
+                var modelEntity = tb.First().Value;
+
+                var groupEntTable = modelEntity.RoomGroupEntities;
                 foreach (var item in go.Objects())
                 {
                     Func<Brep, bool> func = (b) => doc.Objects.Replace(item, b);
@@ -55,6 +66,7 @@ namespace HoneybeeRhino.RhinoCommands
                         var b = Brep.TryConvertBrep(ex.Geometry);
                         doc.Objects.Replace(item, b);
                     }
+                    //Convert Room brep
                     item.ToRoomBrepObj(func, groupEntTable);
 
                 }

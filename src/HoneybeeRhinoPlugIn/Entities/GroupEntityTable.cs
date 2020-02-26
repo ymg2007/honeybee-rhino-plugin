@@ -7,12 +7,21 @@ namespace HoneybeeRhino.Entities
 {
     public class GroupEntityTable : Dictionary<Guid, GroupEntity>
     {
+   
         /// <summary>
         /// Class major and minor verson numbers
         /// </summary>
         private const int MAJOR = 1;
         private const int MINOR = 0;
-
+        public GroupEntityTable Duplicate()
+        {
+            var newTb = new GroupEntityTable();
+            foreach (var item in this)
+            {
+                newTb.Add(item.Key, item.Value);
+            }
+            return newTb;
+        }
         /// <summary>
         /// Write to binary archive
         /// </summary>
