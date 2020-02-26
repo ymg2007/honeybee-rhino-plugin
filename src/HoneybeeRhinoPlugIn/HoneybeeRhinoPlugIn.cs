@@ -21,9 +21,8 @@ namespace HoneybeeRhino
     {
         private RoomEntityMouseCallback m_mc;
 
-        //TODO: add GroupEntityTable into ModelEntity
-        public GroupEntityTable GroupEntityTable { get; private set; } = new GroupEntityTable();
-        //TODO: need to take care of saving to doc
+        //Link GroupEntityTable from ModelEntity
+        public GroupEntityTable GroupEntityTable => this.ModelEntityTable.First().Value.RoomGroupEntities;
         public ModelEntityTable ModelEntityTable { get; private set; } = new ModelEntityTable();
         public override Rhino.PlugIns.PlugInLoadTime LoadTime => Rhino.PlugIns.PlugInLoadTime.AtStartup;
         public string ObjectSelectMode { get; set; } = "GroupEntity";
@@ -211,13 +210,13 @@ namespace HoneybeeRhino
             archive.Read3dmChunkVersion(out var major, out var minor);
             if (major == 1 && minor == 0)
             {
-                var t = new GroupEntityTable();
+                var t = new ModelEntityTable();
                 t.ReadDocument(archive);
 
                 if (!options.ImportMode && !options.ImportReferenceMode)
                 {
                     if (t.Count > 0)
-                        GroupEntityTable = t;
+                        this.ModelEntityTable = t;
 
                 }
             }
@@ -226,7 +225,7 @@ namespace HoneybeeRhino
         protected override void WriteDocument(RhinoDoc doc, BinaryArchiveWriter archive, FileWriteOptions options)
         {
             archive.Write3dmChunkVersion(1, 0);
-            this.GroupEntityTable.WriteDocument(archive);
+            this.ModelEntityTable.WriteDocument(archive);
 
         }
     }

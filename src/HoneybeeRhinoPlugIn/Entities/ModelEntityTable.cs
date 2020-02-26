@@ -57,11 +57,11 @@ namespace HoneybeeRhino.Entities
                         var count = archive.ReadInt();
                         for (var i = 0; i < count; i++)
                         {
-                            var guid = archive.ReadString();
+                            var key = archive.ReadString();
                             var data = new ModelEntity();
                             if (data.ReadArchive(archive))
                             {
-                                this.Add(guid, data);
+                                this.Add(key, data);
                             }
                         }
                         rc = archive.ReadErrorOccured;

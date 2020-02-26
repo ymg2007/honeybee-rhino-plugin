@@ -1,31 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Rhino.DocObjects.Custom;
-using Rhino;
-using Rhino.Commands;
 using Rhino.DocObjects;
-using Rhino.UI;
 using Rhino.FileIO;
-using System.Runtime.InteropServices;
 using Rhino.Collections;
-using Rhino.Geometry;
 using HB = HoneybeeSchema;
 
 namespace HoneybeeRhino.Entities
 {
     public class ModelEntity
     {
-        public string ModelNameID { get; private set; }
+        public string ModelNameID => this.HBObject.Name;
         public HB.Model HBObject { get; private set; }
+        public GroupEntityTable RoomGroupEntities { get; private set; } = new GroupEntityTable();
+        public List<ObjRef> OrphanedFaces { get; private set; } = new List<ObjRef>();
+        public List<ObjRef> OrphanedShades { get; private set; } = new List<ObjRef>();
+        public List<ObjRef> OrphanedApertures { get; private set; } = new List<ObjRef>();
+        public List<ObjRef> OrphanedDoors { get; private set; } = new List<ObjRef>();
+
+
+
         public ModelEntity() { }
 
         public ModelEntity(HB.Model hbObject) 
         {
             this.HBObject = hbObject;
-            this.ModelNameID = hbObject.Name;
         }
 
         public void AddToDocument(ModelEntityTable documentModelEntityTable)
@@ -42,12 +40,6 @@ namespace HoneybeeRhino.Entities
             }
         }
 
-
-        public GroupEntityTable RoomGroupEntities { get; private set; } = new GroupEntityTable();
-        public List<ObjRef> OrphanedFaces { get; private set; } = new List<ObjRef>();
-        public List<ObjRef> OrphanedShades { get; private set; } = new List<ObjRef>();
-        public List<ObjRef> OrphanedApertures { get; private set; } = new List<ObjRef>();
-        public List<ObjRef> OrphanedDoors { get; private set; } = new List<ObjRef>();
 
         public bool IsValid => true;
 
@@ -168,6 +160,7 @@ namespace HoneybeeRhino.Entities
             archive.Read3dmChunkVersion(out var major, out var minor);
             if (major == 1 && minor == 0)
             {
+                //HBObject, orphaned objects 
                 var dic = archive.ReadDictionary();
                 Deserialize(dic);
 
@@ -183,6 +176,7 @@ namespace HoneybeeRhino.Entities
         {
             archive.Write3dmChunkVersion(1, 0);
 
+            //HBObject, orphaned objects 
             var dic = Serialize();
             archive.WriteDictionary(dic);
 
@@ -194,6 +188,7 @@ namespace HoneybeeRhino.Entities
         private ArchivableDictionary Serialize()
         {
             var dic = new ArchivableDictionary();
+            dic.Set(nameof(HBObject), HBObject.ToJson());
             dic.Set(nameof(OrphanedApertures), OrphanedApertures);
             dic.Set(nameof(OrphanedDoors), OrphanedDoors);
             dic.Set(nameof(OrphanedFaces), OrphanedFaces);
@@ -204,6 +199,7 @@ namespace HoneybeeRhino.Entities
         private void Deserialize(ArchivableDictionary dictionary)
         {
             var dic = dictionary;
+            this.HBObject = HB.Model.FromJson(dic[nameof(HBObject)].ToString());
             this.OrphanedApertures = (dic[nameof(OrphanedApertures)] as IEnumerable<ObjRef>).ToList();
             this.OrphanedDoors = (dic[nameof(OrphanedDoors)] as IEnumerable<ObjRef>).ToList();
             this.OrphanedFaces = (dic[nameof(OrphanedFaces)] as IEnumerable<ObjRef>).ToList();
