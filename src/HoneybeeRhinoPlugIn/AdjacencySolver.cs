@@ -33,37 +33,37 @@ namespace HoneybeeRhino
         public IEnumerable<Brep> ExecuteIntersectMasses(double tolerance, bool parallelCompute = false)
         {
             var allRooms = this._rooms;
-            if (allRooms.Count() <= 1)
+            var totalCount = allRooms.Count();
+            if (totalCount <= 1)
                 return allRooms;
 
+            //Turn off parallel compute when there are only 10 or less objects.
+            if (totalCount < 10)
+                parallelCompute = false;
 
+
+            var roomCopy = allRooms.Select(_ => _.DuplicateBrep().DetachHBEntityTo(this._tempEntityHolder)).ToList();
+            var adjacentCopy = roomCopy.Select(_ => _.DuplicateBrep()).ToList();
+
+            
             //match each room's adjacent rooms before do split.
-            var copy = allRooms.Select(_ => _.DuplicateBrep()).ToList();
-            var count = copy.Count;
-            var roomAndAdjacents = new List<(Brep room, IEnumerable<Brep> adjacentRooms)>();
-            var solo = new List<Brep>();
-            for (int i = 0; i < count; i++)
+            var roomAndAdjacents = roomCopy.AsParallel().AsOrdered().Select(room =>
             {
-                var room = copy[i];
                 var roomBBox = room.GetBoundingBox(false);
-                var adjacentRooms = copy.Where(_ => _.GetBoundingBox(false).isIntersected(roomBBox)).Select(_ => _.DuplicateBrep().DeleteHBEntity());
-                if (adjacentRooms.Any())
-                {
-                    var dupRoom = room.DuplicateBrep().DetachHBEntityTo(this._tempEntityHolder);
-                    roomAndAdjacents.Add((dupRoom, adjacentRooms));
-                }
-                else
-                {
-                    solo.Add(room);
-                }
-            }
+                var adjacentRooms = adjacentCopy.Where(_ => _.GetBoundingBox(false).isIntersected(roomBBox));
+                return (room, adjacentRooms);
+
+            });
+
 
             try
             {
-                var intersected = new Brep[count];
+              
+                var intersected = new Brep[totalCount];
                 if (parallelCompute)
                 {
                     intersected = roomAndAdjacents.AsParallel().AsOrdered().Select(_ => IntersectWithMasses(_.room, _.adjacentRooms, tolerance)).ToArray();
+
                 }
                 else
                 {
@@ -71,11 +71,8 @@ namespace HoneybeeRhino
                 }
                 //add HBObjEntity back to geometry again.
                 var intersetedRooms = intersected.Select(_ => _.ReinstallHBEntityFrom(this._tempEntityHolder)).ToList();
-                intersetedRooms.AddRange(solo);
-                this._tempEntityHolder.Clear();
-                //var isRoom = otherRooms.Select(_ => _.Surfaces.All(s => s.TryGetFaceEntity().IsValid));
-                //var isRoom2 = intersected.Select(_ => _.Surfaces.All(s => s.TryGetFaceEntity().IsValid));
 
+                this._tempEntityHolder.Clear();
                 return intersetedRooms;
             }
             catch (Exception)
@@ -89,6 +86,10 @@ namespace HoneybeeRhino
 
         private static Brep IntersectWithMasses(Brep roomGeo, IEnumerable<Brep> adjacentRooms, double tolerance)
         {
+            //return solo room directly.
+            if (!adjacentRooms.Any())
+                return roomGeo;
+
             tolerance = Math.Max(tolerance, Rhino.RhinoMath.ZeroTolerance);
 
             //Check bounding boxes first
@@ -96,6 +97,7 @@ namespace HoneybeeRhino
 
             var currentBrep = roomGeo;
             var allBreps = adjacentRooms;
+
 
             //var currentBrepFaces = currentBrep.Faces;
             //var isRoomValid = allBreps.Select(_ => _.Surfaces.All(s => s.TryGetFaceEntity().IsValid));

@@ -17,6 +17,7 @@ namespace HoneybeeRhino.Test
     [TestFixture]
     public class Tests_RoomEntityTests
     {
+        System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
         RhinoDoc _doc = RhinoDoc.ActiveDoc;
         double _tol = 0.0001;
         public GroupEntityTable GroupEntityTable => HoneybeeRhinoPlugIn.Instance.GroupEntityTable;
@@ -303,6 +304,7 @@ namespace HoneybeeRhino.Test
         [Test]
         public void Test_ParallelIntersectMass_28Breps()
         {
+            TestContext.WriteLine($"Testing: {nameof(Test_ParallelIntersectMass_28Breps)}");
 
             string file = @"D:\Dev\honeybee-rhino-plugin\src\HoneybeeRhino.Test\TestModels\28Breps.json";
             var breps = LoadBrepsFromJson(file);
@@ -310,8 +312,11 @@ namespace HoneybeeRhino.Test
 
             var dupBreps = rooms.Select(_ => _.DuplicateBrep());
             var adjSolver = new AdjacencySolver(dupBreps);
-            
+            sw.Restart();
             var intersectedBreps = adjSolver.Execute(_tol, true);
+            sw.Stop();
+            var ms = sw.Elapsed.TotalSeconds;
+            TestContext.WriteLine($"Runtime: {ms} ms");
 
             //check if there is a new face created
             Assert.IsTrue(intersectedBreps.All(_ => _.IsSolid));

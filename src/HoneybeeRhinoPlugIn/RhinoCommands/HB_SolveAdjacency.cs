@@ -55,7 +55,7 @@ namespace HoneybeeRhino.RhinoCommands
                 var tol = RhinoDoc.ActiveDoc.ModelAbsoluteTolerance / 10;
                 var dupRooms = rooms.Select(_ => _.DuplicateBrep());
 
-                var adjSolver = new global::HoneybeeRhino.AdjacencySolver(dupRooms);
+                var adjSolver = new AdjacencySolver(dupRooms);
 
                 var checkedObjs = adjSolver.Execute(tol, true);
 
