@@ -36,11 +36,11 @@ namespace HoneybeeRhino.RhinoCommands
         protected override Result RunCommand(RhinoDoc doc, RunMode mode)
         {
             var rc = Result.Cancel;
-            RoomEnergyPropertiesAbridged roomEnergyProperties = null;
+            RoomEnergyPropertiesAbridged roomEnergyProperties = new RoomEnergyPropertiesAbridged();
 
             if (mode == RunMode.Interactive)
             {
-                var dialog = new UI.EnergyPropertyDialog();
+                var dialog = new UI.EnergyPropertyDialog(roomEnergyProperties);
                 dialog.RestorePosition();
                 var dialog_rc = dialog.ShowSemiModal(doc, RhinoEtoApp.MainWindow);
                 dialog.SavePosition();
