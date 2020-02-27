@@ -1,6 +1,7 @@
 ﻿using Rhino.DocObjects;
 using Rhino.UI;
 using HoneybeeRhino.Entities;
+using System.Linq;
 
 namespace HoneybeeRhino.UI
 {
@@ -10,29 +11,36 @@ namespace HoneybeeRhino.UI
         public override object PageControl => panelUI ?? (panelUI = new PropertyPanel());
 
         public override string EnglishPageTitle => "Honeybee";
-
-        public override ObjectType SupportedTypes => ObjectType.Brep | ObjectType.Extrusion;
+       
+        public override ObjectType SupportedTypes => ObjectType.Brep;
 
         //TODO: will add support to subobj later.
         public override bool SupportsSubObjects => false;
 
+        private HBObjEntity _HBObjEntity;
+
         public override bool ShouldDisplay(ObjectPropertiesPageEventArgs e)
         {
-            if (e.ObjectCount != 1) return false;
-            if (e.Objects.Length != 1) return false; //there is a bug in Rhino, which ObjectCount ==1, but Object is empty.
+            var groupTable = HoneybeeRhinoPlugIn.Instance.GroupEntityTable;
 
-            var rObj = e.Objects[0];
-
-            return rObj.Geometry.HasHBObjEntity();
+            //Check groupEntity first.
+            //TODO: orphaned object doesn't have groupEntity, deal with this later
+            var gpEnts = e.Objects.Select(_ => _.Geometry.TryGetGroupEntity(groupTable)).Where(_ => _.IsValid).Distinct();
+            //Do not show if there are two or more groups are selected.
+            if (!gpEnts.Any()) return false;
+            if (gpEnts.Count() > 1) return false;
+            if (!gpEnts.First().IsValid) return false;
+          
+            this._HBObjEntity = gpEnts.First().Room.TryGetRoomEntity();
+            return this._HBObjEntity.IsValid;
+      
         }
 
         public override void UpdatePage(ObjectPropertiesPageEventArgs e)
         {
-            var selectedObj = e.Objects[0].Geometry;
-            if (selectedObj.HasHBObjEntity())
+            if (this._HBObjEntity.IsValid)
             {
-                var room = selectedObj.TryGetRoomEntity().GetHBRoom();
-                this.panelUI.updateRoomPanel(room);
+                this.panelUI.updateRoomPanel(this._HBObjEntity);
             }
         }
     }
