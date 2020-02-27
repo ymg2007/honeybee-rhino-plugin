@@ -46,8 +46,8 @@ namespace HoneybeeRhino.UI
 
 
             layout.AddSeparateRow(new Label { Text = "Properties:" });
-            var rmPropBtn = new Button { Text = "Room Analytical Properties" };
-            rmPropBtn.Click += (s, e) => RmPropBtn_Click(room.Properties.Energy);
+            var rmPropBtn = new Button { Text = "Room Energy Properties" };
+            rmPropBtn.Click += (s, e) => RmPropBtn_Click(room.Properties.Energy, (v)=> room.Properties.Energy = v);
             layout.AddSeparateRow(rmPropBtn);
 
             layout.AddSeparateRow(new Label { Text = "Faces:" });
@@ -164,7 +164,7 @@ namespace HoneybeeRhino.UI
 
         }
 
-        private void RmPropBtn_Click( RoomEnergyPropertiesAbridged roomEnergyProperties)
+        private void RmPropBtn_Click(RoomEnergyPropertiesAbridged roomEnergyProperties, Action<RoomEnergyPropertiesAbridged> setAction)
         {
             var dialog = new UI.EnergyPropertyDialog(roomEnergyProperties);
             dialog.RestorePosition();
@@ -172,7 +172,7 @@ namespace HoneybeeRhino.UI
             dialog.SavePosition();
             if (dialog_rc != null)
             {
-                roomEnergyProperties = dialog_rc;
+                setAction(dialog_rc);
             }
 
         }
