@@ -20,16 +20,16 @@ namespace HoneybeeRhino.UI
             MinimumSize = new Size(450, 620);
 
             //Get constructions
-            var constructionSetDP = MakeDropDown(EnergyProp.ConstructionSet, (v) => EnergyProp.ConstructionSet = v.Name,
+            var constructionSetDP = MakeDropDown(EnergyProp.ConstructionSet, (v) => EnergyProp.ConstructionSet = v?.Name,
                 EnergyLibrary.DefaultConstructionSets, "By Global Model ConstructionSet");
 
 
             //Get programs
-            var programTypesDP = MakeDropDown(EnergyProp.ProgramType, (v) => EnergyProp.ProgramType = v.Name,
+            var programTypesDP = MakeDropDown(EnergyProp.ProgramType, (v) => EnergyProp.ProgramType = v?.Name,
                EnergyLibrary.DefaultProgramTypes, "Unoccupied, NoLoads");
 
             //Get HVACs
-            var hvacDP = MakeDropDown(EnergyProp.Hvac, (v) => EnergyProp.Hvac = v.Name,
+            var hvacDP = MakeDropDown(EnergyProp.Hvac, (v) => EnergyProp.Hvac = v?.Name,
                EnergyLibrary.DefaultHVACs, "Unconditioned"); 
 
 
@@ -130,7 +130,7 @@ namespace HoneybeeRhino.UI
 
             dp.SelectedIndexBinding.Bind(
                 () => items.FindIndex(_ => _.Name == currentObjName) + 1,
-                (int i) => setAction(i == 0 ? items[i] : items[i - 1])
+                (int i) => setAction(i == 0 ? default : items[i - 1])
                 );
 
             return dp;
