@@ -12,16 +12,16 @@ namespace HoneybeeRhino.Test.Tests
     [TestFixture]
     public class Tests_Utility
     {
-        [Test]
-        public void DownLoadAllDefaultLibrary()
-        {
-            var libs = EnergyLibrary.CheckAllDefaultLibraries();
+        //[Test]
+        //public void DownLoadAllDefaultLibrary()
+        //{
+        //    var libs = EnergyLibrary.CheckAllDefaultLibraries();
 
-            foreach (var item in libs)
-            {
-                Assert.IsTrue(File.Exists(item));
-            }
-        }
+        //    foreach (var item in libs)
+        //    {
+        //        Assert.IsTrue(File.Exists(item));
+        //    }
+        //}
 
         //[Test]
         //public void LoadProgramType()

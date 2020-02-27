@@ -10,32 +10,38 @@ namespace HoneybeeRhino
 {
     public static class EnergyLibrary
     {
-        private const string _defaultConstructionSetUrl = @"https://raw.githubusercontent.com/ladybug-tools/honeybee-schema/master/samples/construction_set/constructionset_complete.json";
-        private const string _defaultProgramTypesUrl = @"https://raw.githubusercontent.com/ladybug-tools/honeybee-schema/master/samples/program_type/program_type_office.json";
-        private const string _defaultHVACUrl = @"https://raw.githubusercontent.com/ladybug-tools/honeybee-schema/master/samples/hvac/ideal_air_default.json";
+        //private const string _defaultConstructionSetUrl = @"https://raw.githubusercontent.com/ladybug-tools/honeybee-schema/master/samples/construction_set/constructionset_complete.json";
+        //private const string _defaultProgramTypesUrl = @"https://raw.githubusercontent.com/ladybug-tools/honeybee-schema/master/samples/program_type/program_type_office.json";
+        //private const string _defaultHVACUrl = @"https://raw.githubusercontent.com/ladybug-tools/honeybee-schema/master/samples/hvac/ideal_air_default.json";
 
-        private static (string Url, string FilePath)[] _defaultLibraryFiles
-            = new (string Url, string FilePath)[3] {
-                (_defaultConstructionSetUrl, "defaultConstructionSets.json"),
-                (_defaultProgramTypesUrl, "defaultProgramTypes.json"),
-                (_defaultHVACUrl, "defaultHVACs.json" )
-            };
+        //private static (string Url, string FilePath)[] _defaultLibraryFiles
+        //    = new (string Url, string FilePath)[3] {
+        //        (_defaultConstructionSetUrl, "defaultConstructionSets.json"),
+        //        (_defaultProgramTypesUrl, "defaultProgramTypes.json"),
+        //        (_defaultHVACUrl, "defaultHVACs.json" )
+        //    };
 
-        public static string HoneybeeStandardFolder { get; } = Path.Combine(Path.GetTempPath(), "Ladybug", "Library");
-        private static string[] _LoadLibraries = new string[7]
+        public static string HoneybeeRootFolder { get; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "honeybee");
+
+        public static string DefaultStandardsFolder { get; } = Path.Combine(HoneybeeRootFolder, "default");
+        private static string[] _LoadLibraries = new string[10]
         {
-            Path.Combine(HoneybeeStandardFolder,"defaultPeopleLoads.json"),
-            Path.Combine(HoneybeeStandardFolder,"defaultLightingLoads.json"),
-            Path.Combine(HoneybeeStandardFolder,"defaultElectricEquipmentLoads.json"),
-            Path.Combine(HoneybeeStandardFolder,"defaultGasEquipmentLoads.json"),
-            Path.Combine(HoneybeeStandardFolder,"defaultInfiltrationLoads.json"),
-            Path.Combine(HoneybeeStandardFolder,"defaultVentilationLoads.json"),
-            Path.Combine(HoneybeeStandardFolder,"defaultSetpoints.json") 
+            Path.Combine(DefaultStandardsFolder,"defaultPeopleLoads.json"),
+            Path.Combine(DefaultStandardsFolder,"defaultLightingLoads.json"),
+            Path.Combine(DefaultStandardsFolder,"defaultElectricEquipmentLoads.json"),
+            Path.Combine(DefaultStandardsFolder,"defaultGasEquipmentLoads.json"),
+            Path.Combine(DefaultStandardsFolder,"defaultInfiltrationLoads.json"),
+            Path.Combine(DefaultStandardsFolder,"defaultVentilationLoads.json"),
+            Path.Combine(DefaultStandardsFolder,"defaultSetpoints.json"),
+
+            Path.Combine(DefaultStandardsFolder,"constructionsets.json"),
+            Path.Combine(DefaultStandardsFolder,"programTypes.json"),
+            Path.Combine(DefaultStandardsFolder,"hvacs.json")
         };
 
         
 
-        public static string HoneybeeRootFolder { get; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "honeybee");
+
         public static string StandardsFolder { get; } = Path.Combine(HoneybeeRootFolder, "honeybee_standards", "data");
 
         //honeybee_energy_standards
@@ -55,9 +61,9 @@ namespace HoneybeeRhino
 
 
         //ConstructionSets
-        private static IEnumerable<HB.ConstructionSetAbridged> _defaultConstructionSets;
+        private static readonly IEnumerable<HB.ConstructionSetAbridged> _defaultConstructionSets;
         public static IEnumerable<HB.ConstructionSetAbridged> DefaultConstructionSets => _defaultConstructionSets ?? 
-            LoadLibrary(_defaultLibraryFiles[0].FilePath, HB.ConstructionSetAbridged.FromJson);
+            LoadLibrary(_LoadLibraries[7], HB.ConstructionSetAbridged.FromJson);
 
         private static Dictionary<string, IEnumerable<HB.ConstructionSetAbridged>> _standardsConstructionSets = new Dictionary<string, IEnumerable<HB.ConstructionSetAbridged>>();
         public static Dictionary<string, IEnumerable<HB.ConstructionSetAbridged>> StandardsConstructionSets => throw new ArgumentException("Use GetorLoadStandardsConstructionSets(jsonFile)");
@@ -92,7 +98,7 @@ namespace HoneybeeRhino
         private static IEnumerable<HB.ProgramTypeAbridged> _defaultProgramTypes;
         public static IEnumerable<HB.ProgramTypeAbridged> DefaultProgramTypes 
             => _defaultProgramTypes ?? 
-            LoadLibrary(_defaultLibraryFiles[1].FilePath, HB.ProgramTypeAbridged.FromJson);
+            LoadLibrary(_LoadLibraries[8], HB.ProgramTypeAbridged.FromJson);
 
         private static Dictionary<string, IEnumerable<HB.ProgramTypeAbridged>> _standardsProgramTypesByVintage = new Dictionary<string, IEnumerable<HB.ProgramTypeAbridged>>();
         public static Dictionary<string, IEnumerable<HB.ProgramTypeAbridged>> StandardsProgramTypesByVintage => throw new ArgumentException("Use GetOrLoadProgramTypesFromJson(jsonFile)");
@@ -109,7 +115,7 @@ namespace HoneybeeRhino
         //HVACs
         private static IEnumerable<HB.IdealAirSystemAbridged> _defaultHVACs;
         public static IEnumerable<HB.IdealAirSystemAbridged> DefaultHVACs => _defaultHVACs ?? 
-            LoadLibrary(_defaultLibraryFiles[2].FilePath, HB.IdealAirSystemAbridged.FromJson);
+            LoadLibrary(_LoadLibraries[9], HB.IdealAirSystemAbridged.FromJson);
 
         //People load
         private static IEnumerable<HB.PeopleAbridged> _defaultPeopleLoads;
@@ -151,34 +157,17 @@ namespace HoneybeeRhino
             var url = standardsUrl;
             using (System.Net.WebClient wc = new System.Net.WebClient())
             {
-                Directory.CreateDirectory(HoneybeeStandardFolder);
-                var file = Path.Combine(HoneybeeStandardFolder, saveAsfileName);
+                Directory.CreateDirectory(DefaultStandardsFolder);
+                var file = Path.Combine(DefaultStandardsFolder, saveAsfileName);
                 wc.DownloadFile(url, file);
                 return file;
             }
         }
 
-        public static List<string> CheckAllDefaultLibraries()
-        {
-            var libs = new List<string>();
-            foreach (var item in _defaultLibraryFiles)
-            {
-                var jsonFile = Path.Combine(HoneybeeStandardFolder, item.FilePath);
-                if (!File.Exists(jsonFile))
-                    DownLoadLibrary(item.Url, item.FilePath);
-                libs.Add(jsonFile);
-            }
 
-            return libs;
-        }
 
         public static IEnumerable<T> LoadLibrary<T>(string jsonFile, Func<string,T> func)
         {
-            //TODO: remove this later for real deployment
-            //Check or download all json libraries.
-            //CheckAllDefaultLibraries();
-
-            //var jsonFile = Path.Combine(HoneybeeStandardFolder, jsonFilename);
 
             if (!File.Exists(jsonFile))
                 throw new ArgumentException($"Invalid file: {jsonFile}");
