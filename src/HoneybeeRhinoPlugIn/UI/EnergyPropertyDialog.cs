@@ -13,7 +13,6 @@ namespace HoneybeeRhino.UI
         {
             var EnergyProp = roomEnergyProperties?? new HB.RoomEnergyPropertiesAbridged();
 
-            EnergyProp.Hvac = "Default HVAC System";
             Padding = new Padding(5);
             Resizable = true;
             Title = "Honeybee Rhino PlugIn";
