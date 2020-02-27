@@ -47,13 +47,6 @@ namespace HoneybeeRhino.RhinoCommands
 
                 //get current working model, and its GroupEntityTable for roomEntity to add
                 var tb = HoneybeeRhinoPlugIn.Instance.ModelEntityTable;
-                if (!tb.Any())
-                {
-                    var modelName = $"Model_{Guid.NewGuid()}";
-                    var hbModel = new HoneybeeSchema.Model(modelName, new HoneybeeSchema.ModelProperties(energy: HoneybeeSchema.ModelEnergyProperties.Default));
-                    var modelEnt = new Entities.ModelEntity(hbModel);
-                    modelEnt.AddToDocument(tb);
-                }
                 var modelEntity = tb.First().Value;
 
                 var groupEntTable = modelEntity.RoomGroupEntities;

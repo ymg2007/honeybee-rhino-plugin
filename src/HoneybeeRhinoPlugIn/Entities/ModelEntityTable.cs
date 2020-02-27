@@ -7,6 +7,16 @@ namespace HoneybeeRhino.Entities
 {
     public class ModelEntityTable : Dictionary<string, ModelEntity>
     {
+
+        public static ModelEntityTable Init()
+        {
+            var tb = new ModelEntityTable();
+            var modelName = $"Model_{Guid.NewGuid()}";
+            var hbModel = new HoneybeeSchema.Model(modelName, new HoneybeeSchema.ModelProperties(energy: HoneybeeSchema.ModelEnergyProperties.Default));
+            var modelEnt = new ModelEntity(hbModel);
+            modelEnt.AddToDocument(tb);
+            return tb;
+        }
         /// <summary>
         /// Class major and minor verson numbers
         /// </summary>

@@ -23,7 +23,7 @@ namespace HoneybeeRhino
 
         //Link GroupEntityTable from ModelEntity
         public GroupEntityTable GroupEntityTable => this.ModelEntityTable.First().Value.RoomGroupEntities;
-        public ModelEntityTable ModelEntityTable { get; private set; } = new ModelEntityTable();
+        public ModelEntityTable ModelEntityTable { get; private set; } = ModelEntityTable.Init();
         public override Rhino.PlugIns.PlugInLoadTime LoadTime => Rhino.PlugIns.PlugInLoadTime.AtStartup;
         public string ObjectSelectMode { get; set; } = "GroupEntity";
 

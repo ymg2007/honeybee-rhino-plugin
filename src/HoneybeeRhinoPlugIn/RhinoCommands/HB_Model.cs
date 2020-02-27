@@ -29,14 +29,6 @@ namespace HoneybeeRhino.RhinoCommands
         protected override Result RunCommand(RhinoDoc doc, RunMode mode)
         {
             var tb = HoneybeeRhinoPlugIn.Instance.ModelEntityTable;
-            if (!tb.Any())
-            {
-                var modelName = $"Model_{System.Guid.NewGuid()}";
-                var model = new HB.Model(modelName, new HB.ModelProperties(energy: HB.ModelEnergyProperties.Default));
-                var modelEnt = new Entities.ModelEntity(model);
-                modelEnt.AddToDocument(tb);
-            }
-
             var modelEntity = tb.First().Value;
             
             var rc = Result.Cancel;
