@@ -52,7 +52,7 @@ namespace HoneybeeRhino.UI
 
             layout.AddSeparateRow(new Label { Text = $"Faces: (total: {room.Faces.Count})" });
             var facesListBox = new ListBox();
-            facesListBox.Height = 100;
+            facesListBox.Height = 120;
             var faces = room.Faces;
             if (faces != null)
             {
