@@ -29,13 +29,15 @@ namespace HoneybeeRhino.UI
             
             layout.AddSeparateRow(new Label { Text = "Name:" });
             var nameTBox = new TextBox() { };
-            nameTBox.TextBinding.Bind(face, m => m.DisplayName?? $"My Room {face.Name.Substring(5,5)}");
+            nameTBox.TextBinding.Bind(face, m => m.DisplayName?? $"Face {face.Name.Substring(5,5)}");
             layout.AddSeparateRow(nameTBox);
 
+            
             layout.AddSeparateRow(new Label { Text = "Face Type:" });
-            var faceTypeTBox = new TextBox() { };
-            faceTypeTBox.TextBinding.Bind(face, m => m.FaceType.ToString());
-            layout.AddSeparateRow(faceTypeTBox);
+            var terrainTypeDP = new EnumDropDown<Face.FaceTypeEnum>();
+            terrainTypeDP.SelectedValueBinding.Bind(Binding.Delegate(() => face.FaceType, v => face.FaceType = v));
+            layout.AddSeparateRow(terrainTypeDP);
+
 
             layout.AddSeparateRow(new Label { Text = "Boundary Condition:" });
             var bcTBox = new TextBox() { };
@@ -45,7 +47,7 @@ namespace HoneybeeRhino.UI
 
             layout.AddSeparateRow(new Label { Text = "Properties:" });
             var rmPropBtn = new Button { Text = "Face Energy Properties" };
-            //rmPropBtn.Click += (s, e) => RmPropBtn_Click(rm);
+            rmPropBtn.Click += (s, e) => FacePropBtn_Click(hbObjEntity);
             layout.AddSeparateRow(rmPropBtn);
 
             
@@ -105,6 +107,32 @@ namespace HoneybeeRhino.UI
             this.Content = layout;
             //layout.up
 
+            void FacePropBtn_Click(Entities.FaceEntity ent)
+            {
+                var energyProp = ent.HBObject.Properties.Energy ?? new FaceEnergyPropertiesAbridged();
+                energyProp = FaceEnergyPropertiesAbridged.FromJson(energyProp.ToJson());
+                var dialog = new UI.FaceEnergyPropertyDialog(energyProp);
+                dialog.RestorePosition();
+                var dialog_rc = dialog.ShowModal(RhinoEtoApp.MainWindow);
+                dialog.SavePosition();
+                if (dialog_rc != null)
+                {
+                    //replace brep in order to add an undo history
+                    var undo = Rhino.RhinoDoc.ActiveDoc.BeginUndoRecord("Set Honeybee face energy properties");
+
+                    //Dup entire room for replacement
+                    var dupRoomHost = ent.RoomHostObjRef.Brep().DuplicateBrep();
+                    //get face entity with subsurface component index
+                    var dupEnt = dupRoomHost.Faces[ent.ComponentIndex.Index].TryGetFaceEntity();
+                    //update properties
+                    dupEnt.HBObject.Properties.Energy = dialog_rc;
+                    Rhino.RhinoDoc.ActiveDoc.Objects.Replace(ent.RoomHostObjRef.ObjectId, dupRoomHost);
+
+                    Rhino.RhinoDoc.ActiveDoc.EndUndoRecord(undo);
+
+                }
+
+            }
         }
 
         public void updateRoomPanel(RoomEntity hbObjEntity)
@@ -186,29 +214,29 @@ namespace HoneybeeRhino.UI
             this.Content = layout;
             //layout.up
 
-        }
-        private void RmPropBtn_Click(Entities.RoomEntity roomEnt)
-        {
-            var roomEnergyProperties = RoomEnergyPropertiesAbridged.FromJson(roomEnt.GetEnergyProp().ToJson());
-            var dialog = new UI.EnergyPropertyDialog(roomEnergyProperties);
-            dialog.RestorePosition();
-            var dialog_rc = dialog.ShowModal(RhinoEtoApp.MainWindow);
-            dialog.SavePosition();
-            if (dialog_rc != null)
+            void RmPropBtn_Click(Entities.RoomEntity roomEnt)
             {
-                //replace brep in order to add an undo history
-                var undo = Rhino.RhinoDoc.ActiveDoc.BeginUndoRecord("Set Honeybee room energy properties");
+                var roomEnergyProperties = RoomEnergyPropertiesAbridged.FromJson(roomEnt.GetEnergyProp().ToJson());
+                var dialog = new UI.RoomEnergyPropertyDialog(roomEnergyProperties);
+                dialog.RestorePosition();
+                var dialog_rc = dialog.ShowModal(RhinoEtoApp.MainWindow);
+                dialog.SavePosition();
+                if (dialog_rc != null)
+                {
+                    //replace brep in order to add an undo history
+                    var undo = Rhino.RhinoDoc.ActiveDoc.BeginUndoRecord("Set Honeybee room energy properties");
 
-                var dup = roomEnt.HostObjRef.Brep().DuplicateBrep();
-                dup.TryGetRoomEntity().GetHBRoom().Properties.Energy = dialog_rc; 
-                Rhino.RhinoDoc.ActiveDoc.Objects.Replace(roomEnt.HostObjRef.ObjectId, dup);
+                    var dup = roomEnt.HostObjRef.Brep().DuplicateBrep();
+                    dup.TryGetRoomEntity().GetHBRoom().Properties.Energy = dialog_rc;
+                    Rhino.RhinoDoc.ActiveDoc.Objects.Replace(roomEnt.HostObjRef.ObjectId, dup);
 
-                Rhino.RhinoDoc.ActiveDoc.EndUndoRecord(undo);
+                    Rhino.RhinoDoc.ActiveDoc.EndUndoRecord(undo);
+
+                }
 
             }
-
         }
-
+    
 
     }
 }

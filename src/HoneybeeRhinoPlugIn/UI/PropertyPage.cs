@@ -20,6 +20,7 @@ namespace HoneybeeRhino.UI
 
         public override bool ShouldDisplay(ObjectPropertiesPageEventArgs e)
         {
+            if (!e.Objects.Any()) return false;
 
             //check if a subsurface is selected.
             var selectedObj = e.Objects[0];
@@ -28,13 +29,14 @@ namespace HoneybeeRhino.UI
 
             if (isSelectedBrepFace)
             {
-                if (subObjes[0].ComponentIndexType != Rhino.Geometry.ComponentIndexType.BrepFace)
+                var comIndex = subObjes[0];
+                if (comIndex.ComponentIndexType != Rhino.Geometry.ComponentIndexType.BrepFace)
                     return false;
 
-                var faceIndex = subObjes[0].Index;
-                var face = (selectedObj as BrepObject).BrepGeometry.Faces[faceIndex];
-                this._HBObjEntity = face.TryGetFaceEntity();
-                return true;
+                var faceIndex = comIndex.Index;
+                var hostRoomObjRef =  new ObjRef(selectedObj.Id);
+                this._HBObjEntity = hostRoomObjRef.TryGetFaceEntity(comIndex);
+                return this._HBObjEntity.IsValid;
             }
 
             //Now checking room group entity.
