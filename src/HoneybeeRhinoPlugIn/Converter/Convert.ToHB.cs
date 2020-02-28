@@ -87,7 +87,7 @@ namespace HoneybeeRhino
             var roofBaseNorm = new RH.Vector3d(0, 0, 1);
 
             var face = new HB.Face(
-                    "Face_" + Guid.NewGuid().ToString(),
+                    $"Face_{Guid.NewGuid()}",
                     f.ToHBFace3D(),
                     HB.Face.FaceTypeEnum.Wall,
                     new HB.Outdoors(),
@@ -149,12 +149,12 @@ namespace HoneybeeRhino
         //}
 
 
-        public static HB.Aperture ToAperture(this RH.Surface singleSurface)
+        public static HB.Aperture ToAperture(this RH.Surface singleSurface, Guid hostID)
         {
             if (singleSurface.IsPlanar())
             {
                 var face3D = singleSurface.ToHBFace3D();
-                return new HB.Aperture($"Aperture_{Guid.NewGuid()}", face3D, new HB.Outdoors(), new HB.AperturePropertiesAbridged());
+                return new HB.Aperture($"Aperture_{hostID}", face3D, new HB.Outdoors(), new HB.AperturePropertiesAbridged());
             }
             else
             {
@@ -162,7 +162,7 @@ namespace HoneybeeRhino
             }
         }
 
-        public static HB.Aperture ToWindow(this RH.Surface singleSurface) => ToAperture(singleSurface);
+        //public static HB.Aperture ToWindow(this RH.Surface singleSurface) => ToAperture(singleSurface);
 
         public static HB.Door ToDoor(this RH.Surface singleSurface)
         {

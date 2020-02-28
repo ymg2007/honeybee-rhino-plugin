@@ -63,7 +63,7 @@ namespace HoneybeeRhino.Entities
             }
 
 
-            this.HBObject = new HB.Room($"Room_{Guid.NewGuid()}".ToString(), hbFaces, new HB.RoomPropertiesAbridged());
+            this.HBObject = new HB.Room($"Room_{brepObject.ObjectId}", hbFaces, new HB.RoomPropertiesAbridged());
             this.HostObjRef = brepObject;
             this.GroupEntityID = brepObject.ObjectId;
 
@@ -145,8 +145,23 @@ namespace HoneybeeRhino.Entities
         /// <param name="roomObj"></param>
         public RoomEntity UpdateHost(ObjRef newObj, GroupEntityTable documentGroupEntityTable)
         {
+            //update HBobject name (ID):
+            var newID = newObj.ObjectId;
+            this.HBObject.Name = $"Room_{newID}";
+            this.HBObject.DisplayName = null;
+
+            //update subsurfaces:
+            var faces = this.HBObject.Faces;
+            foreach (var face in faces)
+            {
+                face.Name = $"Face_{Guid.NewGuid()}";
+                face.DisplayName = null;
+            }
+
+            //update hostRed
             this.HostObjRef = newObj;
-            this.GroupEntityID = newObj.ObjectId;
+            this.GroupEntityID = newID;
+           
 
             var ent = new GroupEntity(newObj);
             ent.AddToDocument(documentGroupEntityTable);

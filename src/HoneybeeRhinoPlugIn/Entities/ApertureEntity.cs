@@ -41,6 +41,10 @@ namespace HoneybeeRhino.Entities
 
         public ApertureEntity UpdateHostFrom(ObjRef newApertureObj)
         {
+            //update HBObject name (ID)
+            this.HBObject.Name = $"Aperture_{newApertureObj.ObjectId}";
+            this.HBObject.DisplayName = null;
+            //update hostRef
             this.HostObjRef = newApertureObj;
             return this;
         }
