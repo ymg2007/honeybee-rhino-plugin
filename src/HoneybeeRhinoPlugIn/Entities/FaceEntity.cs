@@ -22,6 +22,12 @@ namespace HoneybeeRhino.Entities
 
         public override bool IsValid => HBObject != null;
         public override string Description => this.IsValid ? $"HBFaceEntity: {HBObject.Name}" : base.Description;
+
+        //below properties doesn't have be serialized, only for runtime.
+        public ObjRef RoomHostObjRef { get; private set; }
+        public ComponentIndex ComponentIndex { get; private set; }
+
+
         public FaceEntity()
         {
         }
@@ -76,7 +82,28 @@ namespace HoneybeeRhino.Entities
      
         }
 
-        public static FaceEntity TryGetFrom(Rhino.Geometry.GeometryBase rhinoGeo)
+        //This is used in subselection, in which need to replace entire geometry after property changes
+        public static FaceEntity TryGetFrom(ObjRef roomHostObjRef, ComponentIndex componentIndex)
+        {
+            var roomHostObject = roomHostObjRef.Brep();
+            var rc = new FaceEntity();
+            if (roomHostObject == null)
+                return rc;
+            if (componentIndex.ComponentIndexType != ComponentIndexType.BrepFace)
+                return rc;
+
+            var face = roomHostObject.Faces[componentIndex.Index];
+            var ent = face.TryGetFaceEntity();
+            if (!ent.IsValid)
+                return rc;
+
+            //updates hostObjRef to its room's host
+            ent.RoomHostObjRef = roomHostObjRef;
+            ent.ComponentIndex = componentIndex;
+            return ent;
+        }
+
+        public static FaceEntity TryGetFrom(GeometryBase rhinoGeo)
         {
             var rc = new FaceEntity();
             if (!rhinoGeo.IsValid)

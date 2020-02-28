@@ -90,7 +90,8 @@
     <Compile Include="HoneybeeRhinoPlugIn.cs" />
     <Compile Include="Runner.cs" />
     <Compile Include="UI\HBModelDialog.cs" />
-    <Compile Include="UI\EnergyPropertyDialog.cs" />
+    <Compile Include="UI\FaceEnergyPropertyDialog.cs" />
+    <Compile Include="UI\RoomEnergyPropertyDialog.cs" />
     <Compile Include="UI\PropertyPage.cs" />
     <Compile Include="UI\PropertyPanel.cs" />
     <Compile Include="RoomEntityMouseCallback.cs" />

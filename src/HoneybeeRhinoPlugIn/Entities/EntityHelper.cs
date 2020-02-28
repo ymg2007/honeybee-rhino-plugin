@@ -20,8 +20,9 @@ namespace HoneybeeRhino.Entities
         public static ApertureEntity TryGetApertureEntity(this ObjRef rhinoRef) => ApertureEntity.TryGetFrom(rhinoRef.Geometry());
         public static ApertureEntity TryGetApertureEntity(this GeometryBase rhinoRef) => ApertureEntity.TryGetFrom(rhinoRef);
 
-
-        public static FaceEntity TryGetFaceEntity(this GeometryBase rhinoRef) => FaceEntity.TryGetFrom(rhinoRef);
+        public static FaceEntity TryGetFaceEntity(this ObjRef roomHostRef, ComponentIndex componentIndex) => FaceEntity.TryGetFrom(roomHostRef, componentIndex);
+        public static FaceEntity TryGetFaceEntity(this BrepFace rhinoRef) => FaceEntity.TryGetFrom(rhinoRef);
+        public static FaceEntity TryGetFaceEntity(this Surface rhinoRef) => FaceEntity.TryGetFrom(rhinoRef);
 
         public static HBObjEntity TryGetHBObjEntity(this GeometryBase rhinoRef) => HBObjEntity.TryGetFrom(rhinoRef);
         public static GroupEntity TryGetGroupEntity(this GeometryBase rhinoRef, GroupEntityTable documentGroupEntityTable)
