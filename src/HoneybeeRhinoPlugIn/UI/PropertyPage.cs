@@ -14,13 +14,30 @@ namespace HoneybeeRhino.UI
        
         public override ObjectType SupportedTypes => ObjectType.Brep;
 
-        //TODO: will add support to subobj later.
-        public override bool SupportsSubObjects => false;
+        public override bool SupportsSubObjects => true;
 
         private HBObjEntity _HBObjEntity;
 
         public override bool ShouldDisplay(ObjectPropertiesPageEventArgs e)
         {
+
+            //check if a subsurface is selected.
+            var selectedObj = e.Objects[0];
+            var subObjes = selectedObj.GetSelectedSubObjects();
+            var isSelectedBrepFace = null != subObjes;
+
+            if (isSelectedBrepFace)
+            {
+                if (subObjes[0].ComponentIndexType != Rhino.Geometry.ComponentIndexType.BrepFace)
+                    return false;
+
+                var faceIndex = subObjes[0].Index;
+                var face = (selectedObj as BrepObject).BrepGeometry.Faces[faceIndex];
+                this._HBObjEntity = face.TryGetFaceEntity();
+                return true;
+            }
+
+            //Now checking room group entity.
             var groupTable = HoneybeeRhinoPlugIn.Instance.GroupEntityTable;
 
             //Check groupEntity first.
@@ -38,9 +55,16 @@ namespace HoneybeeRhino.UI
 
         public override void UpdatePage(ObjectPropertiesPageEventArgs e)
         {
-            if (this._HBObjEntity.IsValid)
+
+            if (!this._HBObjEntity.IsValid) return;
+
+            if (this._HBObjEntity is RoomEntity rm)
             {
-                this.panelUI.updateRoomPanel(this._HBObjEntity);
+                this.panelUI.updateRoomPanel(rm);
+            }
+            else if (this._HBObjEntity is FaceEntity face)
+            {
+                this.panelUI.updateFacePanel(face);
             }
         }
     }

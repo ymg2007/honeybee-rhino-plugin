@@ -99,7 +99,7 @@ namespace HoneybeeRhino
         private void RhinoDoc_SelectObjects(object sender, RhinoObjectSelectionEventArgs e)
         {
             var selectedObjs = e.RhinoObjects.Select(_ => _);
-
+         
             if (this._mergedCounts > 0)
             {
                 //Get all pasted in objects one by one.
@@ -159,6 +159,10 @@ namespace HoneybeeRhino
                 return;
             }
 
+            //Subobject is selected
+            var subs = selectedObjs.ElementAt(0).GetSelectedSubObjects();
+            if (subs != null)
+                return;
 
             //Only make the room obj as the entry point for selecting the entire group entity.
             foreach (var room in selectedRooms)
