@@ -41,7 +41,7 @@ namespace HoneybeeRhino.UI
             
             layout.AddSeparateRow(new Label { Text = "Name:" });
             var modelNameTextBox = new TextBox() { };
-            modelNameTextBox.TextBinding.Bind(room, m => m.DisplayName);
+            modelNameTextBox.TextBinding.Bind(room, m => m.DisplayName?? $"My Room {room.Name.Substring(5,5)}");
             layout.AddSeparateRow(modelNameTextBox);
 
 
@@ -50,9 +50,9 @@ namespace HoneybeeRhino.UI
             rmPropBtn.Click += (s, e) => RmPropBtn_Click(room.Properties.Energy, (v)=> room.Properties.Energy = v);
             layout.AddSeparateRow(rmPropBtn);
 
-            layout.AddSeparateRow(new Label { Text = "Faces:" });
+            layout.AddSeparateRow(new Label { Text = $"Faces: (total: {room.Faces.Count})" });
             var facesListBox = new ListBox();
-            facesListBox.Height = 50;
+            facesListBox.Height = 100;
             var faces = room.Faces;
             if (faces != null)
             {
