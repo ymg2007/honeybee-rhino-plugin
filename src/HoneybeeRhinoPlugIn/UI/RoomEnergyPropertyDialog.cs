@@ -6,16 +6,16 @@ using HB = HoneybeeSchema;
 using System;
 namespace HoneybeeRhino.UI
 {
-    public class EnergyPropertyDialog: Dialog<HB.RoomEnergyPropertiesAbridged>
+    public class RoomEnergyPropertyDialog: Dialog<HB.RoomEnergyPropertiesAbridged>
     {
      
-        public EnergyPropertyDialog(HB.RoomEnergyPropertiesAbridged roomEnergyProperties)
+        public RoomEnergyPropertyDialog(HB.RoomEnergyPropertiesAbridged roomEnergyProperties)
         {
             var EnergyProp = roomEnergyProperties?? new HB.RoomEnergyPropertiesAbridged();
 
             Padding = new Padding(5);
             Resizable = true;
-            Title = "Honeybee Rhino PlugIn";
+            Title = "Room Energy Properties - Honeybee Rhino PlugIn";
             WindowStyle = WindowStyle.Default;
             MinimumSize = new Size(450, 620);
 
