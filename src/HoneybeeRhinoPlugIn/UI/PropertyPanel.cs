@@ -1,19 +1,16 @@
 ﻿using Eto.Drawing;
 using Eto.Forms;
 using Rhino.UI;
-using Rhino.UI.Forms;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using HoneybeeSchema;
-using System.Collections;
+using HoneybeeRhino.Entities;
 
 namespace HoneybeeRhino.UI
 {
     internal class PropertyPanel: Eto.Forms.Panel
     {
+        static string _tempEnergyProp = string.Empty;
         public PropertyPanel()
         {
         }
@@ -47,7 +44,7 @@ namespace HoneybeeRhino.UI
 
             layout.AddSeparateRow(new Label { Text = "Properties:" });
             var rmPropBtn = new Button { Text = "Room Energy Properties" };
-            rmPropBtn.Click += (s, e) => RmPropBtn_Click(room.Properties.Energy, (v)=> room.Properties.Energy = v);
+            rmPropBtn.Click += (s, e) => RmPropBtn_Click(rm);
             layout.AddSeparateRow(rmPropBtn);
 
             layout.AddSeparateRow(new Label { Text = $"Faces: (total: {room.Faces.Count})" });
@@ -108,18 +105,28 @@ namespace HoneybeeRhino.UI
 
         }
 
-        private void RmPropBtn_Click(RoomEnergyPropertiesAbridged roomEnergyProperties, Action<RoomEnergyPropertiesAbridged> setAction)
+        private void RmPropBtn_Click(Entities.RoomEntity roomEnt)
         {
+            var roomEnergyProperties = RoomEnergyPropertiesAbridged.FromJson(roomEnt.GetEnergyProp().ToJson());
             var dialog = new UI.EnergyPropertyDialog(roomEnergyProperties);
             dialog.RestorePosition();
             var dialog_rc = dialog.ShowModal(RhinoEtoApp.MainWindow);
             dialog.SavePosition();
             if (dialog_rc != null)
             {
-                setAction(dialog_rc);
+                //replace brep in order to add an undo history
+                var undo = Rhino.RhinoDoc.ActiveDoc.BeginUndoRecord("Set Honeybee room energy properties");
+
+                var dup = roomEnt.HostObjRef.Brep().DuplicateBrep();
+                dup.TryGetRoomEntity().GetHBRoom().Properties.Energy = dialog_rc; 
+                Rhino.RhinoDoc.ActiveDoc.Objects.Replace(roomEnt.HostObjRef.ObjectId, dup);
+
+                Rhino.RhinoDoc.ActiveDoc.EndUndoRecord(undo);
+
             }
 
         }
+
 
     }
 }
