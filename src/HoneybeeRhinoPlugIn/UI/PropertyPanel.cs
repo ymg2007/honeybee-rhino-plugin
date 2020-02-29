@@ -46,9 +46,12 @@ namespace HoneybeeRhino.UI
 
 
             layout.AddSeparateRow(new Label { Text = "Properties:" });
-            var rmPropBtn = new Button { Text = "Face Energy Properties" };
-            rmPropBtn.Click += (s, e) => FacePropBtn_Click(hbObjEntity);
-            layout.AddSeparateRow(rmPropBtn);
+            var faceRadPropBtn = new Button { Text = "Face Radiance Properties (WIP)" };
+            faceRadPropBtn.Click += (s, e) => Dialogs.ShowMessage("Work in progress", "Honeybee");
+            layout.AddSeparateRow(faceRadPropBtn);
+            var faceEngPropBtn = new Button { Text = "Face Energy Properties" };
+            faceEngPropBtn.Click += (s, e) => FacePropBtn_Click(hbObjEntity);
+            layout.AddSeparateRow(faceEngPropBtn);
 
             
             var apertureLBox = new ListBox();
