@@ -45,16 +45,6 @@ namespace HoneybeeRhino
             var roomCopy = allRooms.Select(_ => _.DuplicateBrep().DetachHBEntityTo(this._tempEntityHolder)).ToList();
             var adjacentCopy = roomCopy.Select(_ => _.DuplicateBrep()).ToList();
 
-            
-            //match each room's adjacent rooms before do split.
-            var roomAndAdjacents = roomCopy.AsParallel().AsOrdered().Select(room =>
-            {
-                var roomBBox = room.GetBoundingBox(false);
-                var adjacentRooms = adjacentCopy.Where(_ => _.GetBoundingBox(false).isIntersected(roomBBox));
-                return (room, adjacentRooms);
-
-            });
-
 
             try
             {
@@ -62,11 +52,25 @@ namespace HoneybeeRhino
                 var intersected = new Brep[totalCount];
                 if (parallelCompute)
                 {
+                    //match each room's adjacent rooms before do split.
+                    var roomAndAdjacents = roomCopy.AsParallel().AsOrdered().Select(room =>
+                    {
+                        var adjacentRooms = adjacentCopy.Where(_ => _.GetBoundingBox(false).isIntersected(room.GetBoundingBox(false), tolerance));
+                        return (room, adjacentRooms);
+
+                    });
+                    //Do split
                     intersected = roomAndAdjacents.AsParallel().AsOrdered().Select(_ => IntersectWithMasses(_.room, _.adjacentRooms, tolerance)).ToArray();
 
                 }
                 else
                 {
+                    var roomAndAdjacents = roomCopy.Select(room =>
+                    {
+                        var adjacentRooms = adjacentCopy.Where(_ => _.GetBoundingBox(false).isIntersected(room.GetBoundingBox(false), tolerance));
+                        return (room, adjacentRooms);
+
+                    });
                     intersected = roomAndAdjacents.Select(_ => IntersectWithMasses(_.room, _.adjacentRooms, tolerance)).ToArray();
                 }
                 //add HBObjEntity back to geometry again.
@@ -183,7 +187,7 @@ namespace HoneybeeRhino
 
             //Check bounding boxes first
             var roomBBox = room.GetBoundingBox(false);
-            var adjacentRooms = otherRooms.Where(_ => roomBBox.isIntersected(_.GetBoundingBox(false)));
+            var adjacentRooms = otherRooms.Where(_ => roomBBox.isIntersected(_.GetBoundingBox(false), tolerance));
 
             var currentBrep = room;
             var currentRoomEnt = currentBrep.TryGetRoomEntity();

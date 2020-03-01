@@ -14,7 +14,7 @@ namespace HoneybeeRhino
         public static (Brep room, Brep aperture) AddAperture(this ObjRef roomObjRef, ObjRef apertureObjRef)
         {
             Brep validApertureBrep = null;
-            var tol = 0.0001;
+            //var tol = 0.0001;
             var roomBrep = roomObjRef.Brep();
             var apertureObject = apertureObjRef.Brep();
             var apertureHostID = apertureObjRef.ObjectId;
@@ -45,7 +45,8 @@ namespace HoneybeeRhino
                 //TODO: need to test following method performance
                 var isInside = srfBBox.Contains(apertureBBox, false);
                 var isIntersected = srfBBox.Contains(apertureBBox.Max, false) || srfBBox.Contains(apertureBBox.Min, false);
-                var isCoPlanner = roomSrf.IsCoplanar(apertureSrf, tol, true, true);
+                //var isCoPlanner = roomSrf.IsCoplanar(apertureSrf, tol, true, true);
+                //TODO: need to take care of is not inside but isIntersected.
                 if (!isInside)
                     continue;
 

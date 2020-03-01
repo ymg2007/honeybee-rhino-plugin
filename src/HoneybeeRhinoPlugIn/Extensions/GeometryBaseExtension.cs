@@ -53,20 +53,33 @@ namespace HoneybeeRhino
 
         }
 
-        public static bool IsCoplanar(this Surface surface, Surface testSurface, double tolerance, bool sameNormal = true, bool fliptedNormal = false)
+        public static bool IsCoplanar(this BrepFace face, BrepFace otherFace, double tolerance, bool sameNormal = true, bool fliptedNormal = false)
         {
-            if (!surface.IsValid || !testSurface.IsValid)
+            if (!face.IsValid || !otherFace.IsValid)
                 return false;
 
-            if (!surface.IsPlanar() || !testSurface.IsPlanar())
+            if (!face.IsPlanar() || !otherFace.IsPlanar())
                 return false;
 
-            surface.TryGetPlane(out Plane plane);
-            testSurface.TryGetPlane(out Plane testPlane);
+            face.TryGetPlane(out Plane plane, tolerance);
+            otherFace.TryGetPlane(out Plane testPlane, tolerance);
+
+            //Ensure the plane's normal is real normal
+            if (face.OrientationIsReversed)
+                plane.Flip();
+
+            if (otherFace.OrientationIsReversed)
+                testPlane.Flip();
+
             return plane.IsCoplanar(testPlane, tolerance, sameNormal, fliptedNormal);
         }
-        public static bool isIntersected(this BoundingBox room, BoundingBox anotherRoom)
+        public static bool isIntersected(this BoundingBox room, BoundingBox anotherRoom, double tolerance)
         {
+            //Room cannot be intersected with self.
+            var issame = room.Equals(anotherRoom);
+            if (issame)
+                return false;
+
             var roomMax = room.Max;
             var roomMin = room.Min;
 
@@ -82,7 +95,12 @@ namespace HoneybeeRhino
 
             bool IsBetween((double Max, double Min) v1, (double Max, double Min) v2)
             {
-                return v1.Max >= v2.Min && v2.Max >= v1.Min;
+                var v1A = v1.Max - v2.Min;
+                var v2A = v2.Max - v1.Min;
+                var isBetween1 = v1A >= 0 ? true : Math.Abs(v1A) <= tolerance;
+                var isBetween2 = v2A >= 0 ? true : Math.Abs(v2A) <= tolerance;
+            
+                return isBetween1 && isBetween2;
             }
 
         }
@@ -96,16 +114,10 @@ namespace HoneybeeRhino
             foreach (var curBrepFace in currentBrepFaces)
             {
                 var curFaceBBox = curBrepFace.GetBoundingBox(false);
-                var coplanned = adjRoom.Faces.Where(_ => _.UnderlyingSurface().IsCoplanar(curBrepFace, tolerance, sameNormal: false, fliptedNormal: true));
-                var faceCutters = coplanned.Where(_ => _.GetBoundingBox(false).isIntersected(curFaceBBox));
+                var coplanned = adjRoom.Faces.Where(_ => _.IsCoplanar(curBrepFace, tolerance, sameNormal: false, fliptedNormal: true));
+                var faceCutters = coplanned.Where(_ => _.GetBoundingBox(false).isIntersected(curFaceBBox, tolerance));
                 if (faceCutters.Any())
                 {
-                    //var srf = faceCutters.Select(_ => _.UnderlyingSurface());
-                    //var b = faceCutters.Select(_ => _.ToBrep().Surfaces[0]);
-                    //var srfByindex = adjRoom.Surfaces[faceCutters.First().SurfaceIndex];
-                    //var c = curBrepFace.ToBrep().Surfaces[0];
-                    //var c2 = curBrepFace.UnderlyingSurface();
-                    //var c3 = room.Surfaces[curBrepFace.SurfaceIndex];
                     cutters.Add((curBrepFace, faceCutters));
                 }
 
