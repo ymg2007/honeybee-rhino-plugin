@@ -24,8 +24,8 @@ namespace HoneybeeRhino
         public  IEnumerable<Brep> Execute(double tolerance, bool parallelCompute = false)
         {
             var checkedObjs = ExecuteIntersectMasses(this._rooms, tolerance, parallelCompute).ToList();
-            //var matchedObj = checkedObjs.Select(_ => _.DuplicateBrep().MatchInteriorFaces(checkedObjs, tolerance));
-            return checkedObjs;
+            var matchedObj = ExecuteMatchInteriorFaces(checkedObjs, tolerance);
+            return matchedObj;
 
         }
 
