@@ -78,6 +78,7 @@
     <Compile Include="Entities\RoomEntity.cs" />
     <Compile Include="Extensions\GeometryBaseExtension.cs" />
     <Compile Include="RhinoCommands\BrepJson.cs" />
+    <Compile Include="RhinoCommands\HB_AddWindowByWWR.cs" />
     <Compile Include="RhinoCommands\HB_AddWindowToRoom.cs" />
     <Compile Include="RhinoCommands\HB_Model.cs" />
     <Compile Include="RhinoCommands\HB_EditRoom.cs" />
