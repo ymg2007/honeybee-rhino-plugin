@@ -48,14 +48,16 @@ namespace HoneybeeRhino.Test
 
         }
 
-        public List<Brep> InitTwoBoxes()
+        public List<ObjRef> InitTwoBoxes()
         {
             var bbox1 = new BoundingBox(new Point3d(0, 0, 0), new Point3d(10, 8, 3));
             var b1 = new Box(bbox1).ToBrep();
-            var bbox2 = new BoundingBox(new Point3d(0, 0, 0), new Point3d(4, -6, 3.5));
+            var bbox2 = new BoundingBox(new Point3d(-1, -1, 3.00001), new Point3d(3, 3, 5.5));
             var b2 = new Box(bbox2).ToBrep();
 
-            return new List<Brep>() { b1, b2 };
+            var obj1 = InitRoomBrepObject(b1);
+            var obj2 = InitRoomBrepObject(b2);
+            return new List<ObjRef>() { obj1 , obj2};
         }
         public List<Brep> LoadBrepsFromJson(string file)
         {
@@ -189,13 +191,11 @@ namespace HoneybeeRhino.Test
 
             var cutters = firstB.GetAdjFaces(secondB, _tol);
 
-
             Assert.AreEqual(cutters.Count(), 1);
 
             var cutterProp = AreaMassProperties.Compute(cutters.First().matchedCutters.First());
             Assert.IsTrue(Math.Abs(cutterProp.Area - 4 * 3.5) < _tol);
             Assert.IsTrue(cutterProp.Centroid.DistanceToSquared(new Point3d(2, 0, 1.75)) < Math.Pow(_tol, 2));
-
 
         }
 
@@ -208,8 +208,8 @@ namespace HoneybeeRhino.Test
 
             var rooms = breps.Select(_ => InitRoomBrepObject(_).Brep());
             var solver = new AdjacencySolver(rooms);
-           
-            var intersectedBreps = solver.ExecuteIntersectMasses(_tol).ToList();
+
+            var intersectedBreps = solver.ExecuteIntersectMasses(rooms, _tol).ToList();
 
             var firstB = intersectedBreps[0];
             var secondB = intersectedBreps[1];
@@ -240,6 +240,48 @@ namespace HoneybeeRhino.Test
             var center_second = AreaMassProperties.Compute(indoorFace_second).Centroid;
 
             Assert.IsTrue(center_first.DistanceToSquared(center_second) < Math.Pow(_tol, 2));
+
+
+        }
+
+        [Test]
+        public void Test_SolveAdjacency_TwoSimpleBrepsWithTol()
+        {
+
+            var rhinoObjs = InitTwoBoxes();
+            var breps = rhinoObjs.Select(_ => _.Brep());
+
+            var solver = new AdjacencySolver(breps);
+
+            var intersectedBreps = solver.ExecuteIntersectMasses(breps, _tol).ToList();
+            intersectedBreps = solver.ExecuteMatchInteriorFaces(intersectedBreps, _tol).ToList();
+
+            var firstB = intersectedBreps[0];
+            var secondB = intersectedBreps[1];
+
+            //check if there is a new face created
+            Assert.IsTrue(firstB.IsSolid);
+            Assert.AreEqual(firstB.Faces.Count, 7);
+            Assert.IsTrue(secondB.IsSolid);
+            Assert.AreEqual(secondB.Faces.Count, 7);
+
+
+            //Check if all face names are identical
+            var hbObjs_first = firstB.Surfaces.Select(_ => _.TryGetFaceEntity().HBObject);
+            var hbObjs_second = secondB.Surfaces.Select(_ => _.TryGetFaceEntity().HBObject);
+
+            var faceNames_first = hbObjs_first.Select(_ => _.Name);
+            var faceNames_second = hbObjs_second.Select(_ => _.Name);
+
+            Assert.IsTrue( faceNames_first.Distinct().Count() == 7);
+            Assert.IsTrue( faceNames_second.Distinct().Count() == 7);
+
+
+            var faceBC_first = hbObjs_first.Select(_ => _.BoundaryCondition);
+            var faceBC_second = hbObjs_second.Select(_ => _.BoundaryCondition);
+
+            Assert.IsTrue(faceBC_first.Where(_=>_.Obj is HB.Surface).Count()==1);
+            Assert.IsTrue(faceBC_second.Where(_ => _.Obj is HB.Surface).Count() == 1);
 
 
         }
