@@ -458,7 +458,7 @@ namespace HoneybeeRhino.Test
             Assert.IsTrue(windowObj.Object().IsDeleted == false);
 
             var newRoom = new ObjRef(roomObj.ObjectId).Object() as BrepObject;
-            if (!newRoom.BrepGeometry.Surfaces.Where(_ => _.TryGetFaceEntity().Apertures.Any()).Any())
+            if (!newRoom.BrepGeometry.Surfaces.Where(_ => _.TryGetFaceEntity().ApertureObjRefs.Any()).Any())
                 throw new ArgumentException("some thing wrong with assigning aperture!");
 
             //recheck if aperture is added to groupEntity
@@ -571,11 +571,11 @@ namespace HoneybeeRhino.Test
             var matchedRoomWindow = roomObj.AddAperture(windObj);
 
             var faceEnts = matchedRoomWindow.room.Surfaces.Select(_ => _.TryGetFaceEntity());
-            if (!faceEnts.Where(_=>_.Apertures.Any()).Any())
+            if (!faceEnts.Where(_=>_.ApertureObjRefs.Any()).Any())
                 throw new ArgumentException("some thing wrong with assigning aperture!");
 
             faceEnts = matchedRoomWindow.room.DuplicateBrep().Surfaces.Select(_ => _.TryGetFaceEntity());
-            if (!faceEnts.Where(_ => _.Apertures.Any()).Any())
+            if (!faceEnts.Where(_ => _.ApertureObjRefs.Any()).Any())
                 throw new ArgumentException("some thing wrong with assigning aperture!");
             //replace the old RhinoObject.
             var success = _doc.Objects.Replace(roomID, matchedRoomWindow.room);
@@ -584,7 +584,7 @@ namespace HoneybeeRhino.Test
             var newFoundGeo = _doc.Objects.FindId(roomID).Geometry;
             faceEnts = Brep.TryConvertBrep(newFoundGeo).Surfaces.Select(_ => _.TryGetFaceEntity());
             Assert.IsTrue(faceEnts.Where(_ => _.HBObject.Apertures.Any()).Any());
-            Assert.IsTrue(faceEnts.Where(_ => _.Apertures.Any()).Any());
+            Assert.IsTrue(faceEnts.Where(_ => _.ApertureObjRefs.Any()).Any());
 
             var newRoomId = _doc.Objects.Add(matchedRoomWindow.room);
             var newWindId = _doc.Objects.Add(matchedRoomWindow.aperture);
@@ -592,7 +592,7 @@ namespace HoneybeeRhino.Test
             var foundGeo = _doc.Objects.FindId(newRoomId).Geometry;
             faceEnts = Brep.TryConvertBrep(foundGeo).Surfaces.Select(_ => _.TryGetFaceEntity());
             Assert.IsTrue(faceEnts.Where(_ => _.HBObject.Apertures.Any()).Any());
-            Assert.IsTrue(faceEnts.Where(_ => _.Apertures.Any()).Any());
+            Assert.IsTrue(faceEnts.Where(_ => _.ApertureObjRefs.Any()).Any());
 
         }
 

@@ -56,13 +56,13 @@ namespace HoneybeeRhino.UI
             
             var apertureLBox = new ListBox();
             apertureLBox.Height = 100;
-            var faces = face.Apertures;
-            var faceCount = 0;
-            if (faces != null)
+            var apertures = hbObjEntity.ApertureObjRefs;
+            var faceCount = apertures.Count();
+            if (apertures != null)
             {
-                var faceItems = faces.Select(_ => new ListItem() { Text = _.DisplayName ?? _.Name, Tag = _ });
+                var faceItems = apertures.Select(_ => _.TryGetApertureEntity().HBObject).Select(_ => new ListItem() { Text =_.Name, Tag = _ });
                 apertureLBox.Items.AddRange(faceItems);
-                faceCount = faces.Count;
+                faceCount = apertures.Count;
             }
             layout.AddSeparateRow(new Label { Text = $"Apertures: (total: {faceCount})" });
             layout.AddSeparateRow(apertureLBox);
@@ -71,9 +71,9 @@ namespace HoneybeeRhino.UI
             var doorLBox = new ListBox();
             doorLBox.Height = 50;
             var doors = face.Doors;
-            if (faces != null)
+            if (doors != null)
             {
-                var faceItems = faces.Select(_ => new ListItem() { Text = _.DisplayName ?? _.Name, Tag = _ });
+                var faceItems = doors.Select(_ => new ListItem() { Text = _.DisplayName ?? _.Name, Tag = _ });
                 doorLBox.Items.AddRange(faceItems);
             }
             layout.AddSeparateRow(doorLBox);

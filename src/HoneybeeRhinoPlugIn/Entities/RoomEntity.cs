@@ -115,12 +115,12 @@ namespace HoneybeeRhino.Entities
                 HBFace.Geometry = face3d;
 
                 //check apertures
-                var apertureBreps = faceEnt.Apertures;
+                var apertureBreps = faceEnt.ApertureObjRefs;
                 var checkedHBApertures = new List<HB.Aperture>();
                 foreach (var apertureBrep in apertureBreps)
                 {
                     //update aperture geometry
-                    var aptFace3D = apertureBrep.ToHBFace3Ds().First();
+                    var aptFace3D = apertureBrep.Brep().ToHBFace3Ds().First();
                     var HBAperture = apertureBrep.TryGetApertureEntity().HBObject;
                     HBAperture.Geometry = aptFace3D;
                     checkedHBApertures.Add(HBAperture);

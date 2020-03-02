@@ -18,7 +18,7 @@ namespace HoneybeeRhino.Entities
     {
         public HB.Face HBObject { get; private set; }
 
-        public List<Brep> Apertures { get; private set; } = new List<Brep>();
+        public List<ObjRef> ApertureObjRefs { get; private set; } = new List<ObjRef>();
 
         public override bool IsValid => HBObject != null;
         public override string Description => this.IsValid ? $"HBFaceEntity: {HBObject.Name}" : base.Description;
@@ -49,7 +49,7 @@ namespace HoneybeeRhino.Entities
                 base.OnDuplicate(source);
                 var json = src.HBObject.ToJson();
                 this.HBObject = HB.Face.FromJson(json);
-                this.Apertures = src.Apertures;
+                this.ApertureObjRefs = src.ApertureObjRefs;
             }
         }
 
@@ -128,13 +128,13 @@ namespace HoneybeeRhino.Entities
           
         }
 
-        public void AddAperture(Brep apertureBrep)
+        public void AddAperture(ObjRef apertureObjRef, Brep aperture)
         {
-            var apertureEntity = apertureBrep.TryGetApertureEntity();
+            var apertureEntity = aperture.TryGetApertureEntity();
             if (!apertureEntity.IsValid)
                 throw new ArgumentException("Aperture brep is not a valid Honeybee aperture object!");
             
-            this.Apertures.Add(apertureBrep);
+            this.ApertureObjRefs.Add(apertureObjRef);
 
             var HBApertures = this.HBObject.Apertures?? new List<HB.Aperture>();
             HBApertures.Add(apertureEntity.HBObject);

@@ -50,11 +50,12 @@ namespace HoneybeeRhino
                 if (!isInside)
                     continue;
 
-                //Convert to Aperture Brep
+                //Convert to Aperture Brep, and replace current rhino object
                 validApertureBrep = apertureBrep.ToApertureBrep(apertureHostID);
+
                 //add to room face brep
                 var roomSrfEnt = roomSrf.TryGetFaceEntity();
-                roomSrfEnt.AddAperture(validApertureBrep);
+                roomSrfEnt.AddAperture(new ObjRef(apertureHostID), validApertureBrep);
 
                 //add to groupEntity.
                 var groupEntity = dupRoom.TryGetGroupEntity(HoneybeeRhinoPlugIn.Instance.GroupEntityTable);
@@ -68,7 +69,7 @@ namespace HoneybeeRhino
 
 
 #if DEBUG
-            if (!dupRoom.Surfaces.Where(_ => _.TryGetFaceEntity().Apertures.Any()).Any())
+            if (!dupRoom.Surfaces.Where(_ => _.TryGetFaceEntity().ApertureObjRefs.Any()).Any())
                 throw new ArgumentException("some thing wrong with assigning aperture!");
 
             //ensure aperture's id has been added to group
