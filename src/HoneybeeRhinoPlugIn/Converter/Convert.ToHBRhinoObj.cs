@@ -49,7 +49,7 @@ namespace HoneybeeRhino
             if (geo.IsSurface && geo.Faces.First().UnderlyingSurface().IsPlanar())
             {
                 //TODO: shinkFace
-                var hbobj = geo.Faces.First().UnderlyingSurface().ToAperture(hostID);
+                var hbobj = geo.Faces.First().ToAperture(hostID);
                 var ent = new Entities.ApertureEntity(hbobj);
                 ent.HostObjRef = new ObjRef( hostID);
                 geo.UserData.Add(ent);

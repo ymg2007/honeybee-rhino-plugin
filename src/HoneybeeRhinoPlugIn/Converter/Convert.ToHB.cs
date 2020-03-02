@@ -8,6 +8,8 @@ namespace HoneybeeRhino
 {
     public static partial class Convert
     {
+        static RH.Vector3d floorBaseNorm = new RH.Vector3d(0, 0, -1);
+        static RH.Vector3d roofBaseNorm = new RH.Vector3d(0, 0, 1);
 
         public static List<double> ToDecimalList(this RH.Point3d point)
         {
@@ -26,65 +28,63 @@ namespace HoneybeeRhino
 
         public static HB.Face3D ToHBFace3D(this RH.Surface surface)
         {
-            return (surface.ToBrep().ToHBFace3Ds().First());
+            return surface.ToBrep().Faces.First().ToHBFace3D();
+        }
+
+        public static HB.Face3D ToHBFace3D(this RH.BrepFace brepFace)
+        {
+            var pts = new List<object>();
+            var bface = brepFace;
+            if (bface.IsPlanar())
+            {
+                var loops = bface.Loops;
+                foreach (var loop in loops)
+                {
+
+                    var isPoly = loop.To3dCurve().TryGetPolyline(out RH.Polyline polyline);
+                    if (isPoly)
+                    {
+                        var loopPts = polyline.Distinct().Select(pt => pt.ToDecimalList()).ToList();
+                        pts.Add(loopPts);
+                    }
+                    else
+                    {
+                        //TODO: maybe convert to mesh
+                    }
+                }
+
+            }
+            else
+            {
+                //TODO: convert it to mesh
+
+            }
+
+            //check if brep has holes
+            var boundaryPts = pts.First() as List<List<double>>;
+            var face3D = new HB.Face3D(boundaryPts);
+            if (pts.Count > 1)
+            {
+                face3D.Holes.AddRange(pts.Skip(1) as List<List<List<double>>>);
+            }
+
+            return face3D;
 
         }
 
         public static List<HB.Face3D> ToHBFace3Ds(this RH.Brep brep)
         {
-            var face3Ds = new List<HB.Face3D>();
-
             var bfaces = brep.Faces;
-            foreach (var bface in bfaces)
-            {
-
-                var pts = new List<object>();
-
-                if (bface.IsPlanar())
-                {
-                    var loops = bface.Loops;
-                    foreach (var loop in loops)
-                    {
-
-                        var isPoly = loop.To3dCurve().TryGetPolyline(out RH.Polyline polyline);
-                        if (isPoly)
-                        {
-                            var loopPts = polyline.Distinct().Select(pt => pt.ToDecimalList()).ToList();
-                            pts.Add(loopPts);
-                        }
-                        else
-                        {
-                            //TODO: maybe convert to mesh
-                        }
-                    }
-
-                }
-                else
-                {
-                    //TODO: convert it to mesh
-
-                }
-
-                //check if brep has holes
-                var boundaryPts = pts.First() as List<List<double>>;
-                var face3D = new HB.Face3D(boundaryPts);
-                if (pts.Count > 1)
-                {
-                    face3D.Holes.AddRange(pts.Skip(1) as List<List<List<double>>>);
-                }
-                face3Ds.Add(face3D);
-            }
-
+            var face3Ds = bfaces.Select(_ => _.ToHBFace3D()).ToList();
             return face3Ds;
-
         }
-        public static HB.Face ToHBFace(this RH.Surface surface, double maxRoofFloorAngle = 30)
+
+        public static HB.Face ToHBFace(this RH.BrepFace surface, double maxRoofFloorAngle = 30)
         {
 
             var f = surface;
             var norm = f.NormalAt(0.5, 0.5);
-            var floorBaseNorm = new RH.Vector3d(0, 0, -1);
-            var roofBaseNorm = new RH.Vector3d(0, 0, 1);
+
 
             var face = new HB.Face(
                     $"Face_{Guid.NewGuid()}",
@@ -94,7 +94,7 @@ namespace HoneybeeRhino
                     new HB.FacePropertiesAbridged()
                     );
 
-            var isGround = surface.PointAt(0.5, 0.5).Z <= 0;
+            var isGround = RH.AreaMassProperties.Compute(surface).Centroid.Z <= 0;
             if (isGround)
             {
                 face.BoundaryCondition = new HB.Ground();
@@ -140,16 +140,7 @@ namespace HoneybeeRhino
         }
 
 
-
-
-
-        //public static HB.Room ToRoom(this RH.Extrusion extrusion, double maxRoofFloorAngle = 30)
-        //{
-        //    return extrusion.ToBrep().ToRoom(maxRoofFloorAngle);
-        //}
-
-
-        public static HB.Aperture ToAperture(this RH.Surface singleSurface, Guid hostID)
+        public static HB.Aperture ToAperture(this RH.BrepFace singleSurface, Guid hostID)
         {
             if (singleSurface.IsPlanar())
             {
