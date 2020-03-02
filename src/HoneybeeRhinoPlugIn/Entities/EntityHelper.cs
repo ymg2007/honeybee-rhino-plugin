@@ -125,7 +125,11 @@ namespace HoneybeeRhino.Entities
                         dup.Duplicate(faceEnt);
                         srf.UserData.Add(dup);
                     }
+                    //clean temp tag for face
+                    srf.GetUserStrings().Remove("HBDataID");
                 }
+                //clean temp tag for room
+                honeybeeObj.GetUserStrings().Remove("HBDataID");
                 return honeybeeObj;
 
             }
