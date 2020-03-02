@@ -227,7 +227,7 @@ namespace HoneybeeRhino.Entities
         }
         public HB.RoomEnergyPropertiesAbridged GetEnergyProp()
         {
-            return this.HBObject.Properties.Energy;
+            return this.HBObject.Properties.Energy ?? new HB.RoomEnergyPropertiesAbridged();
         }
 
         private static bool CheckIfBrepObjectValid(ObjRef roomObj)
