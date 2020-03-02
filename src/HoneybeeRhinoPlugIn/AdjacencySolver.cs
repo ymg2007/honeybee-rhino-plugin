@@ -23,16 +23,16 @@ namespace HoneybeeRhino
 
         public  IEnumerable<Brep> Execute(double tolerance, bool parallelCompute = false)
         {
-            var checkedObjs = ExecuteIntersectMasses(tolerance, parallelCompute).ToList();
+            var checkedObjs = ExecuteIntersectMasses(this._rooms, tolerance, parallelCompute).ToList();
             //var matchedObj = checkedObjs.Select(_ => _.DuplicateBrep().MatchInteriorFaces(checkedObjs, tolerance));
             return checkedObjs;
 
         }
 
        
-        public IEnumerable<Brep> ExecuteIntersectMasses(double tolerance, bool parallelCompute = false)
+        public IEnumerable<Brep> ExecuteIntersectMasses(IEnumerable<Brep> rooms, double tolerance, bool parallelCompute = false)
         {
-            var allRooms = this._rooms;
+            var allRooms = rooms;
             var totalCount = allRooms.Count();
             if (totalCount <= 1)
                 return allRooms;
@@ -147,10 +147,11 @@ namespace HoneybeeRhino
                     {
                         foreach (var item in newBreps)
                         {
-                            if (item.Faces.Count == 1)
-                            {
-                                item.Surfaces[0].SetUserString("HBDataID", faceEntID);
-                            }
+                            if (item.Faces.Count > 1)
+                                continue;
+
+                            item.Surfaces[0].SetUserString("HBDataID", faceEntID);
+                            item.Surfaces[0].SetUserString("HBDataID_NewName", $"Face_{Guid.NewGuid().ToString()}");
                         }
                     }
 
@@ -181,6 +182,41 @@ namespace HoneybeeRhino
             return currentBrep;
 
         }
+
+        public IEnumerable<Brep> ExecuteMatchInteriorFaces(IEnumerable<Brep> rooms, double tolerance, bool parallelCompute = false)
+        {
+            var allRooms = rooms;
+            var totalCount = allRooms.Count();
+            if (totalCount <= 1)
+                return allRooms;
+
+            //Turn off parallel compute when there are only 10 or less objects.
+            if (totalCount < 10)
+                parallelCompute = false;
+
+            var adjacentCopy = allRooms.Select(_ => _.DuplicateBrep()).ToList();
+
+            try
+            {
+                var checkedRooms = new Brep[totalCount];
+                if (parallelCompute)
+                {
+                    checkedRooms = allRooms.AsParallel().AsOrdered().Select(_ => MatchInteriorFaces(_, adjacentCopy, tolerance)).ToArray();
+                }
+                else
+                {
+                    checkedRooms = allRooms.Select(_ => MatchInteriorFaces(_, adjacentCopy, tolerance)).ToArray();
+                }
+
+                return checkedRooms;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+
+
+        }
         public static Brep MatchInteriorFaces(Brep room, IEnumerable<Brep> otherRooms, double tolerance)
         {
             tolerance = Math.Max(tolerance, Rhino.RhinoMath.ZeroTolerance);
@@ -197,8 +233,6 @@ namespace HoneybeeRhino
             foreach (Brep adjBrep in adjBreps)
             {
                 var adjRoomEnt = adjBrep.TryGetRoomEntity();
-                //var adjFaces = adjBrep.Faces;
-                //var isDup = adjBrep.IsDuplicate(currentBrep, tolerance);
                 if (adjRoomEnt.GroupEntityID == currentRoomEnt.GroupEntityID)
                     continue;
 
@@ -223,14 +257,24 @@ namespace HoneybeeRhino
                         continue;
 
                     var matchedAdjFace = sameCenterFaces.First();
+                    var adjFaceName = adjBrep.Surfaces[matchedAdjFace.SurfaceIndex].GetUserString("HBDataID_NewName");
 
-                    var adjEnt = adjBrep.Surfaces[matchedAdjFace.SurfaceIndex].TryGetFaceEntity();
-                    var curEnt = currentBrep.Surfaces[matchedSubFace.SurfaceIndex].TryGetFaceEntity();
-                    adjEnt.HBObject.BoundaryCondition = new HoneybeeSchema.Surface(new List<string>(2) { curEnt.HBObject.Name, currentRoomEnt.Name });
-                    curEnt.HBObject.BoundaryCondition = new HoneybeeSchema.Surface(new List<string>(2) { adjEnt.HBObject.Name, adjRoomEnt.Name });
+                    var curFace = currentBrep.Surfaces[matchedSubFace.SurfaceIndex];
+                    var curFaceName = curFace.GetUserString("HBDataID_NewName");
+                    //curFace.GetUserStrings().Remove("HBDataID_NewName");
+
+                    var curEnt = curFace.TryGetFaceEntity();
+                    //No need to check adjacent rooms, as all adjacent rooms are duplicated.
+                    //adjEnt.HBObject.BoundaryCondition = new HoneybeeSchema.Surface(new List<string>(2) { curEnt.HBObject.Name, currentRoomEnt.Name });
+
+                    //Rename with current name:
+                    curEnt.HBObject.Name = curFaceName;
+                    curEnt.HBObject.BoundaryCondition = new HoneybeeSchema.Surface(new List<string>(2) { adjFaceName, adjRoomEnt.Name });
+
                 }
 
             }
+
 
 
             return currentBrep;
