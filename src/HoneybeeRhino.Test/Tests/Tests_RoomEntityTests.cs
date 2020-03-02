@@ -77,9 +77,34 @@ namespace HoneybeeRhino.Test
             Assert.IsTrue(ent.IsValid);
             var srfNames = room.Surfaces.Select(_ => _.TryGetFaceEntity().HBObject.Name);
             Assert.AreEqual(ent.HBFaces.Count(), 6);
-            //Assert.IsTrue(ent.HostGeoID != Guid.Empty);
             Assert.AreEqual(srfNames.Count(), 6);
 
+        }
+
+        [Test]
+        public void Test_SingleRoomBoundaryCondition()
+        {
+            var rhinoObj = InitRoomBox();
+            var room = rhinoObj.Brep();
+
+            var faces = room.Faces.Select(_ => _.TryGetFaceEntity().HBObject);
+
+            Assert.IsTrue(faces.Where(_ => _.BoundaryCondition.Obj is HB.Outdoors).Count() == 5);
+            Assert.IsTrue(faces.Where(_ => _.BoundaryCondition.Obj is HB.Ground).Count() == 1);
+        }
+
+        [Test]
+        public void Test_SingleRoomFaceType()
+        {
+            var rhinoObj = InitRoomBox();
+            var room = rhinoObj.Brep();
+
+            var faces = room.Faces.Select(_ => _.TryGetFaceEntity().HBObject);
+
+            Assert.IsTrue(faces.Where(_ => _.FaceType == HB.Face.FaceTypeEnum.Wall).Count() == 4);
+            Assert.IsTrue(faces.Where(_ => _.FaceType == HB.Face.FaceTypeEnum.Floor).Count() == 1);
+            Assert.IsTrue(faces.Where(_ => _.FaceType == HB.Face.FaceTypeEnum.Floor).First().BoundaryCondition.Obj is HB.Ground);
+            Assert.IsTrue(faces.Where(_ => _.FaceType == HB.Face.FaceTypeEnum.RoofCeiling).Count() == 1);
         }
 
         [Test]
