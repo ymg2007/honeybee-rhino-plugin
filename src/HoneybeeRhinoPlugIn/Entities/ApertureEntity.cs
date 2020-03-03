@@ -19,6 +19,20 @@ namespace HoneybeeRhino.Entities
 
         //TODO: override isValid to check if hostID exists
         public override string Description => this.IsValid ? $"HBApertureEntity: {HBObject.Name}" : base.Description;
+
+        public override bool IsValid
+        {
+            get
+            {
+                if (this.HostObjRef == null)
+                    return false;
+                if (this.HostObjRef.Brep() == null)
+                    return false;
+
+                return this.HostObjRef.Brep().IsValid
+                    && this.HBObject != null;
+            }
+        }
         public ApertureEntity()
         {
 
@@ -73,6 +87,8 @@ namespace HoneybeeRhino.Entities
         public static ApertureEntity TryGetFrom(Rhino.Geometry.GeometryBase rhinoGeo)
         {
             var rc = new ApertureEntity();
+            if (rhinoGeo == null)
+                return rc;
             if (!rhinoGeo.IsValid)
                 return rc;
 

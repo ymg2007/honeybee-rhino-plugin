@@ -106,7 +106,7 @@ namespace HoneybeeRhino.Entities
       
         }
 
-        public int ApertureCount => this.Apertures.Count;
+        public int ApertureCount => this.Apertures.Count(_=>_.TryGetApertureEntity().IsValid);
 
         public void AddApertures(IEnumerable<(Brep brep, ObjRef hostObj)> apertures)
         {

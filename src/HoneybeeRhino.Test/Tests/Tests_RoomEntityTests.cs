@@ -449,10 +449,12 @@ namespace HoneybeeRhino.Test
 
             //make window //add to groupEntity
             var processedObj = roomBrepObj.AddAperture(windowObj);
-            Assert.IsTrue(processedObj.aperture != null);
+            Assert.IsTrue(processedObj.apertures.Any());
+
+            var apt = processedObj.apertures.First();
 
             var done = _doc.Objects.Replace(roomObj.ObjectId, processedObj.room);
-            done &= _doc.Objects.Replace(windowObj.ObjectId, processedObj.aperture);
+            done &= _doc.Objects.Replace(apt.id, apt.brep);
             Assert.IsTrue(done);
             Assert.IsTrue(roomObj.Object().IsDeleted == false);
             Assert.IsTrue(windowObj.Object().IsDeleted == false);
@@ -486,8 +488,9 @@ namespace HoneybeeRhino.Test
 
             //make window //add to groupEntity
             var processedObj = roomBrepObj.AddAperture(windowObj);
+            var apt = processedObj.apertures.First();
             var done = _doc.Objects.Replace(roomObj.ObjectId, processedObj.room);
-            done &= _doc.Objects.Replace(windowObj.ObjectId, processedObj.aperture);
+            done &= _doc.Objects.Replace(apt.id, apt.brep);
 
 
             var newRoom = new ObjRef(roomObj.ObjectId);
@@ -587,7 +590,7 @@ namespace HoneybeeRhino.Test
             Assert.IsTrue(faceEnts.Where(_ => _.ApertureObjRefs.Any()).Any());
 
             var newRoomId = _doc.Objects.Add(matchedRoomWindow.room);
-            var newWindId = _doc.Objects.Add(matchedRoomWindow.aperture);
+            var newWindId = _doc.Objects.Add(matchedRoomWindow.apertures.First().brep);
 
             var foundGeo = _doc.Objects.FindId(newRoomId).Geometry;
             faceEnts = Brep.TryConvertBrep(foundGeo).Surfaces.Select(_ => _.TryGetFaceEntity());

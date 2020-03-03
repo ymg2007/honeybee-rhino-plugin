@@ -38,6 +38,7 @@ namespace HoneybeeRhino.RhinoCommands
                 go.GeometryFilter = ObjectType.Brep;
                 go.GroupSelect = false;
                 go.Get();
+
                 if (go.CommandResult() != Result.Success)
                     return go.CommandResult();
 
@@ -51,52 +52,52 @@ namespace HoneybeeRhino.RhinoCommands
 
 
                 //Get Room geometry guid
-                var roomIds = go.Objects().Select(_ => _.ObjectId);
-        
+                //var roomIds = go.Objects().Select(_ => _.ObjectId);
 
-                //Select window geometry.
-                var rc = Rhino.Input.RhinoGet.GetMultipleObjects("Please select planer surfaces as windows to add to rooms", false, ObjectType.Surface, out ObjRef[] SelectedObjs);
-                if (rc != Result.Success)
-                    return rc;
-                if (SelectedObjs == null || SelectedObjs.Length < 1)
-                    return Result.Failure;
 
-                //Check intersection, maybe provide an option for use to split window surfaces for zones.
-                //TODO: do this later
+                var rs = AddApertureBySurface(doc, rooms);
 
-                //prepare BrepObjects
-                var WinObjs = SelectedObjs;
-                var room = rooms.First();
-                var roomBrep = room.Brep();
-                Brep newRoomWithApt = null;
-
-                foreach (var aperture in WinObjs)
-                {
-                    //match window to room 
-                    var matchedRoomApt = room.AddAperture(aperture);
-                    if (matchedRoomApt.aperture == null)
-                        continue;
-
-                    newRoomWithApt = matchedRoomApt.room;
-                    doc.Objects.Replace(aperture.ObjectId, matchedRoomApt.aperture);
-                }
-              
-                if (newRoomWithApt != null)
-                    return Result.Failure;
-
-                //Replace the rhino object in order to be able to undo/redo
-                doc.Objects.Replace(room.ObjectId, newRoomWithApt);
-             
                 doc.Views.Redraw();
 
 
-                return Result.Success;
+                return rs;
             }
         }
 
-        public void checkAddAperture()
+        public Result AddApertureBySurface(RhinoDoc doc, IEnumerable<ObjRef> rooms)
         {
-            //TODO: check co-planner
+            //Select window geometry.
+            var rc = Rhino.Input.RhinoGet.GetMultipleObjects("Please select planer surfaces as windows to add to rooms", false, ObjectType.Surface, out ObjRef[] SelectedObjs);
+            if (rc != Result.Success)
+                return rc;
+            if (SelectedObjs == null || SelectedObjs.Length < 1)
+                return Result.Failure;
+
+            //Check intersection, maybe provide an option for use to split window surfaces for zones.
+            //TODO: do this later
+
+            //prepare BrepObjects
+            var WinObjs = SelectedObjs.ToList();
+            var room = rooms.First();
+            var roomBrep = room.Brep();
+
+            //match window to room 
+            var matchedRoomApts = room.AddApertures(WinObjs);
+            var apts = matchedRoomApts.apertures;
+
+            if (!apts.Any())
+                return Result.Failure;
+
+            foreach (var aperture in apts)
+            {
+                doc.Objects.Replace(aperture.id, aperture.brep);
+            }
+
+
+            //Replace the rhino object in order to be able to undo/redo
+            doc.Objects.Replace(room.ObjectId, matchedRoomApts.room);
+
+            return Result.Success;
 
 
         }

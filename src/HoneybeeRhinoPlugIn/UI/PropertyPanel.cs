@@ -65,7 +65,7 @@ namespace HoneybeeRhino.UI
 
                 var faceItems = validApertures.Select(_ => _.TryGetApertureEntity().HBObject).Select(_ => new ListItem() { Text =_.Name, Tag = _ });
                 apertureLBox.Items.AddRange(faceItems);
-                faceCount = apertures.Count;
+               
             }
             layout.AddSeparateRow(new Label { Text = $"Apertures: (total: {faceCount})" });
             layout.AddSeparateRow(apertureLBox);
