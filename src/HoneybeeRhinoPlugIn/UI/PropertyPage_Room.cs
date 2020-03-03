@@ -10,7 +10,7 @@ namespace HoneybeeRhino.UI
         private PropertyPanel panelUI;
         public override object PageControl => panelUI ?? (panelUI = new PropertyPanel());
 
-        public override string EnglishPageTitle => "HoneybeeRoom";
+        public override string EnglishPageTitle => "HBRoom";
        
         public override ObjectType SupportedTypes => ObjectType.Brep;
 
@@ -33,7 +33,11 @@ namespace HoneybeeRhino.UI
             if (!gpEnts.Any()) return false;
             if (gpEnts.Count() > 1) return false;
             if (!gpEnts.First().IsValid) return false;
-          
+
+            var isApertureOnly = e.Objects.Count() == 1 && e.Objects[0].Geometry.TryGetApertureEntity().IsValid;
+            if (isApertureOnly)
+                return false;
+
             this._HBObjEntity = gpEnts.First().Room.TryGetRoomEntity();
             return this._HBObjEntity.IsValid;
       

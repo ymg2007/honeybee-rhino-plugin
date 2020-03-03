@@ -10,7 +10,7 @@ namespace HoneybeeRhino.UI
         private PropertyPanel panelUI;
         public override object PageControl => panelUI ?? (panelUI = new PropertyPanel());
 
-        public override string EnglishPageTitle => "HoneybeeFace";
+        public override string EnglishPageTitle => "HBFace";
        
         public override ObjectType SupportedTypes => ObjectType.Brep;
 

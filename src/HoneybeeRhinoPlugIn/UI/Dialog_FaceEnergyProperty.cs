@@ -86,10 +86,7 @@ namespace HoneybeeRhino.UI
             return dp;
 
         }
-        private DropDown MakeDropDown<T>(T currentValue, Action<T> setAction, IEnumerable<T> valueLibrary, string defaultItemName = default) where T : HB.INamed
-        {
-            return MakeDropDown(currentValue?.Name, setAction, valueLibrary, defaultItemName);
-        }
+     
 
     }
 }
