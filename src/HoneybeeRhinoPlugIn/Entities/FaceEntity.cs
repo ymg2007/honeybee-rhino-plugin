@@ -59,12 +59,14 @@ namespace HoneybeeRhino.Entities
             base.Deserialize(dic);
             var json = dic.GetString("HBData");
             this.HBObject = HB.Face.FromJson(json);
+            this.ApertureObjRefs = dic[nameof(ApertureObjRefs)] as List<ObjRef>;
         }
 
         private protected override ArchivableDictionary Serialize()
         {
             var dic = base.Serialize();
             dic.Set("HBData", this.HBObject.ToJson());
+            dic.Set(nameof(ApertureObjRefs), ApertureObjRefs);
             return dic;
         }
 
