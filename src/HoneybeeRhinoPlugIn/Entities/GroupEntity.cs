@@ -163,6 +163,9 @@ namespace HoneybeeRhino.Entities
                 //Check if object is visible or locked. deleted
                 var obj = item.Object();
 
+                if (obj == null)
+                    continue; 
+
                 if (!obj.IsValid)
                     continue;
                 

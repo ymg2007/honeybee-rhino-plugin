@@ -57,10 +57,13 @@ namespace HoneybeeRhino.UI
             var apertureLBox = new ListBox();
             apertureLBox.Height = 100;
             var apertures = hbObjEntity.ApertureObjRefs;
-            var faceCount = apertures.Count();
+            var faceCount = 0;
             if (apertures != null)
             {
-                var faceItems = apertures.Select(_ => _.TryGetApertureEntity().HBObject).Select(_ => new ListItem() { Text =_.Name, Tag = _ });
+                var validApertures = apertures.Where(_ => _.TryGetApertureEntity().IsValid);
+                faceCount = validApertures.Count();
+
+                var faceItems = validApertures.Select(_ => _.TryGetApertureEntity().HBObject).Select(_ => new ListItem() { Text =_.Name, Tag = _ });
                 apertureLBox.Items.AddRange(faceItems);
                 faceCount = apertures.Count;
             }
