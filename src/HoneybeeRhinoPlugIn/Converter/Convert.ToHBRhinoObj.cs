@@ -45,11 +45,11 @@ namespace HoneybeeRhino
         public static RH.Brep ToApertureBrep(this RH.GeometryBase apertureGeo, Guid hostID)
         {
             var geo = Rhino.Geometry.Brep.TryConvertBrep(apertureGeo);
-           
-            if (geo.IsSurface && geo.Faces.First().UnderlyingSurface().IsPlanar())
+
+            var faces = geo.Faces;
+            if (faces.Count ==1 && faces.First().UnderlyingSurface().IsPlanar())
             {
-                //TODO: shinkFace
-                var hbobj = geo.Faces.First().ToAperture(hostID);
+                var hbobj = faces.First().ToAperture(hostID);
                 var ent = new Entities.ApertureEntity(hbobj);
                 ent.HostObjRef = new ObjRef( hostID);
                 geo.UserData.Add(ent);
