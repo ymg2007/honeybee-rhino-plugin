@@ -141,6 +141,104 @@ namespace HoneybeeRhino.UI
             }
         }
 
+        public void updateAperturePanel(ApertureEntity hbObjEntity)
+        {
+
+            var apt = hbObjEntity.HBObject;
+            var layout = new DynamicLayout { };
+            layout.Spacing = new Size(5, 5);
+            layout.Padding = new Padding(10);
+            layout.DefaultSpacing = new Size(2, 2);
+
+
+            layout.AddSeparateRow(new Label { Text = $"ID: {apt.Name}" });
+
+            layout.AddSeparateRow(new Label { Text = "Name:" });
+            var nameTBox = new TextBox() { };
+            nameTBox.TextBinding.Bind(apt, m => m.DisplayName ?? $"My Aperture {apt.Name.Substring(8, 5)}");
+            layout.AddSeparateRow(nameTBox);
+
+
+            layout.AddSeparateRow(new Label { Text = "Operable:" });
+            var operableCBox = new CheckBox();
+            operableCBox.CheckedBinding.Bind(apt, v => v.IsOperable);
+            layout.AddSeparateRow(operableCBox);
+
+
+            layout.AddSeparateRow(new Label { Text = "Boundary Condition:" });
+            var bcTBox = new TextBox() { };
+            bcTBox.Enabled = false;
+            bcTBox.TextBinding.Bind(apt, m => m.BoundaryCondition.Obj.GetType().Name);
+            layout.AddSeparateRow(bcTBox);
+
+
+            layout.AddSeparateRow(new Label { Text = "Properties:" });
+            var faceRadPropBtn = new Button { Text = "Face Radiance Properties (WIP)" };
+            faceRadPropBtn.Click += (s, e) => Dialogs.ShowMessage("Work in progress", "Honeybee");
+            layout.AddSeparateRow(faceRadPropBtn);
+            var faceEngPropBtn = new Button { Text = "Face Energy Properties" };
+            faceEngPropBtn.Click += (s, e) => PropBtn_Click(hbObjEntity);
+            layout.AddSeparateRow(faceEngPropBtn);
+
+
+
+            layout.AddSeparateRow(new Label { Text = "IndoorShades:" });
+            var inShadesListBox = new ListBox();
+            inShadesListBox.Height = 50;
+            var inShds = apt.IndoorShades;
+            if (inShds != null)
+            {
+                var idShds = inShds.Select(_ => new ListItem() { Text = _.DisplayName ?? _.Name, Tag = _ });
+                inShadesListBox.Items.AddRange(idShds);
+            }
+            layout.AddSeparateRow(inShadesListBox);
+
+            layout.AddSeparateRow(new Label { Text = "OutdoorShades:" });
+            var outShadesListBox = new ListBox();
+            outShadesListBox.Height = 50;
+            var outShds = apt.OutdoorShades;
+            if (outShds != null)
+            {
+                var outShdItems = outShds.Select(_ => new ListItem() { Text = _.DisplayName ?? _.Name, Tag = _ });
+                outShadesListBox.Items.AddRange(outShdItems);
+            }
+            layout.AddSeparateRow(outShadesListBox);
+
+
+            layout.Add(null);
+            var data_button = new Button { Text = "Honeybee Data" };
+            data_button.Click += (sender, e) => Dialogs.ShowEditBox("Honeybee Data", "Honeybee Data can be shared across all platforms.", apt.ToJson(), true, out string outJson);
+            layout.AddSeparateRow(data_button, null);
+
+
+            this.Content = layout;
+            //layout.up
+
+            void PropBtn_Click(Entities.ApertureEntity ent)
+            {
+                var energyProp = ent.HBObject.Properties.Energy ?? new ApertureEnergyPropertiesAbridged();
+                energyProp = ApertureEnergyPropertiesAbridged.FromJson(energyProp.ToJson());
+                var dialog = new UI.Dialog_ApertureEnergyProperty(energyProp);
+                dialog.RestorePosition();
+                var dialog_rc = dialog.ShowModal(RhinoEtoApp.MainWindow);
+                dialog.SavePosition();
+                if (dialog_rc != null)
+                {
+                    //replace brep in order to add an undo history
+                    var undo = Rhino.RhinoDoc.ActiveDoc.BeginUndoRecord("Set Honeybee aperture energy properties");
+
+                    var dup = ent.HostObjRef.Brep().DuplicateBrep();
+                    dup.TryGetApertureEntity().HBObject.Properties.Energy = dialog_rc;
+                    Rhino.RhinoDoc.ActiveDoc.Objects.Replace(ent.HostObjRef.ObjectId, dup);
+
+                    Rhino.RhinoDoc.ActiveDoc.EndUndoRecord(undo);
+
+                }
+
+            }
+        }
+
+
         public void updateRoomPanel(RoomEntity hbObjEntity)
         {
 

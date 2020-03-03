@@ -200,8 +200,10 @@ namespace HoneybeeRhino
         {
             var roomProp = new UI.PropertyPage_Room();
             var faceProp = new UI.PropertyPage_Face();
+            var aptProp = new UI.PropertyPage_Aperture();
             pages.Add(roomProp);
             pages.Add(faceProp);
+            pages.Add(aptProp);
         }
 
 
