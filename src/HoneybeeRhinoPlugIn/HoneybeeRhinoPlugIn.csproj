@@ -90,10 +90,11 @@
     <Compile Include="RhinoCommands\HB_SolveAdjacency.cs" />
     <Compile Include="HoneybeeRhinoPlugIn.cs" />
     <Compile Include="Runner.cs" />
-    <Compile Include="UI\HBModelDialog.cs" />
-    <Compile Include="UI\FaceEnergyPropertyDialog.cs" />
-    <Compile Include="UI\RoomEnergyPropertyDialog.cs" />
-    <Compile Include="UI\PropertyPage.cs" />
+    <Compile Include="UI\Dialog_HBModel.cs" />
+    <Compile Include="UI\Dialog_FaceEnergyProperty.cs" />
+    <Compile Include="UI\PropertyPage_Face.cs" />
+    <Compile Include="UI\Dialog_RoomEnergyProperty.cs" />
+    <Compile Include="UI\PropertyPage_Room.cs" />
     <Compile Include="UI\PropertyPanel.cs" />
     <Compile Include="RoomEntityMouseCallback.cs" />
     <Compile Include="Utilities\Utility.cs" />

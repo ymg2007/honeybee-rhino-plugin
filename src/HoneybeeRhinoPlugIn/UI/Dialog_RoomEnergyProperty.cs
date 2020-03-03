@@ -6,10 +6,10 @@ using HB = HoneybeeSchema;
 using System;
 namespace HoneybeeRhino.UI
 {
-    public class RoomEnergyPropertyDialog: Dialog<HB.RoomEnergyPropertiesAbridged>
+    public class Dialog_RoomEnergyProperty: Dialog<HB.RoomEnergyPropertiesAbridged>
     {
      
-        public RoomEnergyPropertyDialog(HB.RoomEnergyPropertiesAbridged roomEnergyProperties)
+        public Dialog_RoomEnergyProperty(HB.RoomEnergyPropertiesAbridged roomEnergyProperties)
         {
             var EnergyProp = roomEnergyProperties?? new HB.RoomEnergyPropertiesAbridged();
 

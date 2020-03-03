@@ -6,10 +6,10 @@ using HB = HoneybeeSchema;
 using System;
 namespace HoneybeeRhino.UI
 {
-    public class FaceEnergyPropertyDialog: Dialog<HB.FaceEnergyPropertiesAbridged>
+    public class Dialog_FaceEnergyProperty: Dialog<HB.FaceEnergyPropertiesAbridged>
     {
      
-        public FaceEnergyPropertyDialog(HB.FaceEnergyPropertiesAbridged faceEnergyProperties)
+        public Dialog_FaceEnergyProperty(HB.FaceEnergyPropertiesAbridged faceEnergyProperties)
         {
             var EnergyProp = faceEnergyProperties?? new HB.FaceEnergyPropertiesAbridged();
 

@@ -5,12 +5,12 @@ using System.Linq;
 
 namespace HoneybeeRhino.UI
 {
-    public class PropertyPage : ObjectPropertiesPage
+    public class PropertyPage_Face : ObjectPropertiesPage
     {
         private PropertyPanel panelUI;
         public override object PageControl => panelUI ?? (panelUI = new PropertyPanel());
 
-        public override string EnglishPageTitle => "Honeybee";
+        public override string EnglishPageTitle => "HoneybeeFace";
        
         public override ObjectType SupportedTypes => ObjectType.Brep;
 
@@ -38,20 +38,8 @@ namespace HoneybeeRhino.UI
                 this._HBObjEntity = hostRoomObjRef.TryGetFaceEntity(comIndex);
                 return this._HBObjEntity.IsValid;
             }
+            return false;
 
-            //Now checking room group entity.
-            var groupTable = HoneybeeRhinoPlugIn.Instance.GroupEntityTable;
-
-            //Check groupEntity first.
-            //TODO: orphaned object doesn't have groupEntity, deal with this later
-            var gpEnts = e.Objects.Select(_ => _.Geometry.TryGetGroupEntity(groupTable)).Where(_ => _.IsValid).Distinct();
-            //Do not show if there are two or more groups are selected.
-            if (!gpEnts.Any()) return false;
-            if (gpEnts.Count() > 1) return false;
-            if (!gpEnts.First().IsValid) return false;
-          
-            this._HBObjEntity = gpEnts.First().Room.TryGetRoomEntity();
-            return this._HBObjEntity.IsValid;
       
         }
 
@@ -60,11 +48,7 @@ namespace HoneybeeRhino.UI
 
             if (!this._HBObjEntity.IsValid) return;
 
-            if (this._HBObjEntity is RoomEntity rm)
-            {
-                this.panelUI.updateRoomPanel(rm);
-            }
-            else if (this._HBObjEntity is FaceEntity face)
+            if (this._HBObjEntity is FaceEntity face)
             {
                 this.panelUI.updateFacePanel(face);
             }

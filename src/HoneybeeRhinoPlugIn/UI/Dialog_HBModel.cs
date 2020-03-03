@@ -7,10 +7,10 @@ using HB = HoneybeeSchema;
 
 namespace HoneybeeRhino.UI
 {
-    public class HBModelDialog: Dialog<Entities.ModelEntity>
+    public class Dialog_HBModel: Dialog<Entities.ModelEntity>
     {
        
-        public HBModelDialog(Entities.ModelEntity modelEntity)
+        public Dialog_HBModel(Entities.ModelEntity modelEntity)
         {
             var dup = modelEntity.Duplicate();
             var hbModel = dup.HBObject;

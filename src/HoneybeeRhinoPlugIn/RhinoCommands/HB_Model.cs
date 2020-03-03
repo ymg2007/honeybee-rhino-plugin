@@ -34,7 +34,7 @@ namespace HoneybeeRhino.RhinoCommands
             var rc = Result.Cancel;
             if (mode == RunMode.Interactive)
             {
-                var dialog = new UI.HBModelDialog(modelEntity);
+                var dialog = new UI.Dialog_HBModel(modelEntity);
                 dialog.RestorePosition();
                 var dialog_rc = dialog.ShowSemiModal(doc, RhinoEtoApp.MainWindow);
                 dialog.SavePosition();

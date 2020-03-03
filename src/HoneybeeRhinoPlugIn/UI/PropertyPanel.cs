@@ -117,7 +117,7 @@ namespace HoneybeeRhino.UI
             {
                 var energyProp = ent.HBObject.Properties.Energy ?? new FaceEnergyPropertiesAbridged();
                 energyProp = FaceEnergyPropertiesAbridged.FromJson(energyProp.ToJson());
-                var dialog = new UI.FaceEnergyPropertyDialog(energyProp);
+                var dialog = new UI.Dialog_FaceEnergyProperty(energyProp);
                 dialog.RestorePosition();
                 var dialog_rc = dialog.ShowModal(RhinoEtoApp.MainWindow);
                 dialog.SavePosition();
@@ -223,7 +223,7 @@ namespace HoneybeeRhino.UI
             void RmPropBtn_Click(Entities.RoomEntity roomEnt)
             {
                 var roomEnergyProperties = RoomEnergyPropertiesAbridged.FromJson(roomEnt.GetEnergyProp().ToJson());
-                var dialog = new UI.RoomEnergyPropertyDialog(roomEnergyProperties);
+                var dialog = new UI.Dialog_RoomEnergyProperty(roomEnergyProperties);
                 dialog.RestorePosition();
                 var dialog_rc = dialog.ShowModal(RhinoEtoApp.MainWindow);
                 dialog.SavePosition();

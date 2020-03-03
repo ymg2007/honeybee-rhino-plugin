@@ -40,7 +40,7 @@ namespace HoneybeeRhino.RhinoCommands
 
             if (mode == RunMode.Interactive)
             {
-                var dialog = new UI.RoomEnergyPropertyDialog(roomEnergyProperties);
+                var dialog = new UI.Dialog_RoomEnergyProperty(roomEnergyProperties);
                 dialog.RestorePosition();
                 var dialog_rc = dialog.ShowSemiModal(doc, RhinoEtoApp.MainWindow);
                 dialog.SavePosition();

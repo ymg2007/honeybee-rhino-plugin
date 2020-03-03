@@ -198,8 +198,10 @@ namespace HoneybeeRhino
 
         protected override void ObjectPropertiesPages(List<ObjectPropertiesPage> pages)
         {
-            var page = new global::HoneybeeRhino.UI.PropertyPage();
-            pages.Add(page);
+            var roomProp = new UI.PropertyPage_Room();
+            var faceProp = new UI.PropertyPage_Face();
+            pages.Add(roomProp);
+            pages.Add(faceProp);
         }
 
 
