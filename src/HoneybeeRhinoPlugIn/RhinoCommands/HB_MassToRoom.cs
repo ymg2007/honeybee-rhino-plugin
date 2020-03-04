@@ -49,7 +49,6 @@ namespace HoneybeeRhino.RhinoCommands
                 var tb = HoneybeeRhinoPlugIn.Instance.ModelEntityTable;
                 var modelEntity = tb.First().Value;
 
-                var groupEntTable = modelEntity.RoomGroupEntities;
                 foreach (var item in go.Objects())
                 {
                     Func<Brep, bool> func = (b) => doc.Objects.Replace(item, b);
@@ -60,7 +59,7 @@ namespace HoneybeeRhino.RhinoCommands
                         doc.Objects.Replace(item, b);
                     }
                     //Convert Room brep
-                    item.ToRoomBrepObj(func, groupEntTable);
+                    item.ToRoomBrepObj(func);
 
                 }
                 

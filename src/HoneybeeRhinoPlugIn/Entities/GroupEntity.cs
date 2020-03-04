@@ -39,66 +39,66 @@ namespace HoneybeeRhino.Entities
         //}
 
 
-        public void AddToDocument(GroupEntityTable documentGroupEntityTable)
-        {
-            var table = documentGroupEntityTable;
-            var found = table.TryGetValue(this.Guid, out GroupEntity ent);
-            var exist = table.Keys.Any(_ => _ == this.Guid);
-            if (!found)
-            {
-                table.Add(this.Guid, this);
-            }
-            else
-            {
+        //public void AddToDocument(GroupEntityTable documentGroupEntityTable)
+        //{
+        //    var table = documentGroupEntityTable;
+        //    var found = table.TryGetValue(this.Guid, out GroupEntity ent);
+        //    var exist = table.Keys.Any(_ => _ == this.Guid);
+        //    if (!found)
+        //    {
+        //        table.Add(this.Guid, this);
+        //    }
+        //    else
+        //    {
             
-                ent = new GroupEntity(this.Room);
-                ent.Shades.Clear();
-                ent.Apertures.Clear();
-                table[this.Guid] = ent;
+        //        ent = new GroupEntity(this.Room);
+        //        ent.Shades.Clear();
+        //        ent.Apertures.Clear();
+        //        table[this.Guid] = ent;
 
-            }
-        }
+        //    }
+        //}
 
 
-        public bool IsValid
-        {
-            get 
-            {
-                if (this.Room == null)
-                    return false;
-                if (this.Room.Object() == null)
-                    return false;
-                if (this.Room.Object().IsDeleted)
-                    return false;
-                return this.Room.Brep().IsValid; 
-            }
-        }
+        //public bool IsValid
+        //{
+        //    get 
+        //    {
+        //        if (this.Room == null)
+        //            return false;
+        //        if (this.Room.Object() == null)
+        //            return false;
+        //        if (this.Room.Object().IsDeleted)
+        //            return false;
+        //        return this.Room.Brep().IsValid; 
+        //    }
+        //}
         /// <summary>
         /// Use this method to update honeybee geometry based on its rhino object holder.
-        /// </summary>
-        public HB.Room GetCompleteHBRoom()
-        {
-            var doc = RhinoDoc.ActiveDoc.Objects;
+        ///// </summary>
+        //public HB.Room GetCompleteHBRoom()
+        //{
+        //    var doc = RhinoDoc.ActiveDoc.Objects;
 
-            //Get room 
-            //Get read rhino brep
-            var roomObj = this.Room.Brep();
-            if (roomObj == null)
-                throw new ArgumentNullException("Room object has been deleted!, this group entity is not valid");
+        //    //Get room 
+        //    //Get read rhino brep
+        //    var roomObj = this.Room.Brep();
+        //    if (roomObj == null)
+        //        throw new ArgumentNullException("Room object has been deleted!, this group entity is not valid");
 
-            var roomEnt = roomObj.TryGetRoomEntity();
+        //    var roomEnt = roomObj.TryGetRoomEntity();
 
-            //Update room geometry
-            var room = roomEnt.GetHBRoom(recomputeGeometry:true);
+        //    //Update room geometry
+        //    var room = roomEnt.GetHBRoom(recomputeGeometry:true);
            
-            //TODO: get apertures
-            //TODO: add apertures to room.
-            //TODO: get shades
-            //TODO: add shades to room.
+        //    //TODO: get apertures
+        //    //TODO: add apertures to room.
+        //    //TODO: get shades
+        //    //TODO: add shades to room.
 
-            return room;
+        //    return room;
 
-        }
+        //}
 
         protected override void OnDuplicate(UserData source)
         {
@@ -106,24 +106,24 @@ namespace HoneybeeRhino.Entities
       
         }
 
-        public int ApertureCount => this.Apertures.Count(_=>_.TryGetApertureEntity().IsValid);
+        //public int ApertureCount => this.Apertures.Count(_=>_.TryGetApertureEntity().IsValid);
 
-        public void AddApertures(IEnumerable<(Brep brep, ObjRef hostObj)> apertures)
-        {
-            //var docObjs = RhinoDoc.ActiveDoc.Objects;
+        //public void AddApertures(IEnumerable<(Brep brep, ObjRef hostObj)> apertures)
+        //{
+        //    //var docObjs = RhinoDoc.ActiveDoc.Objects;
 
-            foreach (var apt in apertures)
-            {
-                //var aperture = docObjs.FindId(id) as BrepObject;
-                var aptEnt = apt.brep.TryGetApertureEntity();
-                if (!aptEnt.IsValid)
-                    throw new ArgumentException("Some input geometries are not valid aperture object!");
+        //    foreach (var apt in apertures)
+        //    {
+        //        //var aperture = docObjs.FindId(id) as BrepObject;
+        //        var aptEnt = apt.brep.TryGetApertureEntity();
+        //        if (!aptEnt.IsValid)
+        //            throw new ArgumentException("Some input geometries are not valid aperture object!");
 
-                aptEnt.GroupEntityID = this.Room.ObjectId;
-                this.Apertures.Add(apt.hostObj);
-            }
+        //        aptEnt.GroupEntityID = this.Room.ObjectId;
+        //        this.Apertures.Add(apt.hostObj);
+        //    }
 
-        }
+        //}
         public void AddApertures(IEnumerable<ObjRef> apertures)
         {
             foreach (var apt in apertures)
@@ -138,104 +138,76 @@ namespace HoneybeeRhino.Entities
 
         }
 
-        //========================= Select and highlight ========================
-        #region Select and highlight
+        ////========================= Select and highlight ========================
+        //#region Select and highlight
 
-        public bool SelectRoom() => SelectHighlight(new ObjRef[] { this.Room });
+        //public bool SelectRoom() => SelectHighlight(new ObjRef[] { this.Room });
 
-        public bool SelectApertures() => SelectHighlight(this.Apertures);
+        //public bool SelectApertures() => SelectHighlight(this.Apertures);
 
-        public bool SelectShades() => SelectHighlight(this.Shades);
+        //public bool SelectShades() => SelectHighlight(this.Shades);
 
-        public bool SelectEntireEntity()
-        {
-            return this.SelectRoom() &&
-                this.SelectApertures() &&
-                this.SelectShades();
-        }
+        //public bool SelectEntireEntity()
+        //{
+        //    return this.SelectRoom() &&
+        //        this.SelectApertures() &&
+        //        this.SelectShades();
+        //}
 
-        private bool SelectHighlight(IEnumerable<ObjRef> objects)
-        {
-            
-            var rc = true;
-            foreach (var item in objects)
-            {
-                //Check if object is visible or locked. deleted
-                var obj = item.Object();
+      
+        //#endregion
 
-                if (obj == null)
-                    continue; 
-
-                if (!obj.IsValid)
-                    continue;
-                
-                if (obj.IsLocked || obj.IsDeleted || obj.IsHidden)
-                    continue;
-
-                //the entire object (including subobjects) is already selected
-                //Do nothing
-                if (obj.IsSelected(false) == 2)
-                    continue;
-
-                //Select and highlight obj
-                rc = rc && RhinoDoc.ActiveDoc.Objects.Select(item.ObjectId, true, true);
-
-            }
-            return rc;
-        }
-        #endregion
-
-        //========================= Read/Write ==================================
-        #region Read/Write
-        public override bool ShouldWrite => this.IsValid;
+        ////========================= Read/Write ==================================
+        //#region Read/Write
+        //public override bool ShouldWrite => this.IsValid;
 
 
-        protected override bool Read(BinaryArchiveReader archive)
-        {
-            return this.ReadArchive(archive);
-        }
-        protected override bool Write(BinaryArchiveWriter archive)
-        {
-            return WriteToArchive(archive);
-        }
+        //protected override bool Read(BinaryArchiveReader archive)
+        //{
+        //    return this.ReadArchive(archive);
+        //}
+        //protected override bool Write(BinaryArchiveWriter archive)
+        //{
+        //    return WriteToArchive(archive);
+        //}
 
-        public bool ReadArchive(BinaryArchiveReader archive)
-        {
-            archive.Read3dmChunkVersion(out var major, out var minor);
-            if (major == 1 && minor == 0)
-            {
-                var dic = archive.ReadDictionary();
-                Deserialize(dic);
-            }
-            return !archive.ReadErrorOccured;
-        }
+        //public bool ReadArchive(BinaryArchiveReader archive)
+        //{
+        //    archive.Read3dmChunkVersion(out var major, out var minor);
+        //    if (major == 1 && minor == 0)
+        //    {
+        //        var dic = archive.ReadDictionary();
+        //        Deserialize(dic);
+        //    }
+        //    return !archive.ReadErrorOccured;
+        //}
 
-        public bool WriteToArchive(BinaryArchiveWriter archive)
-        {
-            archive.Write3dmChunkVersion(1, 0);
+        //public bool WriteToArchive(BinaryArchiveWriter archive)
+        //{
+        //    archive.Write3dmChunkVersion(1, 0);
 
-            var dic = Serialize();
-            archive.WriteDictionary(dic);
-            return !archive.WriteErrorOccured;
-        }
+        //    var dic = Serialize();
+        //    archive.WriteDictionary(dic);
+        //    return !archive.WriteErrorOccured;
+        //}
 
-        private ArchivableDictionary Serialize()
-        {
-            var dic = new ArchivableDictionary();
-            dic.Set(nameof(this.Room), Room);
-            dic.Set(nameof(this.Apertures), this.Apertures);
-            dic.Set(nameof(this.Shades), this.Shades);
-            return dic;
-        }
+        //private ArchivableDictionary Serialize()
+        //{
+        //    var dic = new ArchivableDictionary();
+        //    dic.Set(nameof(this.Room), Room);
+        //    dic.Set(nameof(this.Apertures), this.Apertures);
+        //    dic.Set(nameof(this.Shades), this.Shades);
+        //    return dic;
+        //}
 
-        private void Deserialize(ArchivableDictionary dictionary)
-        {
-            var dic = dictionary;
-            this.Room = dic[nameof(this.Room)] as ObjRef;
-            this.Apertures = (dic[nameof(this.Apertures)] as IEnumerable<ObjRef>).ToList();
-            this.Shades = (dic[nameof(this.Shades)] as IEnumerable<ObjRef>).ToList();
-        }
-        #endregion
+        //private void Deserialize(ArchivableDictionary dictionary)
+        //{
+        //    var dic = dictionary;
+        //    this.Room = dic[nameof(this.Room)] as ObjRef;
+        //    this.Apertures = (dic[nameof(this.Apertures)] as IEnumerable<ObjRef>).ToList();
+        //    this.Shades = (dic[nameof(this.Shades)] as IEnumerable<ObjRef>).ToList();
+        //}
+        //#endregion
 
 
         //========================= Helpers ===================================
@@ -249,52 +221,52 @@ namespace HoneybeeRhino.Entities
         //    return ent;
         //}
 
-        public static GroupEntity TryGetFromID(Guid roomID, GroupEntityTable groupEntityTable)
-        {
-            GroupEntity rc = new GroupEntity();
-            var found = groupEntityTable.TryGetValue(roomID, out GroupEntity ent);
-            return found ? ent : rc;
-        }
+        //public static GroupEntity TryGetFromID(Guid roomID, GroupEntityTable groupEntityTable)
+        //{
+        //    GroupEntity rc = new GroupEntity();
+        //    var found = groupEntityTable.TryGetValue(roomID, out GroupEntity ent);
+        //    return found ? ent : rc;
+        //}
 
-        public static GroupEntity TryGetFrom(GeometryBase obj, GroupEntityTable groupEntityTable)
-        {
-            GroupEntity rc = new GroupEntity();
-            if (obj == null)
-                return rc;
+        //public static GroupEntity TryGetFrom(GeometryBase obj, GroupEntityTable groupEntityTable)
+        //{
+        //    GroupEntity rc = new GroupEntity();
+        //    if (obj == null)
+        //        return rc;
 
-            Guid groupEntityId = Guid.Empty;
+        //    Guid groupEntityId = Guid.Empty;
 
-            if (obj.IsRoom())
-            {
-                var roomEnt = RoomEntity.TryGetFrom(obj);
-                if (!roomEnt.IsValid)
-                    return rc;
+        //    if (obj.IsRoom())
+        //    {
+        //        var roomEnt = RoomEntity.TryGetFrom(obj);
+        //        if (!roomEnt.IsValid)
+        //            return rc;
 
-                groupEntityId = roomEnt.HostObjRef.ObjectId;
+        //        groupEntityId = roomEnt.HostObjRef.ObjectId;
 
-                //TODO: check if this saved Id == obj.GeometryID
-            }
-            else if (obj.IsAperture())
-            {
-                var roomEnt = ApertureEntity.TryGetFrom(obj);
-                if (!roomEnt.IsValid)
-                    return rc;
+        //        //TODO: check if this saved Id == obj.GeometryID
+        //    }
+        //    else if (obj.IsAperture())
+        //    {
+        //        var roomEnt = ApertureEntity.TryGetFrom(obj);
+        //        if (!roomEnt.IsValid)
+        //            return rc;
 
-                groupEntityId = roomEnt.GroupEntityID;
-                //get aperture entity here
-            }
+        //        groupEntityId = roomEnt.GroupEntityID;
+        //        //get aperture entity here
+        //    }
 
 
-            var entt = HBObjEntity.TryGetFrom(obj);
+        //    var entt = HBObjEntity.TryGetFrom(obj);
 
           
-            //if object is copied, this saved Entity ID will not be valid.
-            var found = groupEntityTable.TryGetValue(groupEntityId, out GroupEntity ent);
-            return found ? ent : rc;
+        //    //if object is copied, this saved Entity ID will not be valid.
+        //    var found = groupEntityTable.TryGetValue(groupEntityId, out GroupEntity ent);
+        //    return found ? ent : rc;
 
 
             
-        }
+        //}
        
 
     }

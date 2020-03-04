@@ -14,15 +14,10 @@ namespace HoneybeeRhino
 {
     public static partial class Convert
     {
-        public static ObjRef ToRoomBrepObj(this ObjRef roomBrepObj, Func<RH.Brep, bool> objectReplaceFunc, GroupEntityTable documentGroupEntityTable, double maxRoofFloorAngle = 30, double tolerance = 0.0001)
+        public static ObjRef ToRoomBrepObj(this ObjRef roomBrepObj, Func<RH.Brep, bool> objectReplaceFunc, double maxRoofFloorAngle = 30, double tolerance = 0.0001)
         {
-           
             var roomEnt = new Entities.RoomEntity(roomBrepObj, objectReplaceFunc);
 
-            //Create new Group Entity
-            var ent = new GroupEntity(roomBrepObj);
-            ent.AddToDocument(documentGroupEntityTable);
-            
             return roomEnt.HostObjRef;
         }
 

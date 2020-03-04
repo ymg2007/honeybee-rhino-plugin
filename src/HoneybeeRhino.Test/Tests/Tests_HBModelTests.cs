@@ -18,7 +18,6 @@ namespace HoneybeeRhino.Test.Tests
     {
         RhinoDoc _doc = RhinoDoc.ActiveDoc;
         double _tol = 0.0001;
-        public GroupEntityTable GroupEntityTable { get; private set; } = new GroupEntityTable();
 
         [Test]
         public void Test_CreateModel()

@@ -25,11 +25,7 @@ namespace HoneybeeRhino.Entities
         public static FaceEntity TryGetFaceEntity(this Surface rhinoRef) => FaceEntity.TryGetFrom(rhinoRef);
 
         public static HBObjEntity TryGetHBObjEntity(this GeometryBase rhinoRef) => HBObjEntity.TryGetFrom(rhinoRef);
-        public static GroupEntity TryGetGroupEntity(this GeometryBase rhinoRef, GroupEntityTable documentGroupEntityTable)
-        {
-            return GroupEntity.TryGetFrom(rhinoRef, documentGroupEntityTable);
-   
-        }
+
         //public static string GetHBJson(this GeometryBase geometry)
         //{
         //    var isHB = geometry.UserDictionary.TryGetString("HBData", out string json);

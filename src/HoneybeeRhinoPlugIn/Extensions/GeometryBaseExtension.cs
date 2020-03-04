@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Rhino.DocObjects;
 using Rhino.Geometry;
 
@@ -174,6 +172,35 @@ namespace HoneybeeRhino
             }
             return solid;
 
+        }
+        public static bool SelectHighlight(this IEnumerable<ObjRef> objects)
+        {
+
+            var rc = true;
+            foreach (var item in objects)
+            {
+                //Check if object is visible or locked. deleted
+                var obj = item.Object();
+
+                if (obj == null)
+                    continue;
+
+                if (!obj.IsValid)
+                    continue;
+
+                if (obj.IsLocked || obj.IsDeleted || obj.IsHidden)
+                    continue;
+
+                //the entire object (including subobjects) is already selected
+                //Do nothing
+                if (obj.IsSelected(false) == 2)
+                    continue;
+
+                //Select and highlight obj
+                rc = rc && Rhino.RhinoDoc.ActiveDoc.Objects.Select(item.ObjectId, true, true);
+
+            }
+            return rc;
         }
 
 

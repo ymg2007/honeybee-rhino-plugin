@@ -4,6 +4,7 @@ using Rhino;
 using Rhino.Commands;
 using Rhino.DocObjects;
 using Rhino.Input.Custom;
+using HoneybeeRhino.Entities;
 
 namespace HoneybeeRhino.RhinoCommands
 {
@@ -28,9 +29,10 @@ namespace HoneybeeRhino.RhinoCommands
 
         protected override Result RunCommand(RhinoDoc doc, RunMode mode)
         {
-            var groups = global::HoneybeeRhino.HoneybeeRhinoPlugIn.Instance.GroupEntityTable;
-            var groupZoneNames = groups.Select(_ => _.Key.ToString());
-            Rhino.UI.Dialogs.ShowEditBox("Ladybug Tools", "All Honeybee Rooms:", string.Join("\n", groupZoneNames), true, out string outJson);
+            var model = HoneybeeRhinoPlugIn.Instance.ModelEntityTable.First().Value;
+
+            var zoneNames = model.RoomEntities.Select(_=>_.Geometry().TryGetRoomEntity()).Where(_=>_.IsValid).Select(_ => _.Name);
+            Rhino.UI.Dialogs.ShowEditBox("Ladybug Tools", "All Honeybee Rooms:", string.Join("\n", zoneNames), true, out string outJson);
             return Result.Success;
         }
     }

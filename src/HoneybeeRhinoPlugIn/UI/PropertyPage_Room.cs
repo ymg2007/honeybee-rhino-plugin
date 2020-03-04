@@ -20,27 +20,20 @@ namespace HoneybeeRhino.UI
 
         public override bool ShouldDisplay(ObjectPropertiesPageEventArgs e)
         {
+            //reset
+            _HBObjEntity = new RoomEntity();
             if (!e.Objects.Any()) return false;
 
+            var roomEnts = e.Objects.Where(_ => _.Geometry.TryGetRoomEntity().IsValid);
+            if (!roomEnts.Any()) return false; 
 
-            //Now checking room group entity.
-            var groupTable = HoneybeeRhinoPlugIn.Instance.GroupEntityTable;
+            //var isApertureOnly = e.Objects.Count() == 1 && e.Objects[0].Geometry.TryGetApertureEntity().IsValid;
+            //if (isApertureOnly)
+            //    return false;
 
-            //Check groupEntity first.
-            //TODO: orphaned object doesn't have groupEntity, deal with this later
-            var gpEnts = e.Objects.Select(_ => _.Geometry.TryGetGroupEntity(groupTable)).Where(_ => _.IsValid).Distinct();
-            //Do not show if there are two or more groups are selected.
-            if (!gpEnts.Any()) return false;
-            if (gpEnts.Count() > 1) return false;
-            if (!gpEnts.First().IsValid) return false;
-
-            var isApertureOnly = e.Objects.Count() == 1 && e.Objects[0].Geometry.TryGetApertureEntity().IsValid;
-            if (isApertureOnly)
-                return false;
-
-            this._HBObjEntity = gpEnts.First().Room.TryGetRoomEntity();
+            this._HBObjEntity = roomEnts.First().Geometry.TryGetRoomEntity();
             return this._HBObjEntity.IsValid;
-      
+
         }
 
         public override void UpdatePage(ObjectPropertiesPageEventArgs e)

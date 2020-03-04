@@ -22,6 +22,7 @@ namespace HoneybeeRhino.Entities
         public string Name => this.HBObject.Name;
         public List<HB.Face> HBFaces => this.HBObject.Faces;
 
+        public int ApertureCount => this.HostObjRef.Brep().Surfaces.Sum(_ => _.TryGetFaceEntity().ApertureObjRefs.Count);
 
         //TODO: override isValid to check if hostID exists
         public override bool IsValid
@@ -87,13 +88,26 @@ namespace HoneybeeRhino.Entities
 #endif
         }
 
-        ////TODO: remove this later
-        //public RoomEntity(HB.Room room, Guid hostID)
-        //{
-        //    this.HBObject = room;
-        //    this.HostObjRef = new ObjRef(hostID);
-        //    this.GroupEntityID = hostID;
-        //}
+    
+        public bool SelectAndHighlight()
+        {
+            var ObjRefs = new List<ObjRef>();
+
+            //select and highlight room
+            ObjRefs.Add(this.HostObjRef);
+
+            //select apertures
+            var apts = this.HostObjRef.Brep().Faces
+                .Select(_ => _.TryGetFaceEntity())
+                .Where(_ => _.IsValid)
+                .SelectMany(_ => _.ApertureObjRefs);
+            ObjRefs.AddRange(apts);
+
+            //TODO: select shades
+
+            return ObjRefs.SelectHighlight();
+
+        }
 
         public HB.Room GetHBRoom(bool recomputeGeometry = false)
         {
@@ -143,12 +157,16 @@ namespace HoneybeeRhino.Entities
         /// Use this for objects were duplicated alone with RhinoObject, but Ids were still referencing old Rhino object ID.
         /// </summary>
         /// <param name="roomObj"></param>
-        public RoomEntity UpdateHost(ObjRef newObj, GroupEntityTable documentGroupEntityTable)
+        public RoomEntity UpdateHost(ObjRef newObj)
         {
+            //update hostRed
+            this.HostObjRef = newObj;
+
             //update HBobject name (ID):
             var newID = newObj.ObjectId;
             this.HBObject.Name = $"Room_{newID}";
             this.HBObject.DisplayName = null;
+
 
             //update subsurfaces:
             var faces = this.HBObject.Faces;
@@ -156,15 +174,10 @@ namespace HoneybeeRhino.Entities
             {
                 face.Name = $"Face_{Guid.NewGuid()}";
                 face.DisplayName = null;
+
             }
 
-            //update hostRed
-            this.HostObjRef = newObj;
-            this.GroupEntityID = newID;
-           
-
-            var ent = new GroupEntity(newObj);
-            ent.AddToDocument(documentGroupEntityTable);
+          
             return this;
         }
         public void Duplicate(RoomEntity otherRoomEntityToCopyFrom)

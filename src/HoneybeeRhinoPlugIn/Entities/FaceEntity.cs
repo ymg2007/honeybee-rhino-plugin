@@ -143,6 +143,18 @@ namespace HoneybeeRhino.Entities
             this.HBObject.Apertures = HBApertures;
         }
 
+        public List<ObjRef> GetApertures()
+        {
+            return this.ApertureObjRefs;
+        }
+
+        public void UpdateApertures(List<(ObjRef newApt, Guid oldID)> apertureMatches)
+        {
+
+            var newApts = this.ApertureObjRefs.Select(_ => apertureMatches.Where(apt => apt.oldID == _.ObjectId).First().newApt);
+            this.ApertureObjRefs = newApts.ToList();
+
+        }
       
     }
 }

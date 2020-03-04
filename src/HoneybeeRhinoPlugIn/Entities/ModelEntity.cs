@@ -11,7 +11,7 @@ namespace HoneybeeRhino.Entities
     {
         public string ModelNameID => this.HBObject.Name;
         public HB.Model HBObject { get; private set; }
-        public GroupEntityTable RoomGroupEntities { get; private set; } = new GroupEntityTable();
+        public List<ObjRef> RoomEntities { get; private set; } = new List<ObjRef>();
         public List<ObjRef> OrphanedFaces { get; private set; } = new List<ObjRef>();
         public List<ObjRef> OrphanedShades { get; private set; } = new List<ObjRef>();
         public List<ObjRef> OrphanedApertures { get; private set; } = new List<ObjRef>();
@@ -48,7 +48,7 @@ namespace HoneybeeRhino.Entities
             var json = this.HBObject.ToJson();
             var model = HB.Model.FromJson(json);
             var newEnt = new ModelEntity(model);
-            newEnt.RoomGroupEntities = this.RoomGroupEntities.Duplicate();
+            newEnt.RoomEntities = new List<ObjRef>(this.RoomEntities);
             newEnt.OrphanedFaces = new List<ObjRef>(this.OrphanedFaces);
             newEnt.OrphanedShades = new List<ObjRef>(this.OrphanedShades);
             newEnt.OrphanedApertures = new List<ObjRef>(this.OrphanedApertures);
@@ -164,10 +164,6 @@ namespace HoneybeeRhino.Entities
                 var dic = archive.ReadDictionary();
                 Deserialize(dic);
 
-                //Takes care of GroupEntityTable
-                var t = new GroupEntityTable();
-                t.ReadDocument(archive);
-                this.RoomGroupEntities = t;
             }
             return !archive.ReadErrorOccured;
         }
@@ -180,8 +176,6 @@ namespace HoneybeeRhino.Entities
             var dic = Serialize();
             archive.WriteDictionary(dic);
 
-            //Takes care of GroupEntityTable
-            RoomGroupEntities.WriteDocument(archive);
             return !archive.WriteErrorOccured;
         }
 

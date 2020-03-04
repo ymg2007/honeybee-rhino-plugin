@@ -32,14 +32,14 @@ namespace HoneybeeRhino.RhinoCommands
         protected override Result RunCommand(RhinoDoc doc, RunMode mode)
         {
 
-            var groupEntities = HoneybeeRhinoPlugIn.Instance.GroupEntityTable.Select(_ => _.Value);
-            var rooms = groupEntities.Where(_=>_.IsValid).Select(_ => _.GetCompleteHBRoom()).ToList();
+            //var groupEntities = HoneybeeRhinoPlugIn.Instance.GroupEntityTable.Select(_ => _.Value);
+            //var rooms = groupEntities.Where(_=>_.IsValid).Select(_ => _.GetCompleteHBRoom()).ToList();
 
 
             var model = HoneybeeRhinoPlugIn.Instance.ModelEntityTable.First().Value.HBObject;
             var modelProp = new HB.ModelProperties(energy: HB.ModelEnergyProperties.Default);
             model.Properties = modelProp;
-            model.Rooms = rooms;
+  
 
          
             var json = model.ToJson();

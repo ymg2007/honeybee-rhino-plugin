@@ -6,6 +6,7 @@ using Rhino.FileIO;
 using Rhino.UI;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 
 namespace HoneybeeRhino
 {
@@ -21,8 +22,6 @@ namespace HoneybeeRhino
     {
         private RoomEntityMouseCallback m_mc;
 
-        //Link GroupEntityTable from ModelEntity
-        public GroupEntityTable GroupEntityTable => this.ModelEntityTable.First().Value.RoomGroupEntities;
         public ModelEntityTable ModelEntityTable { get; private set; } = ModelEntityTable.Init();
         public override Rhino.PlugIns.PlugInLoadTime LoadTime => Rhino.PlugIns.PlugInLoadTime.AtStartup;
         public string ObjectSelectMode { get; set; } = "GroupEntity";
@@ -34,7 +33,6 @@ namespace HoneybeeRhino
             Rhino.RhinoDoc.EndOpenDocument += RhinoDoc_EndOpenDocument; // deal with CopyToClipboard/Paste action
             Rhino.RhinoDoc.BeforeTransformObjects += RhinoDoc_BeforeTransformObjects; //deal with Alt + Gumball drag duplicate action
             Rhino.RhinoDoc.BeginOpenDocument += RhinoDoc_BeginOpenDocument;
-            Rhino.RhinoDoc.CloseDocument += RhinoDoc_OnCloseDocument;
 
 
             if (m_mc == null)
@@ -85,12 +83,12 @@ namespace HoneybeeRhino
             }
         }
 
-        private void RhinoDoc_OnCloseDocument(object sender, DocumentEventArgs e)
-        {
-            // When the document is closed, clear our 
-            // document user data containers.
-            GroupEntityTable.Clear();
-        }
+        //private void RhinoDoc_OnCloseDocument(object sender, DocumentEventArgs e)
+        //{
+        //    // When the document is closed, clear our 
+        //    // document user data containers.
+        //    GroupEntityTable.Clear();
+        //}
 
 
         //this is only being used for temporary container when geometries are copy pasted in.
@@ -127,22 +125,57 @@ namespace HoneybeeRhino
 
             if (this._isObjectCopied)
             {
+                //Dictionary<OldRoomID, (newRoomID, newApertureList)>();
+                Dictionary<Guid, (Guid newRoomId, List<(ObjRef newApt, Guid oldApt)> apertures)> roomAptMatch = 
+                    selectedRooms.ToDictionary(
+                        _=> _.Geometry().TryGetRoomEntity().HostObjRef.ObjectId, 
+                        _=> ( _.ObjectId, new List<(ObjRef, Guid)>())
+                        );
+           
+
                 //check all group entities for new copied objects.
                 foreach (var newAperture in selectedApertures)
                 {
                     //TODO: refactor this later 
-                    newAperture.TryGetApertureEntity().UpdateHostFrom(newAperture);
+                    var ent = newAperture.TryGetApertureEntity();
+                    var oldHost = ent.HostObjRef;
+                    var oldHostRoom = ent.HostRoomObjRef;
+                    if (oldHostRoom != null)
+                    {
+                        //keep tracking of new aperture with its host room
+                        var newMatch = roomAptMatch[oldHostRoom.ObjectId];
+                        newMatch.apertures.Add((newAperture, oldHost.ObjectId));
+
+                        //attach aperture to new host room
+                        ent.HostRoomObjRef = new ObjRef(newMatch.newRoomId);
+                    }
+                    //update host brep
+                    ent.UpdateHostFrom(newAperture);
+                    //TODO: update hostRoomObjRef to new obj
                 }
               
 
-                //TODO: figure out all new copied windows' ownership
+                //update room
                 foreach (var newroom in selectedRooms)
                 {
+                  
                     var roomEnt = newroom.Brep().TryGetRoomEntity();
-                    roomEnt.UpdateHost(newroom, Instance.GroupEntityTable);
-                    
-                    var grpEnt = GroupEntity.TryGetFromID(newroom.ObjectId, Instance.GroupEntityTable);
-                    grpEnt.AddApertures(selectedApertures);
+                    var oldHostId = roomEnt.HostObjRef.ObjectId;
+                    var matchDic = roomAptMatch[oldHostId];
+                    var matchApts = matchDic.apertures;
+
+                    //update sub face entities 
+                    //Figure out all new copied windows' ownership
+                    var brepFaces = newroom.Brep().Faces;
+                    foreach (var bface in brepFaces)
+                    {
+                        var ent = bface.TryGetFaceEntity();
+                        var apts = ent.GetApertures();
+                        ent.UpdateApertures(matchApts);
+                    }
+
+                    roomEnt.UpdateHost(newroom);
+
                 }
                 //reset the flag.
                 this._isObjectCopied = false;
@@ -167,21 +200,21 @@ namespace HoneybeeRhino
             //Only make the room obj as the entry point for selecting the entire group entity.
             foreach (var room in selectedRooms)
             {
-                var entity = room.Geometry().TryGetGroupEntity(Instance.GroupEntityTable);
+                var entity = room.Geometry().TryGetRoomEntity();
                 if (!entity.IsValid)
                     continue;
 
-                entity.SelectEntireEntity();
-                RhinoApp.WriteLine($"Room: {entity.Guid.ToString()}; Window: {entity.ApertureCount}");
+                entity.SelectAndHighlight();
+                RhinoApp.WriteLine($"{entity.Name}; Window: {entity.ApertureCount}");
 
             }
             foreach (var apt in selectedApertures)
             {
-                var entity = apt.Geometry().TryGetGroupEntity(Instance.GroupEntityTable);
+                var entity = apt.Geometry().TryGetApertureEntity();
                 if (!entity.IsValid)
                     continue;
 
-                entity.SelectRoom();
+                entity.SelectAndHighlightRoom();
                
             }
 

@@ -20,14 +20,13 @@ namespace HoneybeeRhino.Test
         System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
         RhinoDoc _doc = RhinoDoc.ActiveDoc;
         double _tol = 0.0001;
-        public GroupEntityTable GroupEntityTable => HoneybeeRhinoPlugIn.Instance.GroupEntityTable;
 
         public ObjRef InitRoomBrepObject(Brep brep)
         {
             var id = _doc.Objects.Add(brep);
             //var rhinoObj = _doc.Objects.FindId(id);
             var rhinoObj = new ObjRef(id);
-            var a =  rhinoObj.ToRoomBrepObj((Brep b) => _doc.Objects.Replace(id, b), GroupEntityTable);
+            var a =  rhinoObj.ToRoomBrepObj((Brep b) => _doc.Objects.Replace(id, b));
             
             return rhinoObj;
         }
@@ -194,7 +193,7 @@ namespace HoneybeeRhino.Test
             var newObj = InitRoomBrepObject(dupGeo);
 
             var ent = dupGeo.TryGetRoomEntity();
-            ent.UpdateHost(newObj, GroupEntityTable);
+            ent.UpdateHost(newObj);
 
             Assert.AreEqual(ent.HBFaces.Count, rhinoObj.TryGetRoomEntity().HBFaces.Count);
             Assert.IsTrue(ent.HostObjRef.ObjectId == newObj.ObjectId);
@@ -430,46 +429,45 @@ namespace HoneybeeRhino.Test
 
 
 
-        [Test]
-        public void Test_GroupEntity()
-        {
-            var file = @"D:\Dev\honeybee-rhino-plugin\src\HoneybeeRhino.Test\TestModels\SingleRoomAndWindow.json";
-            var breps = LoadBrepsFromJson(file);
+        //[Test]
+        //public void Test_GroupEntity()
+        //{
+        //    var file = @"D:\Dev\honeybee-rhino-plugin\src\HoneybeeRhino.Test\TestModels\SingleRoomAndWindow.json";
+        //    var breps = LoadBrepsFromJson(file);
 
 
-            var roomObj = InitBrepObject(breps.First(_ => _.IsSolid));
-            var windowObj = InitBrepObject(breps.First(_ => _.IsSurface));
+        //    var roomObj = InitBrepObject(breps.First(_ => _.IsSolid));
+        //    var windowObj = InitBrepObject(breps.First(_ => _.IsSurface));
 
-            //make room
-            var roomBrepObj = roomObj.ToRoomBrepObj((Brep b) => _doc.Objects.Replace(roomObj.ObjectId, b), GroupEntityTable);
-            var groupID = roomBrepObj.Geometry().TryGetRoomEntity().GroupEntityID;
-            var groupEnt = GroupEntityTable[groupID];
-            Assert.IsTrue(groupID != Guid.Empty);
-            Assert.IsTrue(groupEnt != null);
+        //    //make room
+        //    var roomBrepObj = roomObj.ToRoomBrepObj((Brep b) => _doc.Objects.Replace(roomObj.ObjectId, b));
 
-            //make window //add to groupEntity
-            var processedObj = roomBrepObj.AddAperture(windowObj);
-            Assert.IsTrue(processedObj.apertures.Any());
+        //    Assert.IsTrue(groupID != Guid.Empty);
+        //    Assert.IsTrue(groupEnt != null);
 
-            var apt = processedObj.apertures.First();
+        //    //make window //add to groupEntity
+        //    var processedObj = roomBrepObj.AddAperture(windowObj);
+        //    Assert.IsTrue(processedObj.apertures.Any());
 
-            var done = _doc.Objects.Replace(roomObj.ObjectId, processedObj.room);
-            done &= _doc.Objects.Replace(apt.id, apt.brep);
-            Assert.IsTrue(done);
-            Assert.IsTrue(roomObj.Object().IsDeleted == false);
-            Assert.IsTrue(windowObj.Object().IsDeleted == false);
+        //    var apt = processedObj.apertures.First();
 
-            var newRoom = new ObjRef(roomObj.ObjectId).Object() as BrepObject;
-            if (!newRoom.BrepGeometry.Surfaces.Where(_ => _.TryGetFaceEntity().ApertureObjRefs.Any()).Any())
-                throw new ArgumentException("some thing wrong with assigning aperture!");
+        //    var done = _doc.Objects.Replace(roomObj.ObjectId, processedObj.room);
+        //    done &= _doc.Objects.Replace(apt.id, apt.brep);
+        //    Assert.IsTrue(done);
+        //    Assert.IsTrue(roomObj.Object().IsDeleted == false);
+        //    Assert.IsTrue(windowObj.Object().IsDeleted == false);
 
-            //recheck if aperture is added to groupEntity
-            groupEnt = GroupEntityTable[groupID];
-            Assert.IsTrue(groupEnt.Apertures.First().ObjectId == windowObj.ObjectId);
-            Assert.IsTrue(groupEnt.Room.Object().IsDeleted == false);
-            Assert.IsTrue(groupEnt.Apertures.All(_=>_.Object().IsDeleted == false));
+        //    var newRoom = new ObjRef(roomObj.ObjectId).Object() as BrepObject;
+        //    if (!newRoom.BrepGeometry.Surfaces.Where(_ => _.TryGetFaceEntity().ApertureObjRefs.Any()).Any())
+        //        throw new ArgumentException("some thing wrong with assigning aperture!");
 
-        }
+        //    //recheck if aperture is added to groupEntity
+        //    groupEnt = GroupEntityTable[groupID];
+        //    Assert.IsTrue(groupEnt.Apertures.First().ObjectId == windowObj.ObjectId);
+        //    Assert.IsTrue(groupEnt.Room.Object().IsDeleted == false);
+        //    Assert.IsTrue(groupEnt.Apertures.All(_=>_.Object().IsDeleted == false));
+
+        //}
 
         [Test]
         public void Test_SelectGroupEntity()
@@ -482,9 +480,7 @@ namespace HoneybeeRhino.Test
             var windowObj = InitBrepObject(breps.First(_ => _.IsSurface));
 
             //make room
-            var roomBrepObj = roomObj.ToRoomBrepObj((Brep b) => _doc.Objects.Replace(roomObj.ObjectId, b), GroupEntityTable);
-            var groupID = roomBrepObj.Geometry().TryGetRoomEntity().GroupEntityID;
-            var groupEnt = GroupEntityTable[groupID];
+            var roomBrepObj = roomObj.ToRoomBrepObj((Brep b) => _doc.Objects.Replace(roomObj.ObjectId, b));
 
             //make window //add to groupEntity
             var processedObj = roomBrepObj.AddAperture(windowObj);

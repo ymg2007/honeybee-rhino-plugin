@@ -17,6 +17,7 @@ namespace HoneybeeRhino.Entities
     {
         public HB.Aperture HBObject { get; private set; }
 
+        public ObjRef HostRoomObjRef { get; set; }
         //TODO: override isValid to check if hostID exists
         public override string Description => this.IsValid ? $"HBApertureEntity: {HBObject.Name}" : base.Description;
 
@@ -35,7 +36,6 @@ namespace HoneybeeRhino.Entities
         }
         public ApertureEntity()
         {
-
         }
 
         public ApertureEntity(HB.Aperture hbObj)
@@ -50,6 +50,11 @@ namespace HoneybeeRhino.Entities
                 base.OnDuplicate(source);
                 var json = src.HBObject.ToJson();
                 this.HBObject = HB.Aperture.FromJson(json);
+                if (src.HostRoomObjRef != null)          
+                {
+                    this.HostRoomObjRef = new ObjRef(src.HostRoomObjRef.ObjectId);
+                }
+               
             }
         }
 
@@ -95,6 +100,21 @@ namespace HoneybeeRhino.Entities
             var ent = rhinoGeo.UserData.Find(typeof(ApertureEntity)) as ApertureEntity;
 
             return ent == null ? rc : ent;
+        }
+
+        public bool SelectAndHighlightRoom()
+        {
+            if (this.HostRoomObjRef == null)
+                return false;
+
+            if (this.HostRoomObjRef.Geometry() == null)
+                return false;
+
+            var roomEnt = this.HostRoomObjRef.Geometry().TryGetRoomEntity();
+            if (!roomEnt.IsValid)
+                return false;
+
+            return roomEnt.SelectAndHighlight();
         }
     }
 }

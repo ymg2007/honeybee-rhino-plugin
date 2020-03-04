@@ -28,12 +28,6 @@ namespace HoneybeeRhino
             if (!checkedApertureBreps.Any())
                 return (roomBrep, apertures);
 
-
-            var groupEntity = roomBrep.TryGetGroupEntity(HoneybeeRhinoPlugIn.Instance.GroupEntityTable);
-            //this shouldn't be happening, because all honeybee room must have to be part of a group entity.
-            if (!groupEntity.IsValid)
-                throw new ArgumentException("Failed to get valid group entity from room!");
-
             var roomSrfs = roomBrep.Faces;
             foreach (var roomSrf in roomSrfs)
             {
@@ -58,11 +52,11 @@ namespace HoneybeeRhino
                     //add to room face brep
                     roomSrfEnt.AddAperture(newObjRef, aptBrep);
 
-                    //add to groupEntity.
-                    groupEntity.AddApertures(new (Brep, ObjRef)[] { (aptBrep, newObjRef) });
+                    //link host room objref to aperture entity
+                    aptBrep.TryGetApertureEntity().HostRoomObjRef = new ObjRef(roomObjRef.ObjectId);
+
 
                     apertures.Add((aptBrep, hostId));
-
 
                 }
 

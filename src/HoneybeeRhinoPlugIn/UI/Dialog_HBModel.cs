@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using HB = HoneybeeSchema;
+using HoneybeeRhino.Entities;
 
 namespace HoneybeeRhino.UI
 {
@@ -68,12 +69,12 @@ namespace HoneybeeRhino.UI
             //}
 
             //Room list
-            var rooms = dup.RoomGroupEntities.Where(_ => _.Value.IsValid);
+            var rooms = dup.RoomEntities.Where(_ => _.Geometry().TryGetRoomEntity().IsValid);
             var roomListBox = new ListBox();
             roomListBox.Height = 100;
             foreach (var item in rooms)
             {
-                roomListBox.Items.Add(new ListItem() { Text = $"Room_{ item.Value.Guid }" });
+                roomListBox.Items.Add(new ListItem() { Text = $"Room_{ item.ObjectId }" });
             }
            
             //Create layout
