@@ -59,7 +59,7 @@ namespace HoneybeeRhino.Entities
             base.Deserialize(dic);
             var json = dic.GetString("HBData");
             this.HBObject = HB.Face.FromJson(json);
-            this.ApertureObjRefs = dic[nameof(ApertureObjRefs)] as List<ObjRef>;
+            this.ApertureObjRefs = (dic[nameof(ApertureObjRefs)] as IEnumerable<ObjRef>).ToList();
         }
 
         private protected override ArchivableDictionary Serialize()
@@ -150,6 +150,8 @@ namespace HoneybeeRhino.Entities
 
         public void UpdateApertures(List<(ObjRef newApt, Guid oldID)> apertureMatches)
         {
+            if (!apertureMatches.Any())
+                return;
 
             var newApts = this.ApertureObjRefs.Select(_ => apertureMatches.Where(apt => apt.oldID == _.ObjectId).First().newApt);
             this.ApertureObjRefs = newApts.ToList();

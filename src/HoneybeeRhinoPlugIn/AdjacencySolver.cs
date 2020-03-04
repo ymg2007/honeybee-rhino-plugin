@@ -233,8 +233,6 @@ namespace HoneybeeRhino
             foreach (Brep adjBrep in adjBreps)
             {
                 var adjRoomEnt = adjBrep.TryGetRoomEntity();
-                if (adjRoomEnt.GroupEntityID == currentRoomEnt.GroupEntityID)
-                    continue;
 
                 var matches = currentBrep.GetAdjFaces( adjBrep, tolerance);
                 //ignore this face, and keep its original outdoor, ground, or surface;

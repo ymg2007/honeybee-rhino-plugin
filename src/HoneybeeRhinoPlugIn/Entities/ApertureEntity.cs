@@ -17,7 +17,6 @@ namespace HoneybeeRhino.Entities
     {
         public HB.Aperture HBObject { get; private set; }
 
-        public ObjRef HostRoomObjRef { get; set; }
         //TODO: override isValid to check if hostID exists
         public override string Description => this.IsValid ? $"HBApertureEntity: {HBObject.Name}" : base.Description;
 
@@ -50,11 +49,6 @@ namespace HoneybeeRhino.Entities
                 base.OnDuplicate(source);
                 var json = src.HBObject.ToJson();
                 this.HBObject = HB.Aperture.FromJson(json);
-                if (src.HostRoomObjRef != null)          
-                {
-                    this.HostRoomObjRef = new ObjRef(src.HostRoomObjRef.ObjectId);
-                }
-               
             }
         }
 

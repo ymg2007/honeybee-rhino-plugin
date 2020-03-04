@@ -69,10 +69,6 @@ namespace HoneybeeRhino
         }
         private void RhinoDoc_EndOpenDocument(object sender, DocumentOpenEventArgs e)
         {
-            //reset flags
-            this._isObjectCopied = false;
-            this._mergedCounts = 0;
-
             //Check if object is copied 
             if (e.FileName.EndsWith("tmp") && e.Merge)
             {
@@ -81,6 +77,13 @@ namespace HoneybeeRhino
                 this._mergedCounts = e.Document.Objects.Count - this._mergedCounts;
                 Rhino.RhinoApp.WriteLine($"Total {this._mergedCounts} objects merged");
             }
+            else
+            {
+                //reset flags
+                this._isObjectCopied = false;
+                this._mergedCounts = 0;
+            }
+           
         }
 
         //private void RhinoDoc_OnCloseDocument(object sender, DocumentEventArgs e)
@@ -164,15 +167,19 @@ namespace HoneybeeRhino
                     var matchDic = roomAptMatch[oldHostId];
                     var matchApts = matchDic.apertures;
 
-                    //update sub face entities 
-                    //Figure out all new copied windows' ownership
-                    var brepFaces = newroom.Brep().Faces;
-                    foreach (var bface in brepFaces)
+                    if (matchApts.Any())
                     {
-                        var ent = bface.TryGetFaceEntity();
-                        var apts = ent.GetApertures();
-                        ent.UpdateApertures(matchApts);
+                        //update sub face entities 
+                        //Figure out all new copied windows' ownership
+                        var brepFaces = newroom.Brep().Faces;
+                        foreach (var bface in brepFaces)
+                        {
+                            var ent = bface.TryGetFaceEntity();
+                            //var apts = ent.GetApertures();
+                            ent.UpdateApertures(matchApts);
+                        }
                     }
+                  
 
                     roomEnt.UpdateHost(newroom);
 

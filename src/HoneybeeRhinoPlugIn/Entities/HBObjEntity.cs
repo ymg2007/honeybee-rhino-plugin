@@ -14,7 +14,7 @@ namespace HoneybeeRhino.Entities
     public abstract class HBObjEntity: UserData
     {
         public ObjRef HostObjRef { get; set; }
-        public Guid GroupEntityID { get; set; } = Guid.Empty;
+        public ObjRef HostRoomObjRef { get; set; } //Object is orphaned if HostRoomObjRef is null
         public virtual bool IsValid => this.HostObjRef != null;
         public override bool ShouldWrite => IsValid;
         public override string Description => this.IsValid ? "Honeybee Object Entity" : "An Invalid Honeybee Object Entity";
@@ -25,7 +25,10 @@ namespace HoneybeeRhino.Entities
             if (source is HBObjEntity src)
             {
                 this.HostObjRef = src.HostObjRef;
-                this.GroupEntityID = src.GroupEntityID;
+                if (src.HostRoomObjRef != null)
+                {
+                    this.HostRoomObjRef = new ObjRef(src.HostRoomObjRef.ObjectId);
+                }
             }
 
         }
@@ -50,13 +53,16 @@ namespace HoneybeeRhino.Entities
         private protected virtual ArchivableDictionary Serialize() 
         {
             var dic = new ArchivableDictionary();
-            if (HostObjRef!=null)
+            if (HostObjRef != null)
             {
                 //Subsurfaces have no host ObjRef object
                 dic.Set(nameof(HostObjRef), HostObjRef);
             }
-           
-            dic.Set(nameof(GroupEntityID), GroupEntityID);
+
+            if (HostRoomObjRef != null)
+                dic.Set(nameof(HostRoomObjRef), HostRoomObjRef);
+
+
             return dic;
         }
         private protected virtual void Deserialize(ArchivableDictionary dictionary) 
@@ -68,8 +74,11 @@ namespace HoneybeeRhino.Entities
                 //Subsurfaces have no host ObjRef object
                 this.HostObjRef = obj as ObjRef;
             }
-           
-            this.GroupEntityID = dic.GetGuid(nameof(GroupEntityID));
+
+            if (dic.TryGetValue(nameof(HostRoomObjRef), out object roomObj))
+            {
+                this.HostRoomObjRef = roomObj as ObjRef;
+            }
 
         }
         public static HBObjEntity TryGetFrom(Rhino.Geometry.GeometryBase roomGeo)

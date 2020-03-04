@@ -66,7 +66,7 @@ namespace HoneybeeRhino.Entities
 
             this.HBObject = new HB.Room($"Room_{brepObject.ObjectId}", hbFaces, new HB.RoomPropertiesAbridged());
             this.HostObjRef = brepObject;
-            this.GroupEntityID = brepObject.ObjectId;
+            this.HostRoomObjRef = new ObjRef(brepObject.ObjectId);
 
             //Add this RoomEntity to brep's userdata at the end.
             dupBrep.UserData.Add(this);
@@ -82,7 +82,7 @@ namespace HoneybeeRhino.Entities
             var refreshedObj = new ObjRef(brepObject.ObjectId).Object();
             if (!refreshedObj.Geometry.TryGetRoomEntity().IsValid)
                 throw new ArgumentException("Failed to convert to honeybee room!");
-            if (refreshedObj.Geometry.TryGetRoomEntity().GroupEntityID == Guid.Empty)
+            if (refreshedObj.Geometry.TryGetRoomEntity().HostRoomObjRef == null)
                 throw new ArgumentException("Failed to convert to honeybee room!");
 
 #endif
@@ -101,6 +101,7 @@ namespace HoneybeeRhino.Entities
                 .Select(_ => _.TryGetFaceEntity())
                 .Where(_ => _.IsValid)
                 .SelectMany(_ => _.ApertureObjRefs);
+
             ObjRefs.AddRange(apts);
 
             //TODO: select shades

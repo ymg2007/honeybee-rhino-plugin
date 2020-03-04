@@ -36,7 +36,7 @@ namespace HoneybeeRhino
             if (ent.IsValid)
             {
                 RhinoApp.EscapeKeyPressed += RhinoApp_EscapeKeyPressed;
-                RhinoApp.WriteLine($"Double clicked on: {ent.GroupEntityID}");
+                RhinoApp.WriteLine($"Double clicked on: {ent.Name}");
                 EditingObj = ent.HostObjRef.ObjectId;
                 greiedOutObjs = doc.Objects.Where(_ => (!_.IsHidden) && (!_.IsLocked) && (_.IsSelected(true) == 0)).ToList();
 

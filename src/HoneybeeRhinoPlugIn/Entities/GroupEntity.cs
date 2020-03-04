@@ -124,19 +124,19 @@ namespace HoneybeeRhino.Entities
         //    }
 
         //}
-        public void AddApertures(IEnumerable<ObjRef> apertures)
-        {
-            foreach (var apt in apertures)
-            {
-                var aptEnt = apt.TryGetApertureEntity();
-                if (!aptEnt.IsValid)
-                    throw new ArgumentException("Some input geometries are not valid aperture object!");
+        //public void AddApertures(IEnumerable<ObjRef> apertures)
+        //{
+        //    foreach (var apt in apertures)
+        //    {
+        //        var aptEnt = apt.TryGetApertureEntity();
+        //        if (!aptEnt.IsValid)
+        //            throw new ArgumentException("Some input geometries are not valid aperture object!");
 
-                aptEnt.GroupEntityID = this.Room.ObjectId;
-                this.Apertures.Add(apt);
-            }
+        //        aptEnt.HostRoomObjRef = new ObjRef(this.Room.ObjectId);
+        //        this.Apertures.Add(apt);
+        //    }
 
-        }
+        //}
 
         ////========================= Select and highlight ========================
         //#region Select and highlight
