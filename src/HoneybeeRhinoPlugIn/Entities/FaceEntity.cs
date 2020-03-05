@@ -18,11 +18,13 @@ namespace HoneybeeRhino.Entities
     {
         public HB.Face HBObject { get; private set; }
 
-        private List<ObjRef> _apertureObjRefs = new List<ObjRef>();
-        public List<ObjRef> ApertureObjRefs
+        public List<ObjRef> ApertureObjRefs { get; private set; } = new List<ObjRef>();
+        public List<ObjRef> ApertureObjRefsWithoutHistory
         {
-            get { return this._apertureObjRefs.Where(_ => _.TryGetApertureEntity().IsValid).ToList(); } 
-            private set { _apertureObjRefs = value; } 
+            get 
+            {
+                return this.ApertureObjRefs.Where(_ => _.TryGetApertureEntity().IsValid).ToList();
+            } 
         } 
 
         public override bool IsValid => HBObject != null;
@@ -42,6 +44,7 @@ namespace HoneybeeRhino.Entities
             this.HBObject = hbObj;
         }
 
+
         public void Duplicate(FaceEntity otherFaceEntityToCopyFrom)
         {
             this.OnDuplicate(otherFaceEntityToCopyFrom);
@@ -54,7 +57,7 @@ namespace HoneybeeRhino.Entities
                 base.OnDuplicate(source);
                 var json = src.HBObject.ToJson();
                 this.HBObject = HB.Face.FromJson(json);
-                this.ApertureObjRefs = src.ApertureObjRefs;
+                this.ApertureObjRefs = src.ApertureObjRefsWithoutHistory;
             }
         }
 
@@ -71,7 +74,7 @@ namespace HoneybeeRhino.Entities
         {
             var dic = base.Serialize();
             dic.Set("HBData", this.HBObject.ToJson());
-            dic.Set(nameof(ApertureObjRefs), ApertureObjRefs);
+            dic.Set(nameof(ApertureObjRefs), ApertureObjRefsWithoutHistory);
             return dic;
         }
 
@@ -140,7 +143,7 @@ namespace HoneybeeRhino.Entities
             var apertureEntity = aperture.TryGetApertureEntity();
             if (!apertureEntity.IsValid)
                 throw new ArgumentException("Aperture brep is not a valid Honeybee aperture object!");
-            
+
             this.ApertureObjRefs.Add(apertureObjRef);
 
             var HBApertures = this.HBObject.Apertures?? new List<HB.Aperture>();

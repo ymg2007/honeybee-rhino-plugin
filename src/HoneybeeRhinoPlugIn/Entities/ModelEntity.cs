@@ -12,38 +12,42 @@ namespace HoneybeeRhino.Entities
         public string ModelNameID => this.HBObject.Name;
         public HB.Model HBObject { get; private set; }
 
-        private List<ObjRef> _roomEntities = new List<ObjRef>();
-        private List<ObjRef> _orphanedFaces = new List<ObjRef>();
-        private List<ObjRef> _orphanedShades = new List<ObjRef>();
-        private List<ObjRef> _orphanedApertures = new List<ObjRef>();
-        private List<ObjRef> _orphanedDoors = new List<ObjRef>();
+        public List<ObjRef> RoomEntities { get; private set; } = new List<ObjRef>();
+        public List<ObjRef> OrphanedFaces { get; private set; } = new List<ObjRef>();
+        public List<ObjRef> OrphanedShades { get; private set; } = new List<ObjRef>();
+        public List<ObjRef> OrphanedApertures { get; private set; } = new List<ObjRef>();
+        public List<ObjRef> OrphanedDoors { get; private set; } = new List<ObjRef>();
 
-        public List<ObjRef> RoomEntities
+        public List<ObjRef> RoomEntitiesWithoutHistory
         {
-            get { return this._roomEntities.Where(_ => _.TryGetRoomEntity().IsValid).ToList(); }
-            private set { _roomEntities = value; }
+            get 
+            {
+                return this.RoomEntities.Where(_ => _.TryGetRoomEntity().IsValid).ToList();
+            }
         }
-        public List<ObjRef> OrphanedFaces
+        public List<ObjRef> OrphanedFacesWithoutHistory
         {
-            get { return this._orphanedFaces.Where(_ => _.TryGetOrphanedFaceEntity().IsValid).ToList(); }
-            private set { _orphanedFaces = value; }
+            get 
+            { 
+                return this.OrphanedFaces.Where(_ => _.TryGetOrphanedFaceEntity().IsValid).ToList();
+            }
         }
-        public List<ObjRef> OrphanedShades
+        public List<ObjRef> OrphanedShadesWithoutHistory
         {
             //TODO: add validation later
-            get { return this._orphanedShades; }
-            private set { _orphanedShades = value; }
+            get { return this.OrphanedShades; }
         }
-        public List<ObjRef> OrphanedApertures
+        public List<ObjRef> OrphanedAperturesWithoutHistory
         {
-            get { return this._orphanedApertures.Where(_ => _.TryGetApertureEntity().IsValid).ToList(); }
-            private set { _orphanedApertures = value; }
+            get 
+            {
+                return this.OrphanedApertures.Where(_ => _.TryGetApertureEntity().IsValid).ToList();
+            }
         }
-        public List<ObjRef> OrphanedDoors
+        public List<ObjRef> OrphanedDoorsWithoutHistory
         {
             //TODO: add validation later
-            get { return this._orphanedDoors; }
-            private set { _orphanedDoors = value; }
+            get { return this.OrphanedDoors; }
         }
 
 
@@ -77,11 +81,11 @@ namespace HoneybeeRhino.Entities
             var json = this.HBObject.ToJson();
             var model = HB.Model.FromJson(json);
             var newEnt = new ModelEntity(model);
-            newEnt.RoomEntities = new List<ObjRef>(this.RoomEntities);
-            newEnt.OrphanedFaces = new List<ObjRef>(this.OrphanedFaces);
-            newEnt.OrphanedShades = new List<ObjRef>(this.OrphanedShades);
-            newEnt.OrphanedApertures = new List<ObjRef>(this.OrphanedApertures);
-            newEnt.OrphanedDoors = new List<ObjRef>(this.OrphanedDoors);
+            newEnt.RoomEntities = new List<ObjRef>(this.RoomEntitiesWithoutHistory);
+            newEnt.OrphanedFaces = new List<ObjRef>(this.OrphanedFacesWithoutHistory);
+            newEnt.OrphanedShades = new List<ObjRef>(this.OrphanedShadesWithoutHistory);
+            newEnt.OrphanedApertures = new List<ObjRef>(this.OrphanedAperturesWithoutHistory);
+            newEnt.OrphanedDoors = new List<ObjRef>(this.OrphanedDoorsWithoutHistory);
 
             return newEnt;
         }
@@ -212,10 +216,10 @@ namespace HoneybeeRhino.Entities
         {
             var dic = new ArchivableDictionary();
             dic.Set(nameof(HBObject), HBObject.ToJson());
-            dic.Set(nameof(OrphanedApertures), OrphanedApertures);
-            dic.Set(nameof(OrphanedDoors), OrphanedDoors);
-            dic.Set(nameof(OrphanedFaces), OrphanedFaces);
-            dic.Set(nameof(OrphanedShades), OrphanedShades);
+            dic.Set(nameof(OrphanedApertures), OrphanedAperturesWithoutHistory);
+            dic.Set(nameof(OrphanedDoors), OrphanedDoorsWithoutHistory);
+            dic.Set(nameof(OrphanedFaces), OrphanedFacesWithoutHistory);
+            dic.Set(nameof(OrphanedShades), OrphanedShadesWithoutHistory);
             return dic;
         }
 
