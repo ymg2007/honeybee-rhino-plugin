@@ -11,7 +11,20 @@ namespace HoneybeeRhino
 {
     public static class HoneybeeRhinoExtension
     {
-        public static (Brep room, List<(Brep brep, Guid id)> apertures) AddApertures(this ObjRef roomObjRef, List<ObjRef> apertureObjRefs)
+        public static List<(Brep room, Guid roomId, List<(Brep brep, Guid id)> apertures) > AddApertures(this IEnumerable<ObjRef> roomObjRefs, List<ObjRef> apertureObjRefs)
+        {
+            var processed = new List<(Brep room, Guid roomId, List<(Brep aperture, Guid apertureId)>)>();
+            foreach (var room in roomObjRefs)
+            {
+                var match = room.AddApertures(apertureObjRefs);
+                if (match.apertures.Any())
+                    processed.Add(match);
+
+            }
+            return processed;
+        }
+
+        public static (Brep room, Guid roomId, List<(Brep brep, Guid id)> apertures) AddApertures(this ObjRef roomObjRef, List<ObjRef> apertureObjRefs)
         {
             //Only add to valid room obj
             if (!roomObjRef.IsRoom())
@@ -26,7 +39,7 @@ namespace HoneybeeRhino
 
             //return empty aperture list;
             if (!checkedApertureBreps.Any())
-                return (roomBrep, apertures);
+                return (roomBrep, roomObjRef.ObjectId, apertures);
 
             var roomSrfs = roomBrep.Faces;
             foreach (var roomSrf in roomSrfs)
@@ -62,7 +75,7 @@ namespace HoneybeeRhino
 
             }
 
-            return (roomBrep, apertures);
+            return (roomBrep, roomObjRef.ObjectId, apertures);
 
 
             //Local method ===========================================================================================================
@@ -88,6 +101,9 @@ namespace HoneybeeRhino
 
             IEnumerable<(Brep brep, Guid id)> GetMatchedBreps(BrepFace _bFace, IEnumerable<(Brep brep, Guid id)> _apertureBreps)
             {
+                //Check intersection, maybe provide an option for use to split window surfaces for zones.
+                //TODO: do this later
+
                 var tol = 0.001;
                 var srfBBox = _bFace.GetBoundingBox(false);
                 var intersected = _apertureBreps.Where(_ => _.brep.GetBoundingBox(false).isIntersected(srfBBox, tol));
@@ -98,7 +114,7 @@ namespace HoneybeeRhino
             }
 
         }
-        public static (Brep room, List<(Brep brep, Guid id)> apertures) AddAperture(this ObjRef roomObjRef, ObjRef apertureObjRef) 
+        public static (Brep room, Guid roomId, List<(Brep brep, Guid id)> apertures) AddAperture(this ObjRef roomObjRef, ObjRef apertureObjRef) 
         {
             return roomObjRef.AddApertures(new List<ObjRef>() { apertureObjRef });
         }

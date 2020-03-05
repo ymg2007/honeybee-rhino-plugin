@@ -38,7 +38,7 @@ namespace HoneybeeRhino.RhinoCommands
                 go.GeometryFilter = ObjectType.Brep;
                 go.GroupSelect = false;
                 go.SubObjectSelect = false;
-                go.Get();
+                go.GetMultiple(1, 0);
 
                 if (go.CommandResult() != Result.Success)
                     return go.CommandResult();
@@ -52,24 +52,19 @@ namespace HoneybeeRhino.RhinoCommands
                 if (solidBreps.Count() != rooms.Count())
                 {
                     doc.Objects.UnselectAll();
-                    RhinoApp.WriteLine("Not all solid geometry is Honeybee room, please use MassToRoom to convert these selected objects!");
                     var nonRooms = solidBreps.Where(_ => ! _.Brep().IsRoom());
                     foreach (var item in nonRooms)
                     {
                         doc.Objects.Select(item, true, true);
                     }
-                  
+
+                    doc.Views.Redraw();
+                    Rhino.UI.Dialogs.ShowMessage("These are not Honeybee rooms, please use MassToRoom to convert them first!", "Honeybee Rhino Plugin");
                     return Result.Failure;
                 }
-                   
-
-                var geos = go.Objects().Select(_ => _.Geometry());
-                //Get Room geometry guid
-                //var roomIds = go.Objects().Select(_ => _.ObjectId);
-                //doc.Objects.Add(geos.First().GetBoundingBox(false).ToBrep());
+                  
 
                 var rs = AddApertureBySurface(doc, rooms);
-
                 doc.Views.Redraw();
 
 
@@ -98,29 +93,32 @@ namespace HoneybeeRhino.RhinoCommands
 
                 var SelectedObjs = go2.Objects();
 
-                //Check intersection, maybe provide an option for use to split window surfaces for zones.
-                //TODO: do this later
-
+          
                 //prepare BrepObjects
                 var WinObjs = SelectedObjs.ToList();
-                var room = rooms.First();
-                var roomBrep = room.Brep();
+                //var room = rooms.First();
+                //var roomBrep = room.Brep();
 
                 //match window to room 
-                var matchedRoomApts = room.AddApertures(WinObjs);
-                var apts = matchedRoomApts.apertures;
+                var matchedRoomApts = rooms.AddApertures(WinObjs);
 
-                if (!apts.Any())
-                    return Result.Failure;
-
-                foreach (var aperture in apts)
+                foreach (var match in matchedRoomApts)
                 {
-                    doc.Objects.Replace(aperture.id, aperture.brep);
+                    var apts = match.apertures;
+
+                    if (!apts.Any())
+                        continue;
+
+                    foreach (var aperture in apts)
+                    {
+                        doc.Objects.Replace(aperture.id, aperture.brep);
+                    }
+
+                    //Replace the rhino object in order to be able to undo/redo
+                    doc.Objects.Replace(match.roomId, match.room);
+                    RhinoApp.WriteLine($"{apts.Count} windows have been successfully added to room {match.roomId}");
                 }
-
-
-                //Replace the rhino object in order to be able to undo/redo
-                doc.Objects.Replace(room.ObjectId, matchedRoomApts.room);
+             
 
                 return Result.Success;
 
