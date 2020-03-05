@@ -183,6 +183,10 @@ namespace HoneybeeRhino
 
                     roomEnt.UpdateHost(newroom);
 
+                    //Add to HB Model
+                    var model = HoneybeeRhinoPlugIn.Instance.ModelEntityTable.First().Value;
+                    model.Rooms.Add(new ObjRef(newroom.ObjectId));
+
                 }
                 //reset the flag.
                 this._isObjectCopied = false;

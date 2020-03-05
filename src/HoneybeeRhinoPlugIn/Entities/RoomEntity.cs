@@ -73,10 +73,10 @@ namespace HoneybeeRhino.Entities
                 bFace.UserData.Add(faceEnt);
             }
 
-
+            var newObjRef = new ObjRef(brepObject.ObjectId);
             this.HBObject = new HB.Room($"Room_{brepObject.ObjectId}", hbFaces, new HB.RoomPropertiesAbridged());
-            this.HostObjRef = brepObject;
-            this.HostRoomObjRef = new ObjRef(brepObject.ObjectId);
+            this.HostObjRef = newObjRef;
+            this.HostRoomObjRef = newObjRef;
 
             //Add this RoomEntity to brep's userdata at the end.
             dupBrep.UserData.Add(this);

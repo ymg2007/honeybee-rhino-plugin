@@ -59,7 +59,7 @@ namespace HoneybeeRhino.RhinoCommands
                         doc.Objects.Replace(item, b);
                     }
                     //Convert Room brep
-                    item.ToRoomBrepObj(func);
+                    item.ToRoomBrepObj(func, modelEntity);
 
                 }
                 

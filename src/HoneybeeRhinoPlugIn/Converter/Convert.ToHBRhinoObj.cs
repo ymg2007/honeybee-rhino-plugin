@@ -14,11 +14,13 @@ namespace HoneybeeRhino
 {
     public static partial class Convert
     {
-        public static ObjRef ToRoomBrepObj(this ObjRef roomBrepObj, Func<RH.Brep, bool> objectReplaceFunc, double maxRoofFloorAngle = 30, double tolerance = 0.0001)
+        public static ObjRef ToRoomBrepObj(this ObjRef roomBrepObj, Func<RH.Brep, bool> objectReplaceFunc, ModelEntity model = default, double maxRoofFloorAngle = 30, double tolerance = 0.0001)
         {
             var roomEnt = new Entities.RoomEntity(roomBrepObj, objectReplaceFunc);
-
-            return roomEnt.HostObjRef;
+            var host = roomEnt.HostObjRef;
+            var modelEnt = model ?? HoneybeeRhinoPlugIn.Instance.ModelEntityTable.First().Value;
+            modelEnt.Rooms.Add(host);
+            return host;
         }
 
         

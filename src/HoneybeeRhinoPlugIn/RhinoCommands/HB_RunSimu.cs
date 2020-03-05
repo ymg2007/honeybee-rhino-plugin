@@ -36,17 +36,22 @@ namespace HoneybeeRhino.RhinoCommands
             //var rooms = groupEntities.Where(_=>_.IsValid).Select(_ => _.GetCompleteHBRoom()).ToList();
 
 
-            var model = HoneybeeRhinoPlugIn.Instance.ModelEntityTable.First().Value.HBObject;
+            var modelEnt = HoneybeeRhinoPlugIn.Instance.ModelEntityTable.First().Value;
+            var model = modelEnt.HBObject;
             var modelProp = new HB.ModelProperties(energy: HB.ModelEnergyProperties.Default);
             model.Properties = modelProp;
+            model.Rooms = modelEnt.RoomEntitiesWithoutHistory.Select(_ => _.TryGetRoomEntity().GetHBRoom(true)).ToList();
   
             var json = model.ToJson();
 
             var folder = @"D:\Dev\test\HB";
+            folder = Path.Combine(Path.GetTempPath(), "Honeybee", Path.GetRandomFileName());
+            Directory.CreateDirectory(folder);
+
             var modelPath = Path.Combine(folder, "model.json");
             File.WriteAllText(modelPath, json);
 
-            var cmdString = $"honeybee-energy translate model-to-osm {modelPath}";
+            var cmdString = $"honeybee-energy translate model-to-osm {modelPath} \n\rPAUSE";
             var cmdFile = Path.Combine(folder, "translate.bat");
             File.WriteAllText(cmdFile, cmdString);
 
