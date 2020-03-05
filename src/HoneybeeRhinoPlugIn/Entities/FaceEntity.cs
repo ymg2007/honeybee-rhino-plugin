@@ -18,7 +18,13 @@ namespace HoneybeeRhino.Entities
     {
         public HB.Face HBObject { get; private set; }
 
-        public List<ObjRef> ApertureObjRefs { get; private set; } = new List<ObjRef>();
+        private List<ObjRef> _apertureObjRefs = new List<ObjRef>();
+        public List<ObjRef> ApertureObjRefs {
+
+            get { return this._apertureObjRefs.Where(_ => _.TryGetApertureEntity().IsValid).ToList(); } 
+
+            private set { _apertureObjRefs = value; } 
+        } 
 
         public override bool IsValid => HBObject != null;
         public override string Description => this.IsValid ? $"HBFaceEntity: {HBObject.Name}" : base.Description;

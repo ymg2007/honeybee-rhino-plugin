@@ -22,7 +22,17 @@ namespace HoneybeeRhino.Entities
         public string Name => this.HBObject.Name;
         public List<HB.Face> HBFaces => this.HBObject.Faces;
 
-        public int ApertureCount => this.HostObjRef.Brep().Surfaces.Sum(_ => _.TryGetFaceEntity().ApertureObjRefs.Count);
+        public int ApertureCount
+        {
+            get
+            {
+                if (!this.IsValid)
+                    return 0;
+                var apts = this.HostObjRef.Brep().Surfaces.SelectMany(_ => _.TryGetFaceEntity().ApertureObjRefs);
+                var valid = apts.Where(_ => _.TryGetApertureEntity().IsValid);
+                return valid.Count();
+            }
+        } 
 
         //TODO: override isValid to check if hostID exists
         public override bool IsValid

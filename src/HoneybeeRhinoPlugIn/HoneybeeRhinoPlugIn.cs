@@ -205,6 +205,7 @@ namespace HoneybeeRhino
                 return;
 
             //Only make the room obj as the entry point for selecting the entire group entity.
+            var roomCounts = selectedRooms.Count();
             foreach (var room in selectedRooms)
             {
                 var entity = room.Geometry().TryGetRoomEntity();
@@ -212,7 +213,11 @@ namespace HoneybeeRhino
                     continue;
 
                 entity.SelectAndHighlight();
-                RhinoApp.WriteLine($"{entity.Name}; Window: {entity.ApertureCount}");
+
+                if (roomCounts == 1)
+                {
+                    RhinoApp.WriteLine($"Honeybee Rhino Plugin: {entity.Name}; Window: {entity.ApertureCount}");
+                }
 
             }
             foreach (var apt in selectedApertures)
@@ -225,6 +230,10 @@ namespace HoneybeeRhino
                
             }
 
+            if (roomCounts > 1)
+            {
+                RhinoApp.WriteLine($"Honeybee Rhino Plugin: {selectedRooms.Count()} Honeybee rooms are selected");
+            }
 
 
         }
