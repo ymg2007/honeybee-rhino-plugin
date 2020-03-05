@@ -72,8 +72,6 @@
     <Compile Include="Entities\ApertureEntity.cs" />
     <Compile Include="Entities\EntityHelper.cs" />
     <Compile Include="Entities\FaceEntity.cs" />
-    <Compile Include="Entities\GroupEntity.cs" />
-    <Compile Include="Entities\GroupEntityTable.cs" />
     <Compile Include="Entities\HBObjEntity.cs" />
     <Compile Include="Entities\RoomEntity.cs" />
     <Compile Include="Extensions\GeometryBaseExtension.cs" />
