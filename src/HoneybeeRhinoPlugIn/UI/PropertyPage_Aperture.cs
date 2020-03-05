@@ -24,7 +24,7 @@ namespace HoneybeeRhino.UI
             //if (e.ObjectCount !=1) return false;
             if (e.Objects.Count() != 1) return false;
 
-            var obj = e.Objects[0];
+            var obj = e.Objects.Last();
             var ent = obj.Geometry.TryGetApertureEntity();
             this._HBObjEntity = ent;
             return this._HBObjEntity.IsValid;

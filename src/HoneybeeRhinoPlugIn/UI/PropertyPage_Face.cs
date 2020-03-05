@@ -23,13 +23,13 @@ namespace HoneybeeRhino.UI
             if (!e.Objects.Any()) return false;
 
             //check if a subsurface is selected.
-            var selectedObj = e.Objects[0];
+            var selectedObj = e.Objects.Last();
             var subObjes = selectedObj.GetSelectedSubObjects();
             var isSelectedBrepFace = null != subObjes;
 
             if (isSelectedBrepFace)
             {
-                var comIndex = subObjes[0];
+                var comIndex = subObjes.Last();
                 if (comIndex.ComponentIndexType != Rhino.Geometry.ComponentIndexType.BrepFace)
                     return false;
 
