@@ -37,6 +37,7 @@ namespace HoneybeeRhino.RhinoCommands
                 go.SetCommandPrompt("Please select honeybee rooms for adding windows to");
                 go.GeometryFilter = ObjectType.Brep;
                 go.GroupSelect = false;
+                go.SubObjectSelect = false;
                 go.Get();
 
                 if (go.CommandResult() != Result.Success)
@@ -46,14 +47,26 @@ namespace HoneybeeRhino.RhinoCommands
                     return go.CommandResult();
 
                 //Check if all selected geoes are hb rooms.
-                var rooms = go.Objects().Where(_ => _.Object().Geometry.IsRoom());
-                if (go.ObjectCount != rooms.Count())
+                var solidBreps = go.Objects().Where(_ => _.Brep() != null).Where(_ => _.Brep().IsSolid);
+                var rooms = solidBreps.Where(_ => _.IsRoom()).ToList();
+                if (solidBreps.Count() != rooms.Count())
+                {
+                    doc.Objects.UnselectAll();
+                    RhinoApp.WriteLine("Not all solid geometry is Honeybee room, please use MassToRoom to convert these selected objects!");
+                    var nonRooms = solidBreps.Where(_ => ! _.Brep().IsRoom());
+                    foreach (var item in nonRooms)
+                    {
+                        doc.Objects.Select(item, true, true);
+                    }
+                  
                     return Result.Failure;
+                }
+                   
 
-
+                var geos = go.Objects().Select(_ => _.Geometry());
                 //Get Room geometry guid
                 //var roomIds = go.Objects().Select(_ => _.ObjectId);
-
+                //doc.Objects.Add(geos.First().GetBoundingBox(false).ToBrep());
 
                 var rs = AddApertureBySurface(doc, rooms);
 
@@ -67,38 +80,52 @@ namespace HoneybeeRhino.RhinoCommands
         public Result AddApertureBySurface(RhinoDoc doc, IEnumerable<ObjRef> rooms)
         {
             //Select window geometry.
-            var rc = Rhino.Input.RhinoGet.GetMultipleObjects("Please select planer surfaces as windows to add to rooms", false, ObjectType.Surface, out ObjRef[] SelectedObjs);
-            if (rc != Result.Success)
-                return rc;
-            if (SelectedObjs == null || SelectedObjs.Length < 1)
-                return Result.Failure;
-
-            //Check intersection, maybe provide an option for use to split window surfaces for zones.
-            //TODO: do this later
-
-            //prepare BrepObjects
-            var WinObjs = SelectedObjs.ToList();
-            var room = rooms.First();
-            var roomBrep = room.Brep();
-
-            //match window to room 
-            var matchedRoomApts = room.AddApertures(WinObjs);
-            var apts = matchedRoomApts.apertures;
-
-            if (!apts.Any())
-                return Result.Failure;
-
-            foreach (var aperture in apts)
+            using (var go2 = new GetObject())
             {
-                doc.Objects.Replace(aperture.id, aperture.brep);
+                go2.SetCommandPrompt("Please select planer window surfaces");
+                go2.GeometryFilter = ObjectType.Surface;
+                go2.GroupSelect = false;
+                go2.DisablePreSelect();
+                go2.EnableSelPrevious(false);
+                go2.SubObjectSelect = false;
+                go2.GetMultiple(1, 0);
+
+                if (go2.CommandResult() != Result.Success)
+                    return go2.CommandResult();
+
+                if (go2.Objects().Count() == 0)
+                    return Result.Failure;
+
+                var SelectedObjs = go2.Objects();
+
+                //Check intersection, maybe provide an option for use to split window surfaces for zones.
+                //TODO: do this later
+
+                //prepare BrepObjects
+                var WinObjs = SelectedObjs.ToList();
+                var room = rooms.First();
+                var roomBrep = room.Brep();
+
+                //match window to room 
+                var matchedRoomApts = room.AddApertures(WinObjs);
+                var apts = matchedRoomApts.apertures;
+
+                if (!apts.Any())
+                    return Result.Failure;
+
+                foreach (var aperture in apts)
+                {
+                    doc.Objects.Replace(aperture.id, aperture.brep);
+                }
+
+
+                //Replace the rhino object in order to be able to undo/redo
+                doc.Objects.Replace(room.ObjectId, matchedRoomApts.room);
+
+                return Result.Success;
+
             }
-
-
-            //Replace the rhino object in order to be able to undo/redo
-            doc.Objects.Replace(room.ObjectId, matchedRoomApts.room);
-
-            return Result.Success;
-
+      
 
         }
     }
