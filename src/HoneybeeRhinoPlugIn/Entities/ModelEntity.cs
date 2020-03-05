@@ -12,7 +12,7 @@ namespace HoneybeeRhino.Entities
         public string ModelNameID => this.HBObject.Name;
         public HB.Model HBObject { get; private set; }
 
-        public List<ObjRef> RoomEntities { get; private set; } = new List<ObjRef>();
+        public List<ObjRef> Rooms { get; private set; } = new List<ObjRef>();
         public List<ObjRef> OrphanedFaces { get; private set; } = new List<ObjRef>();
         public List<ObjRef> OrphanedShades { get; private set; } = new List<ObjRef>();
         public List<ObjRef> OrphanedApertures { get; private set; } = new List<ObjRef>();
@@ -22,7 +22,7 @@ namespace HoneybeeRhino.Entities
         {
             get 
             {
-                return this.RoomEntities.Where(_ => _.TryGetRoomEntity().IsValid).ToList();
+                return this.Rooms.Where(_ => _.TryGetRoomEntity().IsValid).ToList();
             }
         }
         public List<ObjRef> OrphanedFacesWithoutHistory
@@ -81,7 +81,7 @@ namespace HoneybeeRhino.Entities
             var json = this.HBObject.ToJson();
             var model = HB.Model.FromJson(json);
             var newEnt = new ModelEntity(model);
-            newEnt.RoomEntities = new List<ObjRef>(this.RoomEntitiesWithoutHistory);
+            newEnt.Rooms = new List<ObjRef>(this.RoomEntitiesWithoutHistory);
             newEnt.OrphanedFaces = new List<ObjRef>(this.OrphanedFacesWithoutHistory);
             newEnt.OrphanedShades = new List<ObjRef>(this.OrphanedShadesWithoutHistory);
             newEnt.OrphanedApertures = new List<ObjRef>(this.OrphanedAperturesWithoutHistory);

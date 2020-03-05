@@ -69,7 +69,7 @@ namespace HoneybeeRhino.UI
             //}
 
             //Room list
-            var rooms = dup.RoomEntities.Where(_ => _.Geometry().TryGetRoomEntity().IsValid);
+            var rooms = dup.Rooms.Where(_ => _.Geometry().TryGetRoomEntity().IsValid);
             var roomListBox = new ListBox();
             roomListBox.Height = 100;
             foreach (var item in rooms)

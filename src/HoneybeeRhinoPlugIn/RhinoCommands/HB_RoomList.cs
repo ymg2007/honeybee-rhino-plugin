@@ -31,7 +31,7 @@ namespace HoneybeeRhino.RhinoCommands
         {
             var model = HoneybeeRhinoPlugIn.Instance.ModelEntityTable.First().Value;
 
-            var zoneNames = model.RoomEntities.Select(_=>_.Geometry().TryGetRoomEntity()).Where(_=>_.IsValid).Select(_ => _.Name);
+            var zoneNames = model.Rooms.Select(_=>_.Geometry().TryGetRoomEntity()).Where(_=>_.IsValid).Select(_ => _.Name);
             Rhino.UI.Dialogs.ShowEditBox("Ladybug Tools", "All Honeybee Rooms:", string.Join("\n", zoneNames), true, out string outJson);
             return Result.Success;
         }
