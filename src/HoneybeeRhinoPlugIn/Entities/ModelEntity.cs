@@ -11,11 +11,40 @@ namespace HoneybeeRhino.Entities
     {
         public string ModelNameID => this.HBObject.Name;
         public HB.Model HBObject { get; private set; }
-        public List<ObjRef> RoomEntities { get; private set; } = new List<ObjRef>();
-        public List<ObjRef> OrphanedFaces { get; private set; } = new List<ObjRef>();
-        public List<ObjRef> OrphanedShades { get; private set; } = new List<ObjRef>();
-        public List<ObjRef> OrphanedApertures { get; private set; } = new List<ObjRef>();
-        public List<ObjRef> OrphanedDoors { get; private set; } = new List<ObjRef>();
+
+        private List<ObjRef> _roomEntities = new List<ObjRef>();
+        private List<ObjRef> _orphanedFaces = new List<ObjRef>();
+        private List<ObjRef> _orphanedShades = new List<ObjRef>();
+        private List<ObjRef> _orphanedApertures = new List<ObjRef>();
+        private List<ObjRef> _orphanedDoors = new List<ObjRef>();
+
+        public List<ObjRef> RoomEntities
+        {
+            get { return this._roomEntities.Where(_ => _.TryGetRoomEntity().IsValid).ToList(); }
+            private set { _roomEntities = value; }
+        }
+        public List<ObjRef> OrphanedFaces
+        {
+            get { return this._orphanedFaces.Where(_ => _.TryGetOrphanedFaceEntity().IsValid).ToList(); }
+            private set { _orphanedFaces = value; }
+        }
+        public List<ObjRef> OrphanedShades
+        {
+            //TODO: add validation later
+            get { return this._orphanedShades; }
+            private set { _orphanedShades = value; }
+        }
+        public List<ObjRef> OrphanedApertures
+        {
+            get { return this._orphanedApertures.Where(_ => _.TryGetApertureEntity().IsValid).ToList(); }
+            private set { _orphanedApertures = value; }
+        }
+        public List<ObjRef> OrphanedDoors
+        {
+            //TODO: add validation later
+            get { return this._orphanedDoors; }
+            private set { _orphanedDoors = value; }
+        }
 
 
 

@@ -19,10 +19,9 @@ namespace HoneybeeRhino.Entities
         public HB.Face HBObject { get; private set; }
 
         private List<ObjRef> _apertureObjRefs = new List<ObjRef>();
-        public List<ObjRef> ApertureObjRefs {
-
+        public List<ObjRef> ApertureObjRefs
+        {
             get { return this._apertureObjRefs.Where(_ => _.TryGetApertureEntity().IsValid).ToList(); } 
-
             private set { _apertureObjRefs = value; } 
         } 
 

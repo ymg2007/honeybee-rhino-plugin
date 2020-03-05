@@ -13,7 +13,7 @@ namespace HoneybeeRhino.Entities
     [Guid("D9C8832F-EE24-4834-A443-AC981B8D9921")]
     public abstract class HBObjEntity: UserData
     {
-        public ObjRef HostObjRef { get; set; }
+        public ObjRef HostObjRef { get; set; } //Object is orphaned must have HostObjRef
         public ObjRef HostRoomObjRef { get; set; } //Object is orphaned if HostRoomObjRef is null
         public virtual bool IsValid => this.HostObjRef != null;
         public override bool ShouldWrite => IsValid;
