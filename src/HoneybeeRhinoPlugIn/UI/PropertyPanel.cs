@@ -29,7 +29,8 @@ namespace HoneybeeRhino.UI
             
             layout.AddSeparateRow(new Label { Text = "Name:" });
             var nameTBox = new TextBox() { };
-            nameTBox.TextBinding.Bind(face, m => m.DisplayName?? $"Face {face.Name.Substring(5,5)}");
+            face.DisplayName = face.DisplayName ?? $"Face {face.Name.Substring(5, 5)}";
+            nameTBox.TextBinding.Bind(face, m => m.DisplayName );
             layout.AddSeparateRow(nameTBox);
 
             
@@ -156,7 +157,8 @@ namespace HoneybeeRhino.UI
 
             layout.AddSeparateRow(new Label { Text = "Name:" });
             var nameTBox = new TextBox() { };
-            nameTBox.TextBinding.Bind(apt, m => m.DisplayName ?? $"My Aperture {apt.Name.Substring(8, 5)}");
+            apt.DisplayName = apt.DisplayName ?? $"My Aperture {apt.Name.Substring(8, 5)}";
+            nameTBox.TextBinding.Bind(apt, m => m.DisplayName);
             layout.AddSeparateRow(nameTBox);
 
 
@@ -254,7 +256,8 @@ namespace HoneybeeRhino.UI
 
             layout.AddSeparateRow(new Label { Text = "Name:" });
             var modelNameTextBox = new TextBox() { };
-            modelNameTextBox.TextBinding.Bind(room, m => m.DisplayName ?? $"My Room {room.Name.Substring(5, 5)}");
+            room.DisplayName = room.DisplayName ?? $"My Room {room.Name.Substring(5, 5)}";
+            modelNameTextBox.TextBinding.Bind(room, m => m.DisplayName );
             layout.AddSeparateRow(modelNameTextBox);
 
 
