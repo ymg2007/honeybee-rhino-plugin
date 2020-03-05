@@ -39,8 +39,9 @@ namespace HoneybeeRhino.UI
             layout.AddSeparateRow(terrainTypeDP);
 
 
-            layout.AddSeparateRow(new Label { Text = "Boundary Condition:" });
+            layout.AddSeparateRow(new Label { Text = "Boundary Condition: (WIP)" });
             var bcTBox = new TextBox() { };
+            bcTBox.Enabled = false;
             bcTBox.TextBinding.Bind(face, m => m.BoundaryCondition.Obj.GetType().Name);
             layout.AddSeparateRow(bcTBox);
 
@@ -165,7 +166,7 @@ namespace HoneybeeRhino.UI
             layout.AddSeparateRow(operableCBox);
 
 
-            layout.AddSeparateRow(new Label { Text = "Boundary Condition:" });
+            layout.AddSeparateRow(new Label { Text = "Boundary Condition: (WIP)" });
             var bcTBox = new TextBox() { };
             bcTBox.Enabled = false;
             bcTBox.TextBinding.Bind(apt, m => m.BoundaryCondition.Obj.GetType().Name);
