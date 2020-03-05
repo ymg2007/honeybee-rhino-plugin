@@ -41,9 +41,9 @@ namespace HoneybeeRhino.RhinoCommands
                 if (go.ObjectCount <= 1)
                     return go.CommandResult();
 
-               
+
                 //Must be all room objects.
-                var rooms = go.Objects().Select(_ => _.Brep());
+                var rooms = go.Objects().Select(_ => _.Brep()).Where(_ => _ != null).Where(_ => _.IsSolid);
                 //if (rooms.Any(_ => !_.IsRoom()))
                 //{
                 //    RhinoApp.WriteLine("Not all selected objects are Honeybee room, please double check, and convert it to room first.");
