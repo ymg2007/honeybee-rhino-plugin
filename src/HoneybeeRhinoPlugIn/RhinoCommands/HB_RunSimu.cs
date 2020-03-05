@@ -40,13 +40,17 @@ namespace HoneybeeRhino.RhinoCommands
             var modelProp = new HB.ModelProperties(energy: HB.ModelEnergyProperties.Default);
             model.Properties = modelProp;
   
-
-         
             var json = model.ToJson();
 
-            var modelPath = @"D:\Dev\test\HB\model.json";
+            var folder = @"D:\Dev\test\HB";
+            var modelPath = Path.Combine(folder, "model.json");
             File.WriteAllText(modelPath, json);
 
+            var cmdString = $"honeybee-energy translate model-to-osm {modelPath}";
+            var cmdFile = Path.Combine(folder, "translate.bat");
+            File.WriteAllText(cmdFile, cmdString);
+
+            System.Diagnostics.Process.Start(cmdFile);
 
             return Result.Success;
         }
