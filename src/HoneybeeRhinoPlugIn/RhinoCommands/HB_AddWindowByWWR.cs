@@ -39,9 +39,7 @@ namespace HoneybeeRhino.RhinoCommands
                     wwr = Settings.GetDouble(nameof(wwr), 0.6);
                     var optionWWR = new OptionDouble(wwr, 0.01, 0.98);
 
-                    //var ignoreExistingWindow = false;
-                    //ignoreExistingWindow = Settings.GetBool(nameof(ignoreExistingWindow), false);
-                    //var optionIgnoreExistingWindow = new OptionToggle(ignoreExistingWindow,"apply to all faces","ignore faces with existing windows");
+                    var optionSkipFaceExistingWindow = new OptionToggle(true, "No_CreateForAllFaces", "Yes");
 
                     go.SetCommandPrompt("Please select honeybee rooms for adding windows to");
                     go.GeometryFilter = ObjectType.Brep;
@@ -57,7 +55,7 @@ namespace HoneybeeRhino.RhinoCommands
                     {
                         go.ClearCommandOptions();
                         go.AddOptionDouble("WindowWallRatio", ref optionWWR);
-                        //go.AddOptionToggle(nameof(ignoreExistingWindow), ref optionIgnoreExistingWindow);
+                        go.AddOptionToggle("SkipFacesWithWindows", ref optionSkipFaceExistingWindow);
                         var res = go.GetMultiple(1, 0);
 
                         if (res == Rhino.Input.GetResult.Option)
@@ -86,8 +84,9 @@ namespace HoneybeeRhino.RhinoCommands
                     if (go.ObjectCount == 0)
                         throw new ArgumentException("No object is selected!");
 
+                    //get option values
                     Settings.SetDouble(nameof(wwr), optionWWR.CurrentValue);
-                    //Settings.SetBool(nameof(ignoreExistingWindow), optionIgnoreExistingWindow.CurrentValue);
+                    var ifSkipFaceWithWindow = optionSkipFaceExistingWindow.CurrentValue;
 
                     //all selected room geometries
                     var solidBreps = go.Objects().Where(_ => _.Brep() != null).Where(_ => _.Brep().IsSolid);
@@ -108,7 +107,7 @@ namespace HoneybeeRhino.RhinoCommands
 
 
                     //Add Windows
-                    AddApertureByWWR(doc, rooms, optionWWR.CurrentValue);
+                    AddApertureByWWR(doc, rooms, optionWWR.CurrentValue, ifSkipFaceWithWindow);
 
                     doc.Views.Redraw();
                     return Result.Success;
@@ -122,20 +121,26 @@ namespace HoneybeeRhino.RhinoCommands
             }
             
         }
-        public void AddApertureByWWR(RhinoDoc doc, IEnumerable<ObjRef> rooms, double wwr)
+        public void AddApertureByWWR(RhinoDoc doc, IEnumerable<ObjRef> rooms, double wwr, bool skipFaceWithWindow = true)
         {
             foreach (var room in rooms)
             {
-                AddApertureByWWR(doc, room, wwr);
+                AddApertureByWWR(doc, room, wwr, skipFaceWithWindow);
             }
         }
 
-        public void AddApertureByWWR(RhinoDoc doc, ObjRef roomObjRef, double wwr)
+        public void AddApertureByWWR(RhinoDoc doc, ObjRef roomObjRef, double wwr, bool skipFaceWithWindow = true)
         {
             //Get all outdoor faces
             var room = roomObjRef;
             var ourdoorWalls = room.Brep().Faces.Where(_ => {
-                var face = _.TryGetFaceEntity().HBObject;
+                var ent = _.TryGetFaceEntity();
+
+                //skip if face has aperture already
+                if (ent.ApertureObjRefs.Any() && skipFaceWithWindow)
+                    return false;
+
+                var face = ent.HBObject;
                 var isOutdoor = face.BoundaryCondition.Obj is HoneybeeSchema.Outdoors;
                 var isWall = face.FaceType == HoneybeeSchema.Face.FaceTypeEnum.Wall;
                 return isOutdoor && isWall;
