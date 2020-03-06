@@ -84,7 +84,6 @@
     <Compile Include="RhinoCommands\HB_MassToRoom.cs" />
     <Compile Include="RhinoCommands\HB_RunSimu.cs" />
     <Compile Include="RhinoCommands\HB_SetRoomEnergyProperties.cs" />
-    <Compile Include="RhinoCommands\HB_RoomList.cs" />
     <Compile Include="RhinoCommands\HB_SolveAdjacency.cs" />
     <Compile Include="HoneybeeRhinoPlugIn.cs" />
     <Compile Include="Runner.cs" />
