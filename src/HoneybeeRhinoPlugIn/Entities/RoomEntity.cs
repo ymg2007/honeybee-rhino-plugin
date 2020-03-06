@@ -235,6 +235,9 @@ namespace HoneybeeRhino.Entities
         public static RoomEntity TryGetFrom(Rhino.Geometry.GeometryBase roomGeo)
         {
             var rc = new RoomEntity();
+            if (roomGeo == null)
+                return rc;
+
             if (!roomGeo.IsValid)
                 return rc;
 
