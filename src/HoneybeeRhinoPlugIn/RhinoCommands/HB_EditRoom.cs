@@ -28,6 +28,10 @@ namespace HoneybeeRhino.RhinoCommands
 
         protected override Result RunCommand(RhinoDoc doc, RunMode mode)
         {
+#if RELEASE
+            Rhino.UI.Dialogs.ShowMessage("Good try, I have disabled this. This is only used for development!", "Honeybee");
+            return Result.Failure;
+#endif
             //HoneybeeRhinoPlugIn.Instance.ObjectSelectMode = "Aperture";
             //RhinoApp.WriteLine($"Selection mode: { HoneybeeRhinoPlugIn.Instance.ObjectSelectMode}");
 

@@ -35,6 +35,12 @@ namespace HoneybeeRhino.RhinoCommands
 
         protected override Result RunCommand(RhinoDoc doc, RunMode mode)
         {
+#if RELEASE
+            Rhino.UI.Dialogs.ShowMessage("Good try, I have disabled this. This is only used for development!", "Honeybee");
+            return Result.Failure;
+#endif
+
+
             var rc = Result.Cancel;
             RoomEnergyPropertiesAbridged roomEnergyProperties = new RoomEnergyPropertiesAbridged();
 
