@@ -7,6 +7,7 @@ using HB = HoneybeeSchema;
 using HoneybeeRhino.Entities;
 using System.Collections.Generic;
 using System.IO;
+using System.Diagnostics;
 
 namespace HoneybeeRhino.RhinoCommands
 {
@@ -31,11 +32,6 @@ namespace HoneybeeRhino.RhinoCommands
 
         protected override Result RunCommand(RhinoDoc doc, RunMode mode)
         {
-
-            //var groupEntities = HoneybeeRhinoPlugIn.Instance.GroupEntityTable.Select(_ => _.Value);
-            //var rooms = groupEntities.Where(_=>_.IsValid).Select(_ => _.GetCompleteHBRoom()).ToList();
-
-
             var modelEnt = HoneybeeRhinoPlugIn.Instance.ModelEntityTable.First().Value;
             var model = modelEnt.HBObject;
             var modelProp = new HB.ModelProperties(energy: HB.ModelEnergyProperties.Default);
@@ -51,13 +47,45 @@ namespace HoneybeeRhino.RhinoCommands
             var modelPath = Path.Combine(folder, "model.json");
             File.WriteAllText(modelPath, json);
 
-            var cmdString = $"honeybee-energy translate model-to-osm {modelPath} \n\rPAUSE";
-            var cmdFile = Path.Combine(folder, "translate.bat");
-            File.WriteAllText(cmdFile, cmdString);
-
-            System.Diagnostics.Process.Start(cmdFile);
+            try
+            {
+                Run(modelPath);
+            }
+            catch
+            {
+                // Log error.
+            }
+            finally
+            {
+                RhinoApp.WriteLine($"OpenStudio files saved at: {folder}");
+                RhinoApp.WriteLine($"Right now this command only translates model to osm. \nRun simulation will be added after SimulationParamerter and ResourceManagement is implemented");
+            }
+         
 
             return Result.Success;
+        }
+
+        static void Run(string modelFilePath)
+        {
+            var folder = Path.GetDirectoryName(modelFilePath); // @"C:\Users\mingo\AppData\Local\Temp\Honeybee\fq1odqrr.5p3";
+    
+            var scr = $"/C honeybee-energy translate model-to-osm {modelFilePath} \n\rPAUSE";
+            //scr = $"/C honeybee-energy simulate model {Path.Combine(folder, model)} {epw}";
+
+            ProcessStartInfo startInfo = new ProcessStartInfo();
+            startInfo.CreateNoWindow = false;
+            startInfo.UseShellExecute = false;
+            startInfo.FileName = "cmd.exe";
+            startInfo.WorkingDirectory = folder;
+            startInfo.Arguments = scr;
+
+            using (var exeProcess = new Process())
+            {
+                exeProcess.StartInfo = startInfo;
+                exeProcess.Start();
+                exeProcess.WaitForExit();
+            }
+            
         }
     }
 }
