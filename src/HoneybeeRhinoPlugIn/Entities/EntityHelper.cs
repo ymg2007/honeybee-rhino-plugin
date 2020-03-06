@@ -2,6 +2,7 @@
 using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace HoneybeeRhino.Entities
 {
@@ -144,23 +145,36 @@ namespace HoneybeeRhino.Entities
             }
 
         }
-        public static Brep DeleteHBEntity(this Brep honeybeeObj)
+        public static Brep DeleteHBEntity(this Brep honeybeeObj, bool duplicate = true)
         {
-            var hbObj = honeybeeObj.DuplicateBrep();
+            var hbObj = duplicate? honeybeeObj.DuplicateBrep(): honeybeeObj;
             if (hbObj.IsRoom())
             {
+                //Clean Room
                 var ent = hbObj.TryGetRoomEntity();
                 hbObj.UserData.Remove(ent);
+                //clean Faces
                 foreach (var srf in hbObj.Surfaces)
                 {
                     var srfEnt = srf.TryGetFaceEntity();
+               
+                    //Clean Apertures
+                    foreach (var apt in srfEnt.ApertureObjRefs)
+                    {
+                        apt.Brep().DeleteHBEntity();
+                    }
+
+                    //TODO: SHDs
+
                     srf.UserData.Remove(srfEnt);
                 }
             }
             else if (hbObj.IsAperture())
             {
-                //TODO:
+                var ent = hbObj.TryGetApertureEntity();
+                hbObj.UserData.Remove(ent);
             }
+            //TODO: shades
             return hbObj;
 
         }

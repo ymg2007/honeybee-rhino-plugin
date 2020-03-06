@@ -16,9 +16,18 @@ namespace HoneybeeRhino
     {
         public static ObjRef ToRoomBrepObj(this ObjRef roomBrepObj, Func<RH.Brep, bool> objectReplaceFunc, ModelEntity model = default, double maxRoofFloorAngle = 30, double tolerance = 0.0001)
         {
+            var modelEnt = model ?? HoneybeeRhinoPlugIn.Instance.ModelEntityTable.First().Value;
+
+            //Remove from model if exists
+            var found = modelEnt.Rooms.FirstOrDefault(_ => _.ObjectId == roomBrepObj.ObjectId);
+            if (found != null)
+                modelEnt.Rooms.Remove(found);
+
+            //create new room
             var roomEnt = new Entities.RoomEntity(roomBrepObj, objectReplaceFunc);
             var host = roomEnt.HostObjRef;
-            var modelEnt = model ?? HoneybeeRhinoPlugIn.Instance.ModelEntityTable.First().Value;
+
+            //add to model
             modelEnt.Rooms.Add(host);
             return host;
         }

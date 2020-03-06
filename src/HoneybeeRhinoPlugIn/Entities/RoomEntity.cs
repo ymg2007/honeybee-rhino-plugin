@@ -259,11 +259,16 @@ namespace HoneybeeRhino.Entities
             if (roomObj == null)
                 throw new NullReferenceException();
 
-            if (!roomObj.Brep().IsValid)
+            var brep = roomObj.Brep();
+            if (brep == null)
+                throw new NullReferenceException();
+            if (!brep.IsValid)
                 throw new ArgumentException("Input geometry is not a valid object to convert to honeybee room!");
 
-            if (!roomObj.Brep().IsSolid)
+            if (!brep.IsSolid)
                 throw new ArgumentException("This rhino object is not a water-tight solid!");
+
+            brep.DeleteHBEntity(duplicate: false);
 
             return true;
         }
