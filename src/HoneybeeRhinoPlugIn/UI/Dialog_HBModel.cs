@@ -13,92 +13,100 @@ namespace HoneybeeRhino.UI
        
         public Dialog_HBModel(Entities.ModelEntity modelEntity)
         {
-            var dup = modelEntity.Duplicate();
-            var hbModel = dup.HBObject;
-
-            Padding = new Padding(5);
-            Resizable = true;
-            Title = "Honeybee Rhino PlugIn";
-            WindowStyle = WindowStyle.Default;
-            MinimumSize = new Size(450, 620);
-
-            DefaultButton = new Button { Text = "OK" };
-            DefaultButton.Click += (sender, e)
-                => Close(dup);
-
-            AbortButton = new Button { Text = "Cancel" };
-            AbortButton.Click += (sender, e) => Close();
-
-       
-            var buttons = new TableLayout
+            try
             {
-                Padding = new Padding(5, 10, 5, 5),
-                Spacing = new Size(10, 10),
-                Rows = { new TableRow(null, this.DefaultButton, this.AbortButton, null) }
-            };
+                var dup = modelEntity.Duplicate();
+                var hbModel = dup.HBObject;
 
-            //Name
-            hbModel.DisplayName = hbModel.DisplayName ?? "My Honeybee Model"; 
-            var modelNameTextBox = new TextBox() { };
-            modelNameTextBox.TextBinding.Bind(hbModel, m => m.DisplayName);
+                Padding = new Padding(5);
+                Resizable = true;
+                Title = "Honeybee Rhino PlugIn";
+                WindowStyle = WindowStyle.Default;
+                MinimumSize = new Size(450, 620);
 
-            //NorthAngle
-            var northNum = new NumericMaskedTextBox<double>() { };
-            northNum.TextBinding.Bind(Binding.Delegate(() => hbModel.NorthAngle.ToString(), v => hbModel.NorthAngle = CheckIfNum(v)));
+                DefaultButton = new Button { Text = "OK" };
+                DefaultButton.Click += (sender, e)
+                    => Close(dup);
+
+                AbortButton = new Button { Text = "Cancel" };
+                AbortButton.Click += (sender, e) => Close();
 
 
-
-            //Properties
-            //Energy 
-            var energyProp = hbModel.Properties.Energy;
-            //TerrainType
-            var terrainTypeDP = new EnumDropDown<HB.ModelEnergyProperties.TerrainTypeEnum>();
-            terrainTypeDP.SelectedValueBinding.Bind(Binding.Delegate(() => energyProp.TerrainType.Value, v => energyProp.TerrainType = v));
-        
-            //Get constructions
-            var gloConstrSetDP = MakeDropDown(hbModel.Properties.Energy.ConstructionSets, hbModel.Properties.Energy.GlobalConstructionSet);
-            gloConstrSetDP.SelectedKeyBinding.Bind(hbModel, v => v.Properties.Energy.GlobalConstructionSet);
-
-            ////Construction Set list
-            //var ConstructionSetsListBox = new ListBox();
-            //ConstructionSetsListBox.Height = 60;
-            //ConstructionSetsListBox.bin
-            //foreach (var item in hbModel.Properties.Energy.ConstructionSets)
-            //{
-            //    .Add(new ListItem() { Text = $"Room_{ item.Value.Guid }" });
-            //}
-
-            //Room list
-            var rooms = dup.Rooms.Where(_ => _.Geometry().TryGetRoomEntity().IsValid);
-            var roomListBox = new ListBox();
-            roomListBox.Height = 100;
-            foreach (var item in rooms)
-            {
-                roomListBox.Items.Add(new ListItem() { Text = $"Room_{ item.ObjectId }" });
-            }
-           
-            //Create layout
-            Content = new TableLayout
-            {
-                Padding = new Padding(10),
-                Spacing = new Size(5, 5),
-                Rows =
+                var buttons = new TableLayout
                 {
-                    new Label(){ Text = $"ID: {hbModel.Name}"},
-                    new Label(){ Text = "Model Name:"},
-                    modelNameTextBox,
-                    new Label(){ Text = "Terrain Type:"},
-                    terrainTypeDP,
-                    new Label(){ Text = "Global ConstructionSet:"},
-                    gloConstrSetDP,
-                    new Label(){ Text = "North Angle:"},
-                    northNum,
-                    new Label(){ Text = $"Rooms: [total: {rooms.Count()}]"},
-                    roomListBox,
-                    new TableRow(buttons),
-                    null
+                    Padding = new Padding(5, 10, 5, 5),
+                    Spacing = new Size(10, 10),
+                    Rows = { new TableRow(null, this.DefaultButton, this.AbortButton, null) }
+                };
+
+                //Name
+                hbModel.DisplayName = hbModel.DisplayName ?? "My Honeybee Model";
+                var modelNameTextBox = new TextBox() { };
+                modelNameTextBox.TextBinding.Bind(hbModel, m => m.DisplayName);
+
+                //NorthAngle
+                var northNum = new NumericMaskedTextBox<double>() { };
+                northNum.TextBinding.Bind(Binding.Delegate(() => hbModel.NorthAngle.ToString(), v => hbModel.NorthAngle = CheckIfNum(v)));
+
+
+
+                //Properties
+                //Energy 
+                var energyProp = hbModel.Properties.Energy;
+                //TerrainType
+                var terrainTypeDP = new EnumDropDown<HB.ModelEnergyProperties.TerrainTypeEnum>();
+                terrainTypeDP.SelectedValueBinding.Bind(Binding.Delegate(() => energyProp.TerrainType.Value, v => energyProp.TerrainType = v));
+
+                //Get constructions
+                var gloConstrSetDP = MakeDropDown(hbModel.Properties.Energy.ConstructionSets, hbModel.Properties.Energy.GlobalConstructionSet);
+                gloConstrSetDP.SelectedKeyBinding.Bind(hbModel, v => v.Properties.Energy.GlobalConstructionSet);
+
+                ////Construction Set list
+                //var ConstructionSetsListBox = new ListBox();
+                //ConstructionSetsListBox.Height = 60;
+                //ConstructionSetsListBox.bin
+                //foreach (var item in hbModel.Properties.Energy.ConstructionSets)
+                //{
+                //    .Add(new ListItem() { Text = $"Room_{ item.Value.Guid }" });
+                //}
+
+                //Room list
+                var rooms = dup.Rooms.Where(_ => _.Geometry().TryGetRoomEntity().IsValid);
+                var roomListBox = new ListBox();
+                roomListBox.Height = 100;
+                foreach (var item in rooms)
+                {
+                    roomListBox.Items.Add(new ListItem() { Text = $"Room_{ item.ObjectId }" });
                 }
-            };
+
+                //Create layout
+                Content = new TableLayout
+                {
+                    Padding = new Padding(10),
+                    Spacing = new Size(5, 5),
+                    Rows =
+                    {
+                        new Label(){ Text = $"ID: {hbModel.Name}"},
+                        new Label(){ Text = "Model Name:"},
+                        modelNameTextBox,
+                        new Label(){ Text = "Terrain Type:"},
+                        terrainTypeDP,
+                        new Label(){ Text = "Global ConstructionSet:"},
+                        gloConstrSetDP,
+                        new Label(){ Text = "North Angle:"},
+                        northNum,
+                        new Label(){ Text = $"Rooms: [total: {rooms.Count()}]"},
+                        roomListBox,
+                        new TableRow(buttons),
+                        null
+                    }
+                };
+            }
+            catch (Exception e)
+            {
+                Rhino.RhinoApp.WriteLine(e.Message);
+            }
+            
 
 
         }

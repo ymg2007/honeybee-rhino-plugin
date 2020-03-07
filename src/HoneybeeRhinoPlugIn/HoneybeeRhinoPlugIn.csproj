@@ -37,9 +37,8 @@
     <Reference Include="Eto, Version=2.5.0.0, Culture=neutral, PublicKeyToken=552281e97c755530, processorArchitecture=MSIL">
       <HintPath>..\..\packages\RhinoCommon.6.22.20028.13281\lib\net45\Eto.dll</HintPath>
     </Reference>
-    <Reference Include="HoneybeeSchema, Version=1.16.1.4729, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\honeybee-schema-dotnet\src\HoneybeeSchema\bin\Debug\HoneybeeSchema.dll</HintPath>
+    <Reference Include="HoneybeeSchema, Version=1.17.0.398, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\HoneybeeSchema.1.17.0.398\lib\net45\HoneybeeSchema.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>

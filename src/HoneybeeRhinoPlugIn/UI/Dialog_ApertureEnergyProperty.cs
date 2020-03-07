@@ -11,47 +11,58 @@ namespace HoneybeeRhino.UI
      
         public Dialog_ApertureEnergyProperty(HB.ApertureEnergyPropertiesAbridged energyProp)
         {
-            var EnergyProp = energyProp?? new HB.ApertureEnergyPropertiesAbridged();
-
-            Padding = new Padding(5);
-            Resizable = true;
-            Title = "Aperture Energy Properties - Honeybee Rhino PlugIn";
-            WindowStyle = WindowStyle.Default;
-            MinimumSize = new Size(450, 200);
-
-            //Get constructions
-            var constructionSetDP = MakeDropDown(EnergyProp.Construction, (v) => EnergyProp.Construction = v?.Name,
-                EnergyLibrary.StandardsOpaqueConstructions, "By Room ConstructionSet---------------------");
-
-
-            DefaultButton = new Button { Text = "OK" };
-            DefaultButton.Click += (sender, e) => Close(EnergyProp);
-
-            AbortButton = new Button { Text = "Cancel" };
-            AbortButton.Click += (sender, e) => Close();
-
-            var buttons = new TableLayout
+            try
             {
-                Padding = new Padding(5, 10, 5, 5),
-                Spacing = new Size(10, 10),
-                Rows = { new TableRow(null, this.DefaultButton, this.AbortButton, null) }
-            };
+                var EnergyProp = energyProp ?? new HB.ApertureEnergyPropertiesAbridged();
+
+                Padding = new Padding(5);
+                Resizable = true;
+                Title = "Aperture Energy Properties - Honeybee Rhino PlugIn";
+                WindowStyle = WindowStyle.Default;
+                MinimumSize = new Size(450, 200);
+
+                //Get constructions
+                var constructionSetDP = MakeDropDown(EnergyProp.Construction, (v) => EnergyProp.Construction = v?.Name,
+                    EnergyLibrary.StandardsOpaqueConstructions, "By Room ConstructionSet---------------------");
 
 
-            //Create layout
-            Content = new TableLayout()
-            {
-                Padding = new Padding(10),
-                Spacing = new Size(5, 5),
-                Rows =
+                DefaultButton = new Button { Text = "OK" };
+                DefaultButton.Click += (sender, e) => Close(EnergyProp);
+
+                AbortButton = new Button { Text = "Cancel" };
+                AbortButton.Click += (sender, e) => Close();
+
+                var buttons = new TableLayout
+                {
+                    Padding = new Padding(5, 10, 5, 5),
+                    Spacing = new Size(10, 10),
+                    Rows = { new TableRow(null, this.DefaultButton, this.AbortButton, null) }
+                };
+
+
+                //Create layout
+                Content = new TableLayout()
+                {
+                    Padding = new Padding(10),
+                    Spacing = new Size(5, 5),
+                    Rows =
                 {
                     new Label() { Text = "Face Construction:" }, constructionSetDP,
                     new TableRow(buttons),
                     null
                 }
-            };
+                };
+            }
+            catch (Exception e)
+            {
+
+                Rhino.RhinoApp.WriteLine(e.Message);
+            }
+            
             
         }
+
+     
         private DropDown MakeDropDown<T>(string currentObjName, Action<T> setAction, IEnumerable<T> valueLibrary, string defaultItemName = default) where T : HB.INamed
         {
             var items = valueLibrary.ToList();

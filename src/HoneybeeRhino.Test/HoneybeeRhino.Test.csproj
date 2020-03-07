@@ -36,10 +36,6 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="HoneybeeSchema, Version=1.16.1.4729, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\honeybee-schema-dotnet\src\HoneybeeSchema\bin\Debug\HoneybeeSchema.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
@@ -53,6 +49,9 @@
     <Compile Include="Tests\Tests_Utility.cs" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="HoneybeeSchema">
+      <Version>1.17.0.398</Version>
+    </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>12.0.3</Version>
     </PackageReference>
