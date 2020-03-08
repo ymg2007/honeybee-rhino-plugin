@@ -85,14 +85,17 @@ namespace HoneybeeRhino
             var f = surface;
             var norm = f.NormalAt(0.5, 0.5);
 
-
+            var id = Guid.NewGuid();
+            var name = $"Face_{id}";
+            var displayName = $"Face {id.ToString().Substring(0, 5)}";
             var face = new HB.Face(
-                    $"Face_{Guid.NewGuid()}",
+                    name,
                     f.ToHBFace3D(),
                     HB.Face.FaceTypeEnum.Wall,
                     new HB.Outdoors(),
                     new HB.FacePropertiesAbridged()
                     );
+            face.DisplayName = displayName;
 
             var isGround = RH.AreaMassProperties.Compute(surface).Centroid.Z <= 0;
             if (isGround)
@@ -123,21 +126,21 @@ namespace HoneybeeRhino
                 return Math.Acos(cosA);
             }
         }
-        public static List<HB.Face> ToHBFaces(this RH.Brep brep, HB.Face.FaceTypeEnum faceType, HB.AnyOf<HB.Ground, HB.Outdoors, HB.Adiabatic, HB.Surface> boundaryCondition)
-        {
+        //public static List<HB.Face> ToHBFaces(this RH.Brep brep, HB.Face.FaceTypeEnum faceType, HB.AnyOf<HB.Ground, HB.Outdoors, HB.Adiabatic, HB.Surface> boundaryCondition)
+        //{
 
-            var faces = new List<HB.Face>();
+        //    var faces = new List<HB.Face>();
 
-            return brep.ToHBFace3Ds()
-                .Select(_ => new HB.Face(
-                    $"{faceType}_{Guid.NewGuid()}",
-                    _,
-                    faceType,
-                    boundaryCondition,
-                    new HB.FacePropertiesAbridged()
-                    )
-                ).ToList();
-        }
+        //    return brep.ToHBFace3Ds()
+        //        .Select(_ => new HB.Face(
+        //            $"{faceType}_{Guid.NewGuid()}",
+        //            _,
+        //            faceType,
+        //            boundaryCondition,
+        //            new HB.FacePropertiesAbridged()
+        //            )
+        //        ).ToList();
+        //}
 
 
         public static HB.Aperture ToAperture(this RH.BrepFace singleSurface, Guid hostID)
@@ -145,7 +148,9 @@ namespace HoneybeeRhino
             if (singleSurface.IsPlanar())
             {
                 var face3D = singleSurface.ToHBFace3D();
-                return new HB.Aperture($"Aperture_{hostID}", face3D, new HB.Outdoors(), new HB.AperturePropertiesAbridged());
+                var apt = new HB.Aperture($"Aperture_{hostID}", face3D, new HB.Outdoors(), new HB.AperturePropertiesAbridged());
+                apt.DisplayName = $"My Aperture {hostID.ToString().Substring(0, 5)}";
+                return apt;
             }
             else
             {

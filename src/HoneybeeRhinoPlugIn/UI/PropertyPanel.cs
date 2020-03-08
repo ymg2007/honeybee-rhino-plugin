@@ -29,7 +29,7 @@ namespace HoneybeeRhino.UI
             
             layout.AddSeparateRow(new Label { Text = "Name:" });
             var nameTBox = new TextBox() { };
-            face.DisplayName = face.DisplayName ?? $"Face {face.Name.Substring(5, 5)}";
+            face.DisplayName = face.DisplayName ?? string.Empty;
             nameTBox.TextBinding.Bind(face, m => m.DisplayName );
             layout.AddSeparateRow(nameTBox);
 
@@ -65,7 +65,7 @@ namespace HoneybeeRhino.UI
                 var validApertures = apertures.Where(_ => _.TryGetApertureEntity().IsValid);
                 faceCount = validApertures.Count();
 
-                var faceItems = validApertures.Select(_ => _.TryGetApertureEntity().HBObject).Select(_ => new ListItem() { Text =_.Name, Tag = _ });
+                var faceItems = validApertures.Select(_ => _.TryGetApertureEntity().HBObject).Select(_ => new ListItem() { Text = _.DisplayName ?? _.Name, Tag = _ });
                 apertureLBox.Items.AddRange(faceItems);
                
             }
@@ -157,7 +157,7 @@ namespace HoneybeeRhino.UI
 
             layout.AddSeparateRow(new Label { Text = "Name:" });
             var nameTBox = new TextBox() { };
-            apt.DisplayName = apt.DisplayName ?? $"My Aperture {apt.Name.Substring(8, 5)}";
+            apt.DisplayName = apt.DisplayName ?? string.Empty;
             nameTBox.TextBinding.Bind(apt, m => m.DisplayName);
             layout.AddSeparateRow(nameTBox);
 
@@ -256,7 +256,7 @@ namespace HoneybeeRhino.UI
 
             layout.AddSeparateRow(new Label { Text = "Name:" });
             var modelNameTextBox = new TextBox() { };
-            room.DisplayName = room.DisplayName ?? $"My Room {room.Name.Substring(5, 5)}";
+            room.DisplayName = room.DisplayName ?? string.Empty;
             modelNameTextBox.TextBinding.Bind(room, m => m.DisplayName );
             layout.AddSeparateRow(modelNameTextBox);
 

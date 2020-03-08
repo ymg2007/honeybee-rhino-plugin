@@ -52,11 +52,23 @@ namespace HoneybeeRhino.Entities
 
 
 
-        public ModelEntity() { }
-
-        public ModelEntity(HB.Model hbObject) 
+        public ModelEntity() 
         {
-            this.HBObject = hbObject;
+        }
+
+        public ModelEntity(HB.Model hbModel = default, bool newID = false) 
+        {
+            var id = System.Guid.NewGuid();
+            var modelName = $"Model_{id}";
+            var hbObj = hbModel ?? new HoneybeeSchema.Model(modelName, new HoneybeeSchema.ModelProperties(energy: HoneybeeSchema.ModelEnergyProperties.Default));
+            if (newID)
+            {
+                hbObj.Name = modelName;
+                hbObj.DisplayName = $"My Honeybee Model {id.ToString().Substring(0, 5)}";
+            }
+
+            this.HBObject = hbModel;
+
         }
 
         public void AddToDocument(ModelEntityTable documentModelEntityTable)

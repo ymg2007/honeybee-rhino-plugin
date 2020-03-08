@@ -73,8 +73,12 @@ namespace HoneybeeRhino.Entities
                 bFace.UserData.Add(faceEnt);
             }
 
-            var newObjRef = new ObjRef(brepObject.ObjectId);
-            this.HBObject = new HB.Room($"Room_{brepObject.ObjectId}", hbFaces, new HB.RoomPropertiesAbridged());
+            var id = brepObject.ObjectId;
+            var newObjRef = new ObjRef(id);
+            var room = new HB.Room($"Room_{id}", hbFaces, new HB.RoomPropertiesAbridged());
+            room.DisplayName = $"My Room {id.ToString().Substring(0, 5)}";
+            this.HBObject = room;
+
             this.HostObjRef = newObjRef;
             this.HostRoomObjRef = newObjRef;
 
@@ -163,11 +167,11 @@ namespace HoneybeeRhino.Entities
         }
 
 
-   
+
         /// <summary>
-        /// Use this for objects were duplicated alone with RhinoObject, but Ids were still referencing old Rhino object ID.
+        /// Use this for objects were duplicated with its children objects alone with RhinoObject
         /// </summary>
-        /// <param name="roomObj"></param>
+        /// <param name="newObj">new host ObjRef</param>
         public RoomEntity UpdateHost(ObjRef newObj)
         {
             //update hostRed
@@ -176,19 +180,24 @@ namespace HoneybeeRhino.Entities
             //update HBobject name (ID):
             var newID = newObj.ObjectId;
             this.HBObject.Name = $"Room_{newID}";
-            this.HBObject.DisplayName = null;
+            this.HBObject.DisplayName = $"My Room {newID.ToString().Substring(0, 5)}";
 
 
             //update subsurfaces:
             var faces = this.HBObject.Faces;
             foreach (var face in faces)
             {
-                face.Name = $"Face_{Guid.NewGuid()}";
-                face.DisplayName = null;
+                var fId = Guid.NewGuid();
+                face.Name = $"Face_{fId}";
+                face.DisplayName = $"Face {fId.ToString().Substring(0, 5)}";
+
 
             }
 
-          
+            //TODO: update windows? not sure if it is needed to be done at here, since it requires a host ObjRef.
+            //TODO: update shades? same reason.
+
+
             return this;
         }
         public void Duplicate(RoomEntity otherRoomEntityToCopyFrom)

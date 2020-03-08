@@ -40,7 +40,7 @@ namespace HoneybeeRhino.UI
                 };
 
                 //Name
-                hbModel.DisplayName = hbModel.DisplayName ?? "My Honeybee Model";
+                hbModel.DisplayName = hbModel.DisplayName ?? string.Empty;
                 var modelNameTextBox = new TextBox() { };
                 modelNameTextBox.TextBinding.Bind(hbModel, m => m.DisplayName);
 
