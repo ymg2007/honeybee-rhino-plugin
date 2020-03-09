@@ -1,0 +1,41 @@
+name: CD
+
+on: 
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: "Checkout Master Branch"
+        uses: actions/checkout@v2
+        
+      - name: Setup MSbuild
+        uses: microsoft/setup-msbuild@v1.0.0
+        
+      - name: Setup Nuget.exe
+        uses: nuget/setup-nuget@v1
+        
+      - name: Setup npm
+        uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+        
+      - name: Nuget Restore
+        run: nuget restore 
+        
+      - name: MSBuild
+        working-directory: src/HoneybeeRhinoPlugIn
+        run: |
+          msbuild /p:Configuration=Release
+
+      - name: Upload
+        uses: actions/upload-artifact@master
+        with:
+         name: HoneybeePlugin
+         path: src\HoneybeeRhinoPlugIn\bin\
+     
