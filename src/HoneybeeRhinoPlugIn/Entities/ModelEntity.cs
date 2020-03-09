@@ -67,7 +67,7 @@ namespace HoneybeeRhino.Entities
                 hbObj.DisplayName = $"My Honeybee Model {id.ToString().Substring(0, 5)}";
             }
 
-            this.HBObject = hbModel;
+            this.HBObject = hbObj;
 
         }
 
