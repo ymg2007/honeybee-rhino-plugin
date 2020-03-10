@@ -57,13 +57,13 @@ namespace HoneybeeRhino
 
         //BuildingVintages 2004, 2007, 2010, 2013, etc..
         private static IEnumerable<string> _buildingVintages;
-        public static IEnumerable<string> BuildingVintages => _buildingVintages ?? GetBuildingVintages();
+        public static IEnumerable<string> BuildingVintages => _buildingVintages = _buildingVintages ?? GetBuildingVintages();
 
 
         //ConstructionSets
-        private static readonly IEnumerable<HB.ConstructionSetAbridged> _defaultConstructionSets;
-        public static IEnumerable<HB.ConstructionSetAbridged> DefaultConstructionSets => _defaultConstructionSets ?? 
-            LoadLibrary(_LoadLibraries[7], HB.ConstructionSetAbridged.FromJson);
+        private static IEnumerable<HB.ConstructionSetAbridged> _defaultConstructionSets;
+        public static IEnumerable<HB.ConstructionSetAbridged> DefaultConstructionSets => 
+            _defaultConstructionSets = _defaultConstructionSets ?? LoadLibrary(_LoadLibraries[7], HB.ConstructionSetAbridged.FromJson);
 
         private static Dictionary<string, IEnumerable<HB.ConstructionSetAbridged>> _standardsConstructionSets = new Dictionary<string, IEnumerable<HB.ConstructionSetAbridged>>();
         public static Dictionary<string, IEnumerable<HB.ConstructionSetAbridged>> StandardsConstructionSets => throw new ArgumentException("Use GetorLoadStandardsConstructionSets(jsonFile)");
@@ -72,33 +72,32 @@ namespace HoneybeeRhino
 
         //Constructions  load from honeybee\honeybee_energy_standards\data\constructions\window_construction.json
         private static IEnumerable<HB.WindowConstructionAbridged> _standardsWindowConstructions;
-        public static IEnumerable<HB.WindowConstructionAbridged> StandardsWindowConstructions => _standardsWindowConstructions ??
-            LoadLibrary(Path.Combine(ConstructionsFolder, "window_construction.json"), HB.WindowConstructionAbridged.FromJson);
+        public static IEnumerable<HB.WindowConstructionAbridged> StandardsWindowConstructions => 
+            _standardsWindowConstructions = _standardsWindowConstructions?? LoadLibrary(Path.Combine(ConstructionsFolder, "window_construction.json"), HB.WindowConstructionAbridged.FromJson);
 
         //                  load from honeybee\honeybee_energy_standards\data\constructions\opaque_construction.json
         private static IEnumerable<HB.OpaqueConstructionAbridged> _standardsOpaqueConstructions;
-        public static IEnumerable<HB.OpaqueConstructionAbridged> StandardsOpaqueConstructions => _standardsOpaqueConstructions ??
-            LoadLibrary(Path.Combine(ConstructionsFolder, "opaque_construction.json"), HB.OpaqueConstructionAbridged.FromJson);
+        public static IEnumerable<HB.OpaqueConstructionAbridged> StandardsOpaqueConstructions => 
+            _standardsOpaqueConstructions = _standardsOpaqueConstructions ?? LoadLibrary(Path.Combine(ConstructionsFolder, "opaque_construction.json"), HB.OpaqueConstructionAbridged.FromJson);
 
 
 
         //Window Materials load from honeybee\honeybee_energy_standards\data\constructions\window_material.json
         private static IEnumerable<HB.IEnergyWindowMaterial> _standardsWindowMaterials;
-        public static IEnumerable<HB.IEnergyWindowMaterial> StandardsWindowMaterials => _standardsWindowMaterials ??
-            LoadWindowMaterials(Path.Combine(ConstructionsFolder, "window_material.json"));
+        public static IEnumerable<HB.IEnergyWindowMaterial> StandardsWindowMaterials => 
+            _standardsWindowMaterials = _standardsWindowMaterials ?? LoadWindowMaterials(Path.Combine(ConstructionsFolder, "window_material.json"));
 
         //                 load from honeybee\honeybee_energy_standards\data\constructions\opaque_material.json
         private static IEnumerable<HB.IEnergyMaterial> _standardsOpaqueMaterials;
-        public static IEnumerable<HB.IEnergyMaterial> StandardsOpaqueMaterials => _standardsOpaqueMaterials ??
-            LoadOpqueMaterials(Path.Combine(ConstructionsFolder, "opaque_material.json"));
+        public static IEnumerable<HB.IEnergyMaterial> StandardsOpaqueMaterials => 
+            _standardsOpaqueMaterials = _standardsOpaqueMaterials ?? LoadOpqueMaterials(Path.Combine(ConstructionsFolder, "opaque_material.json"));
 
 
 
         //ProgramTypes
         private static IEnumerable<HB.ProgramTypeAbridged> _defaultProgramTypes;
-        public static IEnumerable<HB.ProgramTypeAbridged> DefaultProgramTypes 
-            => _defaultProgramTypes ?? 
-            LoadLibrary(_LoadLibraries[8], HB.ProgramTypeAbridged.FromJson);
+        public static IEnumerable<HB.ProgramTypeAbridged> DefaultProgramTypes =>
+            _defaultProgramTypes = _defaultProgramTypes ?? LoadLibrary(_LoadLibraries[8], HB.ProgramTypeAbridged.FromJson);
 
         private static Dictionary<string, IEnumerable<HB.ProgramTypeAbridged>> _standardsProgramTypesByVintage = new Dictionary<string, IEnumerable<HB.ProgramTypeAbridged>>();
         public static Dictionary<string, IEnumerable<HB.ProgramTypeAbridged>> StandardsProgramTypesByVintage => throw new ArgumentException("Use GetOrLoadProgramTypesFromJson(jsonFile)");
@@ -107,50 +106,48 @@ namespace HoneybeeRhino
 
         //Schedules
         private static IEnumerable<HB.ScheduleRulesetAbridged> _standardsSchedules;
-        public static IEnumerable<HB.ScheduleRulesetAbridged> StandardsSchedules => _standardsSchedules ??
-            LoadLibraryParallel(Path.Combine(ScheduleFolder, "schedule.json"), HB.ScheduleRulesetAbridged.FromJson);
-
-
+        public static IEnumerable<HB.ScheduleRulesetAbridged> StandardsSchedules => 
+            _standardsSchedules = _standardsSchedules ?? LoadLibraryParallel(Path.Combine(ScheduleFolder, "schedule.json"), HB.ScheduleRulesetAbridged.FromJson);
 
         //HVACs
         private static IEnumerable<HB.IdealAirSystemAbridged> _defaultHVACs;
-        public static IEnumerable<HB.IdealAirSystemAbridged> DefaultHVACs => _defaultHVACs ?? 
-            LoadLibrary(_LoadLibraries[9], HB.IdealAirSystemAbridged.FromJson);
+        public static IEnumerable<HB.IdealAirSystemAbridged> DefaultHVACs => 
+            _defaultHVACs = _defaultHVACs ?? LoadLibrary(_LoadLibraries[9], HB.IdealAirSystemAbridged.FromJson);
 
         //People load
         private static IEnumerable<HB.PeopleAbridged> _defaultPeopleLoads;
-        public static IEnumerable<HB.PeopleAbridged> DefaultPeopleLoads => _defaultPeopleLoads ?? 
-            LoadLibrary(_LoadLibraries[0], HB.PeopleAbridged.FromJson);
+        public static IEnumerable<HB.PeopleAbridged> DefaultPeopleLoads =>
+            _defaultPeopleLoads = _defaultPeopleLoads ?? LoadLibrary(_LoadLibraries[0], HB.PeopleAbridged.FromJson);
 
         //Lighting load
         private static IEnumerable<HB.LightingAbridged> _defaultLightingLoads;
-        public static IEnumerable<HB.LightingAbridged> DefaultLightingLoads => _defaultLightingLoads ?? 
-            LoadLibrary(_LoadLibraries[1], HB.LightingAbridged.FromJson);
+        public static IEnumerable<HB.LightingAbridged> DefaultLightingLoads => 
+            _defaultLightingLoads = _defaultLightingLoads ?? LoadLibrary(_LoadLibraries[1], HB.LightingAbridged.FromJson);
 
         //ElecEqp load
         private static IEnumerable<HB.ElectricEquipmentAbridged> _defaultElectricEquipmentLoads;
-        public static IEnumerable<HB.ElectricEquipmentAbridged> DefaultElectricEquipmentLoads => _defaultElectricEquipmentLoads ?? 
-            LoadLibrary(_LoadLibraries[2], HB.ElectricEquipmentAbridged.FromJson);
+        public static IEnumerable<HB.ElectricEquipmentAbridged> DefaultElectricEquipmentLoads =>
+            _defaultElectricEquipmentLoads = _defaultElectricEquipmentLoads ?? LoadLibrary(_LoadLibraries[2], HB.ElectricEquipmentAbridged.FromJson);
 
         //GasEqp load
         private static IEnumerable<HB.GasEquipmentAbridged> _defaultGasEquipmentLoads;
-        public static IEnumerable<HB.GasEquipmentAbridged> GasEquipmentLoads => _defaultGasEquipmentLoads ?? 
-            LoadLibrary(_LoadLibraries[3], HB.GasEquipmentAbridged.FromJson);
+        public static IEnumerable<HB.GasEquipmentAbridged> GasEquipmentLoads =>
+            _defaultGasEquipmentLoads = _defaultGasEquipmentLoads ?? LoadLibrary(_LoadLibraries[3], HB.GasEquipmentAbridged.FromJson);
 
         //GasEqp load
         private static IEnumerable<HB.InfiltrationAbridged> _defaultInfiltrationLoads;
-        public static IEnumerable<HB.InfiltrationAbridged> DefaultInfiltrationLoads => _defaultInfiltrationLoads ?? 
-            LoadLibrary(_LoadLibraries[4], HB.InfiltrationAbridged.FromJson);
+        public static IEnumerable<HB.InfiltrationAbridged> DefaultInfiltrationLoads => 
+            _defaultInfiltrationLoads = _defaultInfiltrationLoads ?? LoadLibrary(_LoadLibraries[4], HB.InfiltrationAbridged.FromJson);
 
         //Ventilation load
         private static IEnumerable<HB.VentilationAbridged> _defaultVentilationLoads;
-        public static IEnumerable<HB.VentilationAbridged> DefaultVentilationLoads => _defaultVentilationLoads ?? 
-            LoadLibrary(_LoadLibraries[5], HB.VentilationAbridged.FromJson);
+        public static IEnumerable<HB.VentilationAbridged> DefaultVentilationLoads =>
+            _defaultVentilationLoads = _defaultVentilationLoads ?? LoadLibrary(_LoadLibraries[5], HB.VentilationAbridged.FromJson);
 
         //Setpoints
         private static IEnumerable<HB.SetpointAbridged> _defaultSetpoints;
-        public static IEnumerable<HB.SetpointAbridged> DefaultSetpoints => _defaultSetpoints ?? 
-            LoadLibrary(_LoadLibraries[6], HB.SetpointAbridged.FromJson);
+        public static IEnumerable<HB.SetpointAbridged> DefaultSetpoints =>
+            _defaultSetpoints = _defaultSetpoints ?? LoadLibrary(_LoadLibraries[6], HB.SetpointAbridged.FromJson);
 
         public static string DownLoadLibrary(string standardsUrl, string saveAsfileName)
         {
