@@ -89,6 +89,21 @@ namespace HoneybeeRhino.Entities
             return ee;
         }
 
+        public bool SelectAndHighlightRoom()
+        {
+            if (this.HostRoomObjRef == null)
+                return false;
+
+            if (this.HostRoomObjRef.Geometry() == null)
+                return false;
+
+            var roomEnt = this.HostRoomObjRef.Geometry().TryGetRoomEntity();
+            if (!roomEnt.IsValid)
+                return false;
+
+            return roomEnt.SelectAndHighlight();
+        }
+
     }
 
 }
