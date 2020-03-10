@@ -13,11 +13,17 @@ namespace HoneybeeRhino
     {
         private List<RhinoObject> greiedOutObjs = new List<RhinoObject>();
         public Guid EditingObj { get; private set; } = Guid.Empty;
-        private System.Drawing.Color _defaultBackgroundColor = AppearanceSettings.ViewportBackgroundColor;
+        private System.Drawing.Color _defaultColor = AppearanceSettings.ViewportBackgroundColor;
+
+        public bool IsEditingRoom => !EditingObj.Equals(Guid.Empty);
+
+    
+
         protected override void OnMouseDoubleClick(MouseCallbackEventArgs e)
         {
             base.OnMouseDoubleClick(e);
-            
+
+         
             var doc = RhinoDoc.ActiveDoc;
             var selectedRoom = doc.Objects.GetSelectedObjects(false, false).FirstOrDefault(_=>_.Geometry.IsRoom());
             //var greiedOutObjs = new List<RhinoObject>();
@@ -45,10 +51,13 @@ namespace HoneybeeRhino
                     doc.Objects.Lock(item, true);
                 }
 
-                var lighter = 30;
-                var newR = Math.Min(_defaultBackgroundColor.R + lighter, 255);
-                var newG = Math.Min(_defaultBackgroundColor.G + lighter, 255);
-                var newB = Math.Min(_defaultBackgroundColor.B + lighter, 255);
+                //save the current default color
+                var color = AppearanceSettings.ViewportBackgroundColor;
+                _defaultColor = color;
+
+                var newR = Math.Min(color.R + 30, 255);
+                var newG = Math.Min(color.G + 30, 255);
+                var newB = Math.Min(color.B + 30, 255);
 
                 AppearanceSettings.ViewportBackgroundColor =  System.Drawing.Color.FromArgb(newR, newG, newB);
                 e.View.Redraw();
@@ -57,16 +66,25 @@ namespace HoneybeeRhino
 
         }
 
+        public void ExitEditing()
+        {
+            ExitGroupEntity(RhinoDoc.ActiveDoc);
+        }
         private void ExitGroupEntity(RhinoDoc doc)
         {
+            if (!this.IsEditingRoom)
+                return;
+
             RhinoApp.EscapeKeyPressed -= RhinoApp_EscapeKeyPressed;
+           
             foreach (var item in greiedOutObjs)
             {
                 doc.Objects.Unlock(item, true);
             }
             EditingObj = Guid.Empty;
             greiedOutObjs.Clear();
-            AppearanceSettings.ViewportBackgroundColor = this._defaultBackgroundColor;
+
+            AppearanceSettings.ViewportBackgroundColor = this._defaultColor;
             doc.Views.Redraw();
             return;
         }
@@ -77,7 +95,7 @@ namespace HoneybeeRhino
             if (EditingObj == Guid.Empty)
                 return;
 
-            ExitGroupEntity(RhinoDoc.ActiveDoc);
+            ExitEditing();
 
         }
     }
