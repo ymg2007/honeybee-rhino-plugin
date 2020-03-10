@@ -2,6 +2,16 @@
     "plugins": [
         "@semantic-release/commit-analyzer",
         "@semantic-release/release-notes-generator",
-        "@semantic-release/github"
+        [
+            "@semantic-release/github",
+            {
+                "assets": [{
+                        "path": "src/HoneybeeRhinoPlugIn/bin",
+                        "name": "HoneybeeRhinoPlugIn",
+                        "label": "This is the plugin for Rhino to load"
+                    }
+                ]
+            }
+        ]
     ]
 }
