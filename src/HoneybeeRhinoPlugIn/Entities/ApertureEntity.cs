@@ -2,6 +2,7 @@
 using Rhino.DocObjects;
 using Rhino.DocObjects.Custom;
 using Rhino.FileIO;
+using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -82,7 +83,7 @@ namespace HoneybeeRhino.Entities
         //    return TryGetFrom(obj.Geometry);
         //}
 
-        public static ApertureEntity TryGetFrom(Rhino.Geometry.GeometryBase rhinoGeo)
+        public new static ApertureEntity TryGetFrom(Rhino.Geometry.GeometryBase rhinoGeo)
         {
             var rc = new ApertureEntity();
             if (rhinoGeo == null)
@@ -109,5 +110,9 @@ namespace HoneybeeRhino.Entities
 
             return roomEnt.SelectAndHighlight();
         }
+
+        #region Helper
+      
+        #endregion
     }
 }

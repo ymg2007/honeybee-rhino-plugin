@@ -112,7 +112,7 @@ namespace HoneybeeRhino.Entities
             return ent;
         }
 
-        public static FaceEntity TryGetFrom(GeometryBase rhinoGeo)
+        public new static FaceEntity TryGetFrom(GeometryBase rhinoGeo)
         {
             var rc = new FaceEntity();
             if (!rhinoGeo.IsValid)

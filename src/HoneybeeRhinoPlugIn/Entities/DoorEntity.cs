@@ -1,7 +1,9 @@
 ﻿using Rhino.Collections;
 using Rhino.DocObjects;
 using Rhino.DocObjects.Custom;
+using Rhino.Geometry;
 using System;
+using System.Linq;
 using System.Runtime.InteropServices;
 using HB = HoneybeeSchema;
 
@@ -74,7 +76,7 @@ namespace HoneybeeRhino.Entities
         }
 
 
-        public static DoorEntity TryGetFrom(Rhino.Geometry.GeometryBase rhinoGeo)
+        public new static DoorEntity TryGetFrom(Rhino.Geometry.GeometryBase rhinoGeo)
         {
             var rc = new DoorEntity();
             if (rhinoGeo == null)
@@ -102,5 +104,10 @@ namespace HoneybeeRhino.Entities
 
             return roomEnt.SelectAndHighlight();
         }
+
+        #region Helper
+
+      
+        #endregion
     }
 }
