@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Collections.Generic;
 using HoneybeeRhino;
 using HoneybeeRhino.Entities;
 using Rhino;
@@ -47,7 +48,6 @@ namespace HoneybeeRhino.RhinoCommands
 
                 //check if any brep has been converted to Room
                 var optionSkipExistingRoom_toggle = new OptionToggle(true, "No_RecreateAllRooms", "Yes");
-                bool bHavePreselectedObjects = false;
                 while (true)
                 {
                     go.ClearCommandOptions();
@@ -64,7 +64,6 @@ namespace HoneybeeRhino.RhinoCommands
                     }
                     if (go.ObjectsWerePreselected)
                     {
-                        bHavePreselectedObjects = true;
                         go.EnablePreSelect(false, true);
                         continue;
                     }
@@ -72,10 +71,10 @@ namespace HoneybeeRhino.RhinoCommands
                 }
 
                 if (go.CommandResult() != Result.Success)
-                    return go.CommandResult();
+                    return Result.Failure;
 
                 if (go.ObjectCount == 0)
-                    return go.CommandResult();
+                    return Result.Nothing;
 
                 var ifSkip = optionSkipExistingRoom_toggle.CurrentValue;
 
@@ -87,24 +86,44 @@ namespace HoneybeeRhino.RhinoCommands
                     objectToConvert = solidBreps.Where(_ => !_.IsRoom()).ToList();
                 }
 
+                ConvertToRoom(doc, objectToConvert);
 
-                //get current working model, and its GroupEntityTable for roomEntity to add
-                var tb = HoneybeeRhinoPlugIn.Instance.ModelEntityTable;
-                var modelEntity = tb.First().Value;
-
-                //Convert Room brep
-                foreach (var item in objectToConvert)
-                {
-                    Func<Brep, bool> func = (b) => doc.Objects.Replace(item, b);
-                    item.ToRoomBrepObj(func, modelEntity);
-                }
-                
                 doc.Views.Redraw();
 
                 var count = objectToConvert.Count();
                 var msg = count > 1 ? $"{count} Honeybee rooms were created successfully!" : $"{count} Honeybee room was created successfully!";
                 RhinoApp.WriteLine(msg);
                 return Result.Success; 
+
+
+            }
+        }
+
+        void ConvertToRoom(RhinoDoc doc, IEnumerable<ObjRef> roomObjRefs)
+        {
+            //get current working model, and its GroupEntityTable for roomEntity to add
+            var tb = HoneybeeRhinoPlugIn.Instance.ModelEntityTable;
+            var modelEntity = tb.First().Value;
+
+            //Convert Room brep
+            foreach (var item in roomObjRefs)
+            {
+                var roomBrep = EntityHelper.ToRoomBrepObj(item);
+                var success = doc.Objects.Replace(item, roomBrep);
+                if (success)
+                {
+                    //Remove from model if exists
+                    var found = modelEntity.Rooms.FirstOrDefault(_ => _.ObjectId == item.ObjectId);
+                    if (found != null)
+                        modelEntity.Rooms.Remove(found);
+
+                    //add to model
+                    modelEntity.Rooms.Add(new ObjRef(item.ObjectId));
+                }
+                else
+                {
+                    throw new ArgumentException("Failed to convert to honeybee room!");
+                }
 
 
             }

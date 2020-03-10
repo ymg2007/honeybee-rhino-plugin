@@ -26,8 +26,8 @@ namespace HoneybeeRhino.Test
             var id = _doc.Objects.Add(brep);
             //var rhinoObj = _doc.Objects.FindId(id);
             var rhinoObj = new ObjRef(id);
-            var a =  rhinoObj.ToRoomBrepObj((Brep b) => _doc.Objects.Replace(id, b));
-            
+            var a =  EntityHelper.ToRoomBrepObj(rhinoObj);
+            _doc.Objects.Replace(rhinoObj, a);
             return rhinoObj;
         }
         public ObjRef InitBrepObject(Brep brep)
@@ -480,7 +480,10 @@ namespace HoneybeeRhino.Test
             var windowObj = InitBrepObject(breps.First(_ => _.IsSurface));
 
             //make room
-            var roomBrepObj = roomObj.ToRoomBrepObj((Brep b) => _doc.Objects.Replace(roomObj.ObjectId, b));
+            var roomBrep = EntityHelper.ToRoomBrepObj(roomObj);
+            var roomBrepObj = new ObjRef(roomObj.ObjectId);
+            _doc.Objects.Replace(roomBrepObj, roomBrep);
+         
 
             //make window //add to groupEntity
             var processedObj = roomBrepObj.AddAperture(windowObj);
