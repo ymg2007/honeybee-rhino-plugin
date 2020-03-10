@@ -170,13 +170,27 @@ namespace HoneybeeRhino.Entities
 
         public void UpdateApertures(List<(ObjRef newApt, Guid oldID)> apertureMatches)
         {
+            if (!this.ApertureObjRefs.Any())
+                return;
             if (!apertureMatches.Any())
                 return;
 
+            //Find the apertures belongs to this Face
             var newApts = this.ApertureObjRefs.Select(_ => apertureMatches.Where(apt => apt.oldID == _.ObjectId).First().newApt);
             this.ApertureObjRefs = newApts.ToList();
-
         }
-      
+
+        public void UpdateDoors(List<(ObjRef newDoor, Guid oldID)> doorMatches)
+        {
+            if (!this.DoorObjRefs.Any())
+                return;
+            if (!doorMatches.Any())
+                return;
+
+            //Find the door belongs to this Face
+            var newdoors = this.DoorObjRefs.Select(_ => doorMatches.Where(apt => apt.oldID == _.ObjectId).First().newDoor);
+            this.DoorObjRefs = newdoors.ToList();
+        }
+
     }
 }

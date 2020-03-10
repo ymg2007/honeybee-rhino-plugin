@@ -126,75 +126,11 @@ namespace HoneybeeRhino
             //TODO: work on this later
             //var selectedShds = selectedObjs.Where(_ => _.IsShade());
 
-
             if (this._isObjectCopied)
             {
-                //Dictionary<OldRoomID, (newRoomID, newApertureList)>();
-                Dictionary<Guid, (Guid newRoomId, List<(ObjRef newApt, Guid oldApt)> apertures)> roomAptMatch = 
-                    selectedRooms.ToDictionary(
-                        _=> _.Geometry().TryGetRoomEntity().HostObjRef.ObjectId, 
-                        _=> ( _.ObjectId, new List<(ObjRef, Guid)>())
-                        );
-           
-
-                //check all group entities for new copied objects.
-                foreach (var newAperture in selectedApertures)
-                {
-                    //TODO: refactor this later 
-                    var ent = newAperture.TryGetApertureEntity();
-                    var oldHost = ent.HostObjRef;
-                    var oldHostRoom = ent.HostRoomObjRef;
-                    if (oldHostRoom != null)
-                    {
-                        //keep tracking of new aperture with its host room
-                        var newMatch = roomAptMatch[oldHostRoom.ObjectId];
-                        newMatch.apertures.Add((newAperture, oldHost.ObjectId));
-
-                        //attach aperture to new host room
-                        ent.HostRoomObjRef = new ObjRef(newMatch.newRoomId);
-                    }
-                    //update host brep
-                    ent.UpdateHostFrom(newAperture);
-                    //TODO: update hostRoomObjRef to new obj
-                }
-              
-
-                //update room
-                foreach (var newroom in selectedRooms)
-                {
-                  
-                    var roomEnt = newroom.Brep().TryGetRoomEntity();
-                    var oldHostId = roomEnt.HostObjRef.ObjectId;
-                    var matchDic = roomAptMatch[oldHostId];
-                    var matchApts = matchDic.apertures;
-
-                    if (matchApts.Any())
-                    {
-                        //update sub face entities 
-                        //Figure out all new copied windows' ownership
-                        var brepFaces = newroom.Brep().Faces;
-                        foreach (var bface in brepFaces)
-                        {
-                            var ent = bface.TryGetFaceEntity();
-                            //var apts = ent.GetApertures();
-                            ent.UpdateApertures(matchApts);
-                        }
-                    }
-                  
-
-                    roomEnt.UpdateHost(newroom);
-
-                    //Add to HB Model
-                    var model = HoneybeeRhinoPlugIn.Instance.ModelEntityTable.First().Value;
-                    model.Rooms.Add(new ObjRef(newroom.ObjectId));
-
-                }
+                CheckCopiedObjs(selectedRooms, selectedApertures, selectedDoors);
                 //reset the flag.
                 this._isObjectCopied = false;
-            }
-            else
-            {
-
             }
 
             //currently there is one object is double clicked,
@@ -211,46 +147,151 @@ namespace HoneybeeRhino
 
             //Only make the room obj as the entry point for selecting the entire group entity.
             var roomCounts = selectedRooms.Count();
-            foreach (var room in selectedRooms)
+            SelectHighlightObj(selectedRooms, selectedApertures, selectedDoors);
+
+
+            if (roomCounts > 1)
+                RhinoApp.WriteLine($"Honeybee Rhino Plugin: {selectedRooms.Count()} Honeybee rooms are selected");
+
+
+
+
+            //local method
+            void CheckCopiedObjs(IEnumerable<ObjRef> rooms, IEnumerable<ObjRef> apertures, IEnumerable<ObjRef> doors)
             {
-                var entity = room.Geometry().TryGetRoomEntity();
-                if (!entity.IsValid)
-                    continue;
+                //Dictionary<OldRoomID, (newRoomID, newApertureList)>();
+                Dictionary<Guid, (Guid newRoomId, List<(ObjRef newApt, Guid oldAptID)> apertures, List<(ObjRef newDoor, Guid olddoorID)> doors)> 
+                    roomAptDoorMatch =
+                    rooms.ToDictionary(
+                        _ => _.Geometry().TryGetRoomEntity().HostObjRef.ObjectId,
+                        _ => (_.ObjectId, new List<(ObjRef, Guid)>(), new List<(ObjRef, Guid)>())
+                        );
 
-                entity.SelectAndHighlight();
 
-                if (roomCounts == 1)
+                //update Apertures
+                foreach (var newAperture in apertures)
                 {
-                    RhinoApp.WriteLine($"Honeybee Rhino Plugin: {entity.Name}; Window: {entity.ApertureCount}");
+                    //TODO: refactor this later 
+                    var ent = newAperture.TryGetApertureEntity();
+                    var oldHost = ent.HostObjRef;
+                    var oldHostRoom = ent.HostRoomObjRef;
+                    if (oldHostRoom != null)
+                    {
+                        //keep tracking of new aperture with its host room
+                        var newMatch = roomAptDoorMatch[oldHostRoom.ObjectId];
+                        newMatch.apertures.Add((newAperture, oldHost.ObjectId));
+
+                        //attach aperture to new host room
+                        ent.HostRoomObjRef = new ObjRef(newMatch.newRoomId);
+                    }
+                    //update host brep
+                    ent.UpdateHostFrom(newAperture);
+                    //TODO: update hostRoomObjRef to new obj
+                }
+
+                //update Doors
+                foreach (var newDoor in doors)
+                {
+                    var ent = newDoor.TryGetDoorEntity();
+                    var oldHost = ent.HostObjRef;
+                    var oldHostRoom = ent.HostRoomObjRef;
+                    if (oldHostRoom != null)
+                    {
+                        //keep tracking of new aperture with its host room
+                        var newMatch = roomAptDoorMatch[oldHostRoom.ObjectId];
+                        newMatch.doors.Add((newDoor, oldHost.ObjectId));
+
+                        //attach aperture to new host room
+                        ent.HostRoomObjRef = new ObjRef(newMatch.newRoomId);
+                    }
+                    //update host brep
+                    ent.UpdateHostFrom(newDoor);
+                }
+
+
+                //update room
+                foreach (var newRoom in rooms)
+                {
+
+                    var roomEnt = newRoom.Brep().TryGetRoomEntity();
+                    var oldHostId = roomEnt.HostObjRef.ObjectId;
+                    var matchDic = roomAptDoorMatch[oldHostId];
+                    //update aperture on faces
+                    var matchApts = matchDic.apertures;
+                    if (matchApts.Any())
+                    {
+                        //update sub face entities 
+                        //Figure out all new copied windows' ownership
+                        var brepFaces = newRoom.Brep().Faces;
+                        foreach (var bface in brepFaces)
+                        {
+                            var ent = bface.TryGetFaceEntity();
+                            ent.UpdateApertures(matchApts);
+                        }
+                    }
+                    //update aperture on faces
+                    var matchDoors = matchDic.doors;
+                    if (matchDoors.Any())
+                    {
+                        //update sub face entities 
+                        //Figure out all new copied matchDoors' ownership
+                        var brepFaces = newRoom.Brep().Faces;
+                        foreach (var bface in brepFaces)
+                        {
+                            var ent = bface.TryGetFaceEntity();
+                            ent.UpdateDoors(matchDoors);
+                        }
+                    }
+
+                    roomEnt.UpdateHost(newRoom);
+
+                    //Add to HB Model
+                    var model = HoneybeeRhinoPlugIn.Instance.ModelEntityTable.First().Value;
+                    model.Rooms.Add(new ObjRef(newRoom.ObjectId));
+
                 }
 
             }
-            foreach (var apt in selectedApertures)
+
+            void SelectHighlightObj(IEnumerable<ObjRef> rooms, IEnumerable<ObjRef> apertures, IEnumerable<ObjRef> doors)
             {
-                var entity = apt.Geometry().TryGetApertureEntity();
-                if (!entity.IsValid)
-                    continue;
+                foreach (var room in rooms)
+                {
+                    var entity = room.Geometry().TryGetRoomEntity();
+                    if (!entity.IsValid)
+                        continue;
 
-                entity.SelectAndHighlightRoom();
-               
+                    entity.SelectAndHighlight();
+
+                    if (roomCounts == 1)
+                    {
+                        RhinoApp.WriteLine($"Honeybee Rhino Plugin: {entity.Name}; Window: {entity.ApertureCount}");
+                    }
+
+                }
+                foreach (var apt in apertures)
+                {
+                    var entity = apt.Geometry().TryGetApertureEntity();
+                    if (!entity.IsValid)
+                        continue;
+
+                    entity.SelectAndHighlightRoom();
+
+                }
+
+                foreach (var door in doors)
+                {
+                    var entity = door.Geometry().TryGetDoorEntity();
+                    if (!entity.IsValid)
+                        continue;
+
+                    entity.SelectAndHighlightRoom();
+                }
             }
-
-            foreach (var door in selectedDoors)
-            {
-                var entity = door.Geometry().TryGetDoorEntity();
-                if (!entity.IsValid)
-                    continue;
-
-                entity.SelectAndHighlightRoom();
-            }
-
-            if (roomCounts > 1)
-            {
-                RhinoApp.WriteLine($"Honeybee Rhino Plugin: {selectedRooms.Count()} Honeybee rooms are selected");
-            }
-
 
         }
+
+        
 
         ///<summary>Gets the only instance of the HoneybeeRhinoPlugIn plug-in.</summary>
         public static HoneybeeRhinoPlugIn Instance
