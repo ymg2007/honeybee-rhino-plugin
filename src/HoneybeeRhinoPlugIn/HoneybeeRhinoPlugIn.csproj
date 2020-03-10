@@ -67,7 +67,6 @@
     <Compile Include="HoneybeeRhino\EnergyLibrary.cs" />
     <Compile Include="HoneybeeRhino\HoneybeeRhino.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Converter\Convert.ToHBRhinoObj.cs" />
     <Compile Include="Converter\Convert.ToHB.cs" />
     <Compile Include="Entities\ApertureEntity.cs" />
     <Compile Include="Entities\EntityHelper.cs" />

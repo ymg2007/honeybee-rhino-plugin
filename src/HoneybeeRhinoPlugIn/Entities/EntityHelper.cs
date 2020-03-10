@@ -184,5 +184,112 @@ namespace HoneybeeRhino.Entities
 
         }
 
+
+        //ObjRef to ObjRef
+        public static Brep ToRoomBrepObj(ObjRef roomBrepObj, double maxRoofFloorAngle = 30, double tolerance = 0.0001)
+        {
+            //check if Null, valid, solid
+            if (!CheckIfBrepObjectValid(roomBrepObj))
+                throw new ArgumentException("Input geometry is not a valid object to convert to honeybee room!");
+
+            //create new room
+            //Create honeybee room object here.
+            var closedBrep = roomBrepObj.Brep().DuplicateBrep();
+            var dupBrep = closedBrep.ToAllPlaneBrep(tolerance);
+            var subFaces = dupBrep.Faces;
+
+            var hbFaces = subFaces.Select(_ => _.ToHBFace(maxRoofFloorAngle)).ToList();
+
+            for (int i = 0; i < hbFaces.Count; i++)
+            {
+                var faceEnt = new FaceEntity(hbFaces[i]);
+                var bFace = dupBrep.Surfaces[i];
+                bFace.UserData.Add(faceEnt);
+            }
+
+            var id = roomBrepObj.ObjectId;
+            var newObjRef = new ObjRef(id);
+            var room = new HoneybeeSchema.Room($"Room_{id}", hbFaces, new HoneybeeSchema.RoomPropertiesAbridged());
+            room.DisplayName = $"My Room {id.ToString().Substring(0, 5)}";
+            var ent = new RoomEntity(room, newObjRef);
+
+            //Add this RoomEntity to brep's userdata at the end.
+            dupBrep.UserData.Add(ent);
+
+
+#if DEBUG
+
+            if (!dupBrep.TryGetRoomEntity().IsValid)
+                throw new ArgumentException("Failed to convert to honeybee room!");
+
+#endif
+
+            return dupBrep;
+
+
+            //Local method
+            bool CheckIfBrepObjectValid(ObjRef roomObj)
+            {
+                if (roomObj == null)
+                    throw new NullReferenceException();
+
+                var brep = roomObj.Brep();
+                if (brep == null)
+                    throw new NullReferenceException();
+                if (!brep.IsValid)
+                    throw new ArgumentException("Input geometry is not a valid object to convert to honeybee room!");
+
+                if (!brep.IsSolid)
+                    throw new ArgumentException("This rhino object is not a water-tight solid!");
+
+                brep.DeleteHBEntity(duplicate: false);
+
+                return true;
+            }
+
+
+
+        }
+
+        public static Brep ToApertureBrep(GeometryBase apertureGeo, Guid hostID)
+        {
+            var geo = Rhino.Geometry.Brep.TryConvertBrep(apertureGeo);
+
+            var faces = geo.Faces;
+            if (faces.Count == 1 && faces.First().UnderlyingSurface().IsPlanar())
+            {
+                var hbobj = faces.First().ToAperture(hostID);
+                var ent = new Entities.ApertureEntity(hbobj);
+                ent.HostObjRef = new ObjRef(hostID);
+                geo.UserData.Add(ent);
+                return geo;
+            }
+            else
+            {
+                throw new ArgumentException("Input geometry is not a valid planar object to convert to honeybee aperture!");
+            }
+
+        }
+
+        public static Brep ToDoorBrep(GeometryBase apertureGeo, Guid hostID)
+        {
+            var geo = Rhino.Geometry.Brep.TryConvertBrep(apertureGeo);
+
+            var faces = geo.Faces;
+            if (faces.Count == 1 && faces.First().UnderlyingSurface().IsPlanar())
+            {
+                var hbobj = faces.First().ToDoor(hostID);
+                var ent = new Entities.DoorEntity(hbobj);
+                ent.HostObjRef = new ObjRef(hostID);
+                geo.UserData.Add(ent);
+                return geo;
+            }
+            else
+            {
+                throw new ArgumentException("Input geometry is not a valid planar object to convert to honeybee aperture!");
+            }
+
+        }
+
     }
 }

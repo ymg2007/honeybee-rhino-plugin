@@ -101,7 +101,7 @@ namespace HoneybeeRhino
 
                 var newObjRef = new ObjRef(hostId);
                 //Convert to Aperture Brep, and replace current rhino object
-                aptBrep = aptBrep.ToApertureBrep(hostId);
+                aptBrep = EntityHelper.ToApertureBrep(aptBrep, hostId);
 
                 //add to room face brep
                 roomFaceEnt.AddAperture(newObjRef, aptBrep);
@@ -118,7 +118,7 @@ namespace HoneybeeRhino
 
                 var newObjRef = new ObjRef(hostId);
                 //Convert to Aperture Brep, and replace current rhino object
-                doorBrep = doorBrep.ToDoorBrep(hostId);
+                doorBrep = EntityHelper.ToDoorBrep(doorBrep, hostId);
 
                 //add to room face brep
                 roomFaceEnt.AddDoor(newObjRef, doorBrep);
