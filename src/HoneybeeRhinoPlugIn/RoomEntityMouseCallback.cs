@@ -45,7 +45,12 @@ namespace HoneybeeRhino
                     doc.Objects.Lock(item, true);
                 }
 
-                AppearanceSettings.ViewportBackgroundColor =  System.Drawing.Color.FromArgb(_defaultBackgroundColor.R + 50, _defaultBackgroundColor.G + 50,_defaultBackgroundColor.B + 50);
+                var lighter = 30;
+                var newR = Math.Min(_defaultBackgroundColor.R + lighter, 255);
+                var newG = Math.Min(_defaultBackgroundColor.G + lighter, 255);
+                var newB = Math.Min(_defaultBackgroundColor.B + lighter, 255);
+
+                AppearanceSettings.ViewportBackgroundColor =  System.Drawing.Color.FromArgb(newR, newG, newB);
                 e.View.Redraw();
             }
 
