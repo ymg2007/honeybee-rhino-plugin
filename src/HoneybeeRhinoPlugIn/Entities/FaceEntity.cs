@@ -19,13 +19,9 @@ namespace HoneybeeRhino.Entities
         public HB.Face HBObject { get; private set; }
 
         public List<ObjRef> ApertureObjRefs { get; private set; } = new List<ObjRef>();
-        public List<ObjRef> ApertureObjRefsWithoutHistory
-        {
-            get 
-            {
-                return this.ApertureObjRefs.Where(_ => _.TryGetApertureEntity().IsValid).ToList();
-            } 
-        } 
+        public List<ObjRef> DoorObjRefs { get; private set; } = new List<ObjRef>();
+        public List<ObjRef> ApertureObjRefsWithoutHistory => this.ApertureObjRefs.Where(_ => _.TryGetApertureEntity().IsValid).ToList();
+        public List<ObjRef> DoorObjRefsWithoutHistory => this.DoorObjRefs.Where(_ => _.TryGetDoorEntity().IsValid).ToList();
 
         public override bool IsValid => HBObject != null;
         public override string Description => this.IsValid ? $"HBFaceEntity: {HBObject.Name}" : base.Description;
@@ -58,6 +54,7 @@ namespace HoneybeeRhino.Entities
                 var json = src.HBObject.ToJson();
                 this.HBObject = HB.Face.FromJson(json);
                 this.ApertureObjRefs = src.ApertureObjRefsWithoutHistory;
+                this.DoorObjRefs = src.DoorObjRefsWithoutHistory;
             }
         }
 
@@ -68,13 +65,15 @@ namespace HoneybeeRhino.Entities
             var json = dic.GetString("HBData");
             this.HBObject = HB.Face.FromJson(json);
             this.ApertureObjRefs = (dic[nameof(ApertureObjRefs)] as IEnumerable<ObjRef>).ToList();
+            this.DoorObjRefs = (dic[nameof(DoorObjRefs)] as IEnumerable<ObjRef>).ToList();
         }
 
         private protected override ArchivableDictionary Serialize()
         {
             var dic = base.Serialize();
             dic.Set("HBData", this.HBObject.ToJson());
-            dic.Set(nameof(ApertureObjRefs), ApertureObjRefsWithoutHistory);
+            dic.Set(nameof(ApertureObjRefs), this.ApertureObjRefsWithoutHistory);
+            dic.Set(nameof(DoorObjRefs), this.DoorObjRefsWithoutHistory);
             return dic;
         }
 
@@ -149,6 +148,19 @@ namespace HoneybeeRhino.Entities
             var HBApertures = this.HBObject.Apertures?? new List<HB.Aperture>();
             HBApertures.Add(apertureEntity.HBObject);
             this.HBObject.Apertures = HBApertures;
+        }
+
+        public void AddDoor(ObjRef doorObjRef, Brep door)
+        {
+            var ent = door.TryGetDoorEntity();
+            if (!ent.IsValid)
+                throw new ArgumentException("Door brep is not a valid Honeybee aperture object!");
+
+            this.DoorObjRefs.Add(doorObjRef);
+
+            var HBDoors = this.HBObject.Doors ?? new List<HB.Door>();
+            HBDoors.Add(ent.HBObject);
+            this.HBObject.Doors = HBDoors;
         }
 
         public List<ObjRef> GetApertures()

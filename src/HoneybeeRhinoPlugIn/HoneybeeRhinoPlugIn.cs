@@ -122,6 +122,7 @@ namespace HoneybeeRhino
             //var selectedGroupEntities = selectedObjs.Select(_ => GroupEntity.TryGet(_));
             var selectedRooms = selectedObjs.Where(_ => _.Geometry.IsRoom()).Select(_ => new ObjRef(_.Id));
             var selectedApertures = selectedObjs.Where(_ => _.Geometry.IsAperture()).Select(_=> new ObjRef(_.Id));
+            var selectedDoors = selectedObjs.Where(_ => _.Geometry.IsDoor()).Select(_ => new ObjRef(_.Id));
             //TODO: work on this later
             //var selectedShds = selectedObjs.Where(_ => _.IsShade());
 
@@ -232,6 +233,15 @@ namespace HoneybeeRhino
 
                 entity.SelectAndHighlightRoom();
                
+            }
+
+            foreach (var door in selectedDoors)
+            {
+                var entity = door.Geometry().TryGetDoorEntity();
+                if (!entity.IsValid)
+                    continue;
+
+                entity.SelectAndHighlightRoom();
             }
 
             if (roomCounts > 1)

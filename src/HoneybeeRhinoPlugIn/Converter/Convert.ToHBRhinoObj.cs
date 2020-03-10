@@ -53,11 +53,30 @@ namespace HoneybeeRhino
             var geo = Rhino.Geometry.Brep.TryConvertBrep(apertureGeo);
 
             var faces = geo.Faces;
-            if (faces.Count ==1 && faces.First().UnderlyingSurface().IsPlanar())
+            if (faces.Count == 1 && faces.First().UnderlyingSurface().IsPlanar())
             {
                 var hbobj = faces.First().ToAperture(hostID);
                 var ent = new Entities.ApertureEntity(hbobj);
-                ent.HostObjRef = new ObjRef( hostID);
+                ent.HostObjRef = new ObjRef(hostID);
+                geo.UserData.Add(ent);
+                return geo;
+            }
+            else
+            {
+                throw new ArgumentException("Input geometry is not a valid planar object to convert to honeybee aperture!");
+            }
+
+        }
+        public static RH.Brep ToDoorBrep(this RH.GeometryBase apertureGeo, Guid hostID)
+        {
+            var geo = Rhino.Geometry.Brep.TryConvertBrep(apertureGeo);
+
+            var faces = geo.Faces;
+            if (faces.Count == 1 && faces.First().UnderlyingSurface().IsPlanar())
+            {
+                var hbobj = faces.First().ToDoor(hostID);
+                var ent = new Entities.DoorEntity(hbobj);
+                ent.HostObjRef = new ObjRef(hostID);
                 geo.UserData.Add(ent);
                 return geo;
             }

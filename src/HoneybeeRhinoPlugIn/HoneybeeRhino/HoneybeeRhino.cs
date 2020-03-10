@@ -23,8 +23,30 @@ namespace HoneybeeRhino
             }
             return processed;
         }
+        public static List<(Brep room, Guid roomId, List<(Brep brep, Guid id)> doors)> AddDoors(this IEnumerable<ObjRef> roomObjRefs, List<ObjRef> doorObjRefs)
+        {
+            var processed = new List<(Brep room, Guid roomId, List<(Brep brep, Guid doorId)>)>();
+            foreach (var room in roomObjRefs)
+            {
+                var match = room.AddDoors(doorObjRefs);
+                if (match.doors.Any())
+                    processed.Add(match);
+
+            }
+            return processed;
+        }
 
         public static (Brep room, Guid roomId, List<(Brep brep, Guid id)> apertures) AddApertures(this ObjRef roomObjRef, List<ObjRef> apertureObjRefs)
+        {
+            return roomObjRef.AddApertureDoor(apertureObjRefs, false);
+        }
+
+        public static (Brep room, Guid roomId, List<(Brep brep, Guid id)> doors) AddDoors(this ObjRef roomObjRef, List<ObjRef> doorObjRefs)
+        {
+            return roomObjRef.AddApertureDoor(doorObjRefs, true);
+        }
+
+        public static (Brep room, Guid roomId, List<(Brep brep, Guid id)> apertures) AddApertureDoor(this ObjRef roomObjRef, List<ObjRef> apertureObjRefs, bool isDoor = false)
         {
             //Only add to valid room obj
             if (!roomObjRef.IsRoom())
@@ -55,27 +77,57 @@ namespace HoneybeeRhino
                 //Install all matched apertures to this room.
                 foreach (var matchedApterture in matchedAptertures)
                 {
-                    var hostId = matchedApterture.id;
-                    var aptBrep = matchedApterture.brep;
-
-                    var newObjRef = new ObjRef(hostId);
-                    //Convert to Aperture Brep, and replace current rhino object
-                    aptBrep = aptBrep.ToApertureBrep(hostId);
-
-                    //add to room face brep
-                    roomSrfEnt.AddAperture(newObjRef, aptBrep);
-
-                    //link host room objref to aperture entity
-                    aptBrep.TryGetApertureEntity().HostRoomObjRef = new ObjRef(roomObjRef.ObjectId);
-
-
-                    apertures.Add((aptBrep, hostId));
+                    (Brep brep, Guid id) processed;
+                    if (isDoor)
+                    {
+                        processed = AddDoor(matchedApterture, roomSrfEnt);
+                    }
+                    else
+                    {
+                        processed = AddAperture(matchedApterture, roomSrfEnt);
+                    }
+                    apertures.Add(processed);
 
                 }
 
             }
 
             return (roomBrep, roomObjRef.ObjectId, apertures);
+
+            (Brep brep, Guid id) AddAperture((Brep brep, Guid id) matchedFace, FaceEntity roomFaceEnt)
+            {
+                var hostId = matchedFace.id;
+                var aptBrep = matchedFace.brep;
+
+                var newObjRef = new ObjRef(hostId);
+                //Convert to Aperture Brep, and replace current rhino object
+                aptBrep = aptBrep.ToApertureBrep(hostId);
+
+                //add to room face brep
+                roomFaceEnt.AddAperture(newObjRef, aptBrep);
+
+                //link host room objref to aperture entity
+                aptBrep.TryGetApertureEntity().HostRoomObjRef = new ObjRef(roomObjRef.ObjectId);
+                return (aptBrep, hostId);
+            }
+
+            (Brep brep, Guid id) AddDoor((Brep brep, Guid id) matchedFace, FaceEntity roomFaceEnt)
+            {
+                var hostId = matchedFace.id;
+                var doorBrep = matchedFace.brep;
+
+                var newObjRef = new ObjRef(hostId);
+                //Convert to Aperture Brep, and replace current rhino object
+                doorBrep = doorBrep.ToDoorBrep(hostId);
+
+                //add to room face brep
+                roomFaceEnt.AddDoor(newObjRef, doorBrep);
+
+                //link host room objref to aperture entity
+                doorBrep.TryGetDoorEntity().HostRoomObjRef = new ObjRef(roomObjRef.ObjectId);
+                return (doorBrep, hostId);
+            }
+
 
 
             //Local method ===========================================================================================================
@@ -118,6 +170,12 @@ namespace HoneybeeRhino
         {
             return roomObjRef.AddApertures(new List<ObjRef>() { apertureObjRef });
         }
+
+
+
+
+
+
 
 
 

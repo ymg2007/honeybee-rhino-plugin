@@ -1,22 +1,18 @@
 ﻿using Rhino.Collections;
 using Rhino.DocObjects;
 using Rhino.DocObjects.Custom;
-using Rhino.FileIO;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using HB = HoneybeeSchema;
 
 namespace HoneybeeRhino.Entities
 {
-    [Guid("FC5517EF-9AFF-4D02-A26D-80E1FEC4B6F1")]
-    public class ApertureEntity : HBObjEntity
+    [Guid("7E348AC8-F8CB-4F83-AFE3-D9C9DFAEC8CB")]
+    public class DoorEntity : HBObjEntity
     {
-        public HB.Aperture HBObject { get; private set; } 
-        public override string Description => this.IsValid ? $"HBApertureEntity: {HBObject.Name}" : base.Description;
+        public HB.Door HBObject { get; private set; }
+
+        public override string Description => this.IsValid ? $"DoorEntity: {HBObject.Name}" : base.Description;
 
         public override bool IsValid
         {
@@ -31,33 +27,33 @@ namespace HoneybeeRhino.Entities
                     && this.HBObject != null;
             }
         }
-        public ApertureEntity()
+        public DoorEntity()
         {
         }
 
-        public ApertureEntity(HB.Aperture hbObj)
+        public DoorEntity(HB.Door hbObj)
         {
             this.HBObject = hbObj;
         }
 
         protected override void OnDuplicate(UserData source)
         {
-            if (source is ApertureEntity src)
+            if (source is DoorEntity src)
             {
                 base.OnDuplicate(source);
                 var json = src.HBObject.ToJson();
-                this.HBObject = HB.Aperture.FromJson(json);
+                this.HBObject = HB.Door.FromJson(json);
             }
         }
 
-        public ApertureEntity UpdateHostFrom(ObjRef newApertureObj)
+        public DoorEntity UpdateHostFrom(ObjRef newDoorObj)
         {
             //update HBObject name (ID)
-            var id = newApertureObj.ObjectId;
-            this.HBObject.Name = $"Aperture_{id}";
-            this.HBObject.DisplayName = $"My Aperture {id.ToString().Substring(0, 5)}";
+            var id = newDoorObj.ObjectId;
+            this.HBObject.Name = $"Door_{id}";
+            this.HBObject.DisplayName = $"My Door {id.ToString().Substring(0, 5)}";
             //update hostRef
-            this.HostObjRef = newApertureObj;
+            this.HostObjRef = newDoorObj;
             return this;
         }
 
@@ -67,7 +63,7 @@ namespace HoneybeeRhino.Entities
             var dic = dictionary;
             base.Deserialize(dic);
             var json = dic.GetString("HBData");
-            this.HBObject = HB.Aperture.FromJson(json);
+            this.HBObject = HB.Door.FromJson(json);
         }
 
         private protected override ArchivableDictionary Serialize()
@@ -77,24 +73,21 @@ namespace HoneybeeRhino.Entities
             return dic;
         }
 
-        //public static ApertureEntity TryGetFrom(RhinoObject obj)
-        //{
-        //    return TryGetFrom(obj.Geometry);
-        //}
 
-        public static ApertureEntity TryGetFrom(Rhino.Geometry.GeometryBase rhinoGeo)
+        public static DoorEntity TryGetFrom(Rhino.Geometry.GeometryBase rhinoGeo)
         {
-            var rc = new ApertureEntity();
+            var rc = new DoorEntity();
             if (rhinoGeo == null)
                 return rc;
             if (!rhinoGeo.IsValid)
                 return rc;
 
-            var ent = rhinoGeo.UserData.Find(typeof(ApertureEntity)) as ApertureEntity;
+            var ent = rhinoGeo.UserData.Find(typeof(DoorEntity)) as DoorEntity;
 
             return ent == null ? rc : ent;
         }
 
+        //TODO: move to HBObjEntity
         public bool SelectAndHighlightRoom()
         {
             if (this.HostRoomObjRef == null)

@@ -110,11 +110,14 @@ namespace HoneybeeRhino.Entities
             //select and highlight room
             ObjRefs.Add(this.HostObjRef);
 
-            //select apertures
+            //select apertures, doors
             var apts = this.HostObjRef.Brep().Faces
                 .Select(_ => _.TryGetFaceEntity())
                 .Where(_ => _.IsValid)
-                .SelectMany(_ => _.ApertureObjRefs);
+                .SelectMany(_ => { 
+                    var objRefs = _.ApertureObjRefs; 
+                    objRefs.AddRange(_.DoorObjRefs); 
+                    return objRefs; });
 
             ObjRefs.AddRange(apts);
 

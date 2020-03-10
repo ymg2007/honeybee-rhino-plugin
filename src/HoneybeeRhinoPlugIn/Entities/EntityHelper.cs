@@ -14,12 +14,17 @@ namespace HoneybeeRhino.Entities
         public static bool IsAperture(this ObjRef rhinoRef) => rhinoRef.Geometry().IsAperture();
         public static bool IsAperture(this GeometryBase geometry) => ApertureEntity.TryGetFrom(geometry).IsValid;
 
+        public static bool IsDoor(this ObjRef rhinoRef) => rhinoRef.Geometry().IsDoor();
+        public static bool IsDoor(this GeometryBase geometry) => DoorEntity.TryGetFrom(geometry).IsValid;
 
         public static RoomEntity TryGetRoomEntity(this ObjRef rhinoRef) => RoomEntity.TryGetFrom(rhinoRef.Geometry());
         public static RoomEntity TryGetRoomEntity(this GeometryBase rhinoRef) => RoomEntity.TryGetFrom(rhinoRef);
 
         public static ApertureEntity TryGetApertureEntity(this ObjRef rhinoRef) => ApertureEntity.TryGetFrom(rhinoRef.Geometry());
         public static ApertureEntity TryGetApertureEntity(this GeometryBase rhinoRef) => ApertureEntity.TryGetFrom(rhinoRef);
+
+        public static DoorEntity TryGetDoorEntity(this ObjRef rhinoRef) => DoorEntity.TryGetFrom(rhinoRef.Geometry());
+        public static DoorEntity TryGetDoorEntity(this GeometryBase rhinoRef) => DoorEntity.TryGetFrom(rhinoRef);
 
         public static FaceEntity TryGetOrphanedFaceEntity(this ObjRef roomHostRef) => FaceEntity.TryGetFrom(roomHostRef.Geometry());
         public static FaceEntity TryGetFaceEntity(this ObjRef roomHostRef, ComponentIndex componentIndex) => FaceEntity.TryGetFrom(roomHostRef, componentIndex);

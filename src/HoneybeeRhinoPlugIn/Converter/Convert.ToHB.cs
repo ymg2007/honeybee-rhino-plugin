@@ -160,10 +160,19 @@ namespace HoneybeeRhino
 
         //public static HB.Aperture ToWindow(this RH.Surface singleSurface) => ToAperture(singleSurface);
 
-        public static HB.Door ToDoor(this RH.Surface singleSurface)
+        public static HB.Door ToDoor(this RH.BrepFace singleSurface, Guid hostID)
         {
-            var face3D = singleSurface.ToHBFace3D();
-            return new HB.Door($"Door_{Guid.NewGuid()}", face3D, new HB.Outdoors(), new HB.DoorPropertiesAbridged());
+            if (singleSurface.IsPlanar())
+            {
+                var face3D = singleSurface.ToHBFace3D();
+                var apt = new HB.Door($"Door_{hostID}", face3D, new HB.Outdoors(), new HB.DoorPropertiesAbridged());
+                apt.DisplayName = $"My Door {hostID.ToString().Substring(0, 5)}";
+                return apt;
+            }
+            else
+            {
+                throw new ArgumentException("Input aperture surface has to be planar!");
+            }
         }
 
 
