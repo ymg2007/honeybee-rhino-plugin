@@ -23,7 +23,7 @@ namespace HoneybeeRhino.UI
 
                 //Get constructions
                 var constructionSetDP = MakeDropDown(EnergyProp.Construction, (v) => EnergyProp.Construction = v?.Name,
-                    EnergyLibrary.StandardsOpaqueConstructions, "By Room ConstructionSet---------------------");
+                    EnergyLibrary.StandardsWindowConstructions, "By Room ConstructionSet---------------------");
 
 
                 DefaultButton = new Button { Text = "OK" };
