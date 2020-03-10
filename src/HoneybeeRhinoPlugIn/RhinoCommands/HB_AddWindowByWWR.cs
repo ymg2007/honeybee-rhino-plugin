@@ -49,8 +49,6 @@ namespace HoneybeeRhino.RhinoCommands
                     go.EnableUnselectObjectsOnExit(false);
                     go.DeselectAllBeforePostSelect = false;
 
-                    bool bHavePreselectedObjects = false;
-
                     while (true)
                     {
                         go.ClearCommandOptions();
@@ -70,7 +68,6 @@ namespace HoneybeeRhino.RhinoCommands
 
                         if (go.ObjectsWerePreselected)
                         {
-                            bHavePreselectedObjects = true;
                             go.EnablePreSelect(false, true);
                             continue;
                         }
