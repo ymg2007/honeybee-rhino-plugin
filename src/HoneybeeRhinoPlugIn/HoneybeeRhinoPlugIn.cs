@@ -33,7 +33,7 @@ namespace HoneybeeRhino
             Rhino.RhinoDoc.EndOpenDocument += RhinoDoc_EndOpenDocument; // deal with CopyToClipboard/Paste action
             Rhino.RhinoDoc.BeforeTransformObjects += RhinoDoc_BeforeTransformObjects; //deal with Alt + Gumball drag duplicate action
             Rhino.RhinoDoc.BeginOpenDocument += RhinoDoc_BeginOpenDocument;
-
+            Rhino.RhinoDoc.BeginSaveDocument += RhinoDoc_BeginSaveDocument;
 
             if (m_mc == null)
             {
@@ -43,8 +43,7 @@ namespace HoneybeeRhino
 
         }
 
-
-
+        
         private bool _isObjectCopied = false;
         private int _mergedCounts = 0;
         private void RhinoDoc_BeforeTransformObjects(object sender, RhinoTransformObjectsEventArgs e)
@@ -84,6 +83,17 @@ namespace HoneybeeRhino
                 this._mergedCounts = 0;
             }
            
+        }
+
+        private void RhinoDoc_BeginSaveDocument(object sender, DocumentSaveEventArgs e)
+        {
+            //currently there is one object is double clicked,
+            //it is under editing, exit editing model before saving document.
+            if (this.m_mc.IsEditingRoom)
+            {
+                this.m_mc.ExitEditing();
+            }
+            
         }
 
         //private void RhinoDoc_OnCloseDocument(object sender, DocumentEventArgs e)
@@ -135,7 +145,7 @@ namespace HoneybeeRhino
 
             //currently there is one object is double clicked,
             //it is under editing, and no need to select the entire groupEntity.
-            if (!this.m_mc.EditingObj.Equals(System.Guid.Empty))
+            if (this.m_mc.IsEditingRoom)
             {
                 return;
             }
