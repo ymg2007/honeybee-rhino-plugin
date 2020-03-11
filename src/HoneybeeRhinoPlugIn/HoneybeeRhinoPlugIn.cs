@@ -315,9 +315,11 @@ namespace HoneybeeRhino
             var roomProp = new UI.PropertyPage_Room();
             var faceProp = new UI.PropertyPage_Face();
             var aptProp = new UI.PropertyPage_Aperture();
+            var doorProp = new UI.PropertyPage_Door();
             pages.Add(roomProp);
             pages.Add(faceProp);
             pages.Add(aptProp);
+            pages.Add(doorProp);
         }
 
 
