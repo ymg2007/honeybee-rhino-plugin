@@ -26,6 +26,9 @@ namespace HoneybeeRhino.Entities
         public static DoorEntity TryGetDoorEntity(this ObjRef rhinoRef) => DoorEntity.TryGetFrom(rhinoRef.Geometry());
         public static DoorEntity TryGetDoorEntity(this GeometryBase rhinoRef) => DoorEntity.TryGetFrom(rhinoRef);
 
+        public static ShadeEntity TryGetShadeEntity(this ObjRef rhinoRef) => ShadeEntity.TryGetFrom(rhinoRef.Geometry());
+        public static ShadeEntity TryGetShadeEntity(this GeometryBase rhinoRef) => ShadeEntity.TryGetFrom(rhinoRef);
+
         public static FaceEntity TryGetOrphanedFaceEntity(this ObjRef roomHostRef) => FaceEntity.TryGetFrom(roomHostRef.Geometry());
         public static FaceEntity TryGetFaceEntity(this ObjRef roomHostRef, ComponentIndex componentIndex) => FaceEntity.TryGetFrom(roomHostRef, componentIndex);
         public static FaceEntity TryGetFaceEntity(this BrepFace rhinoRef) => FaceEntity.TryGetFrom(rhinoRef);
@@ -291,5 +294,22 @@ namespace HoneybeeRhino.Entities
 
         }
 
+        public static Brep ToShadeBrep(Brep shades, Guid hostID)
+        {
+            var geo = shades;
+
+            //for shade brep, it can have more than one faces in one brep
+            var faces = geo.Faces;
+            if (faces.Any(_=>!_.IsPlanar()))
+                throw new ArgumentException("Input geometry has non-planar object which cannot be converted to honeybee shade!");
+
+            //Add honeybee data at Brep level, which assumes all faces has the same property.
+            //add a dummy Face3D data 
+            var hbobj = faces.First().ToShade(hostID); 
+            var ent = new Entities.ShadeEntity(hbobj);
+            ent.HostObjRef = new ObjRef(hostID);
+            geo.UserData.Add(ent);
+            return geo;
+        }
     }
 }

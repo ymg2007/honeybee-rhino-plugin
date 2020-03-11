@@ -154,7 +154,7 @@ namespace HoneybeeRhino
             }
             else
             {
-                throw new ArgumentException("Input aperture surface has to be planar!");
+                throw new ArgumentException("Input surface has to be planar!");
             }
         }
 
@@ -171,11 +171,24 @@ namespace HoneybeeRhino
             }
             else
             {
-                throw new ArgumentException("Input aperture surface has to be planar!");
+                throw new ArgumentException("Input surface has to be planar!");
             }
         }
 
-
+        public static HB.Shade ToShade(this RH.BrepFace singleSurface, Guid hostID)
+        {
+            if (singleSurface.IsPlanar())
+            {
+                var face3D = singleSurface.ToHBFace3D();
+                var obj = new HB.Shade($"Shade_{hostID}", face3D, new HB.ShadePropertiesAbridged());
+                obj.DisplayName = $"My Shade {hostID.ToString().Substring(0, 5)}";
+                return obj;
+            }
+            else
+            {
+                throw new ArgumentException("Input surface has to be planar!");
+            }
+        }
 
     }
 

@@ -171,21 +171,20 @@ namespace HoneybeeRhino
             return roomObjRef.AddApertures(new List<ObjRef>() { apertureObjRef });
         }
 
+  
 
 
 
 
 
 
-
-
-//        public static (Brep room, Brep aperture) AddAperture(this ObjRef roomObjRef, ObjRef apertureObjRef)
-//        {
-//            Brep validApertureBrep = null;
-//            //var tol = 0.0001;
-//            var roomBrep = roomObjRef.Brep();
-//            var apertureObject = apertureObjRef.Brep();
-//            var apertureHostID = apertureObjRef.ObjectId;
+        //        public static (Brep room, Brep aperture) AddAperture(this ObjRef roomObjRef, ObjRef apertureObjRef)
+        //        {
+        //            Brep validApertureBrep = null;
+        //            //var tol = 0.0001;
+        //            var roomBrep = roomObjRef.Brep();
+        //            var apertureObject = apertureObjRef.Brep();
+        //            var apertureHostID = apertureObjRef.ObjectId;
 
         //            //Only add to valid room obj
         //            if (!roomBrep.IsRoom())

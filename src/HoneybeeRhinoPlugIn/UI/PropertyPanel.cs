@@ -445,7 +445,68 @@ namespace HoneybeeRhino.UI
 
             }
         }
-    
+
+
+        public void updateShadePanel(ShadeEntity hbObjEntity)
+        {
+
+            var apt = hbObjEntity.HBObject;
+            var layout = new DynamicLayout { };
+            layout.Spacing = new Size(5, 5);
+            layout.Padding = new Padding(10);
+            layout.DefaultSpacing = new Size(2, 2);
+
+
+            layout.AddSeparateRow(new Label { Text = $"ID: {apt.Name}" });
+
+            layout.AddSeparateRow(new Label { Text = "Name:" });
+            var nameTBox = new TextBox() { };
+            apt.DisplayName = apt.DisplayName ?? string.Empty;
+            nameTBox.TextBinding.Bind(apt, m => m.DisplayName);
+            layout.AddSeparateRow(nameTBox);
+
+            layout.AddSeparateRow(new Label { Text = "Properties:" });
+            var faceRadPropBtn = new Button { Text = "Radiance Properties (WIP)" };
+            faceRadPropBtn.Click += (s, e) => Dialogs.ShowMessage("Work in progress", "Honeybee");
+            layout.AddSeparateRow(faceRadPropBtn);
+            var faceEngPropBtn = new Button { Text = "Energy Properties" };
+            faceEngPropBtn.Click += (s, e) => PropBtn_Click(hbObjEntity);
+            layout.AddSeparateRow(faceEngPropBtn);
+
+
+
+            layout.Add(null);
+            var data_button = new Button { Text = "Honeybee Data" };
+            data_button.Click += (sender, e) => Dialogs.ShowEditBox("Honeybee Data", "Honeybee Data can be shared across all platforms.", apt.ToJson(), true, out string outJson);
+            layout.AddSeparateRow(data_button, null);
+
+
+            this.Content = layout;
+
+            void PropBtn_Click(Entities.ShadeEntity ent)
+            {
+                var energyProp = ent.HBObject.Properties.Energy ?? new ShadeEnergyPropertiesAbridged();
+                energyProp = ShadeEnergyPropertiesAbridged.FromJson(energyProp.ToJson());
+                var dialog = new UI.Dialog_ShadeEnergyProperty(energyProp);
+                dialog.RestorePosition();
+                var dialog_rc = dialog.ShowModal(RhinoEtoApp.MainWindow);
+                dialog.SavePosition();
+                if (dialog_rc != null)
+                {
+                    //replace brep in order to add an undo history
+                    var undo = Rhino.RhinoDoc.ActiveDoc.BeginUndoRecord("Set Honeybee energy properties");
+
+                    var dup = ent.HostObjRef.Brep().DuplicateBrep();
+                    dup.TryGetShadeEntity().HBObject.Properties.Energy = dialog_rc;
+                    Rhino.RhinoDoc.ActiveDoc.Objects.Replace(ent.HostObjRef.ObjectId, dup);
+
+                    Rhino.RhinoDoc.ActiveDoc.EndUndoRecord(undo);
+
+                }
+
+            }
+        }
+
 
     }
 }
