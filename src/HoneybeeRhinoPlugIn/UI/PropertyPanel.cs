@@ -58,13 +58,13 @@ namespace HoneybeeRhino.UI
             
             var apertureLBox = new ListBox();
             apertureLBox.Height = 100;
-            var apertures = hbObjEntity.ApertureObjRefs;
+            var apertures = hbObjEntity.ApertureObjRefsWithoutHistory;
             var faceCount = 0;
-            if (apertures != null)
+            if (apertures.Any())
             {
-                var validApertures = apertures.Where(_ => _.TryGetApertureEntity().IsValid);
+                var validApertures = apertures;
                 faceCount = validApertures.Count();
-
+                //Check if displace name is null, in case this hb object is not created from rhino. 
                 var faceItems = validApertures.Select(_ => _.TryGetApertureEntity().HBObject).Select(_ => new ListItem() { Text = _.DisplayName ?? _.Name, Tag = _ });
                 apertureLBox.Items.AddRange(faceItems);
                
@@ -72,15 +72,17 @@ namespace HoneybeeRhino.UI
             layout.AddSeparateRow(new Label { Text = $"Apertures: (total: {faceCount})" });
             layout.AddSeparateRow(apertureLBox);
 
-            layout.AddSeparateRow(new Label { Text = $"Doors:" });
+
             var doorLBox = new ListBox();
             doorLBox.Height = 50;
-            var doors = face.Doors;
-            if (doors != null)
+            var doors = hbObjEntity.DoorObjRefsWithoutHistory;
+            if (doors.Any())
             {
-                var faceItems = doors.Select(_ => new ListItem() { Text = _.DisplayName ?? _.Name, Tag = _ });
+                //Check if displace name is null, in case this hb object is not created from rhino. 
+                var faceItems = doors.Select(_ => _.TryGetDoorEntity().HBObject).Select(_ => new ListItem() { Text = _.DisplayName ?? _.Name, Tag = _ });
                 doorLBox.Items.AddRange(faceItems);
             }
+            layout.AddSeparateRow(new Label { Text = $"Doors:" });
             layout.AddSeparateRow(doorLBox);
 
             layout.AddSeparateRow(new Label { Text = "IndoorShades:" });
@@ -364,15 +366,16 @@ namespace HoneybeeRhino.UI
             rmPropBtn.Click += (s, e) => RmPropBtn_Click(hbObjEntity);
             layout.AddSeparateRow(rmPropBtn);
 
-            layout.AddSeparateRow(new Label { Text = $"Faces: (total: {room.Faces.Count})" });
+            
             var facesListBox = new ListBox();
             facesListBox.Height = 120;
-            var faces = room.Faces;
+            var faces = hbObjEntity.HBFaces;
             if (faces != null)
             {
                 var faceItems = faces.Select(_ => new ListItem() { Text = _.DisplayName ?? _.Name, Tag = _ });
                 facesListBox.Items.AddRange(faceItems);
             }
+            layout.AddSeparateRow(new Label { Text = $"Faces: (total: {room.Faces.Count})" });
             layout.AddSeparateRow(facesListBox);
 
 

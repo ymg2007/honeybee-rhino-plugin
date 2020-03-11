@@ -20,7 +20,7 @@ namespace HoneybeeRhino.Entities
 
         public Brep BrepGeomerty => this.HostObjRef.Brep();
         public string Name => this.HBObject.Name;
-        public List<HB.Face> HBFaces => this.HBObject.Faces;
+        public List<HB.Face> HBFaces => this.BrepGeomerty.Faces.Select(_ => _.TryGetFaceEntity().HBObject).ToList();
 
         public int ApertureCount
         {
