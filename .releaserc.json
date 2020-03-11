@@ -7,8 +7,8 @@
             {
                 "assets": [{
                         "path": "HoneybeeRhinoPlugIn.zip",
-                        "name": "HoneybeeRhinoPlugIn",
-                        "label": "This is the plugin for Rhino to load"
+                        "name": "HoneybeeRhinoPlugIn.zip",
+                        "label": "HoneybeeRhinoPlugIn.zip"
                     }
                 ]
             }
