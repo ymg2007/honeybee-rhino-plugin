@@ -87,6 +87,7 @@
     <Compile Include="RhinoCommands\HB_SolveAdjacency.cs" />
     <Compile Include="HoneybeeRhinoPlugIn.cs" />
     <Compile Include="Runner.cs" />
+    <Compile Include="UI\DialogHelper.cs" />
     <Compile Include="UI\Dialog_ApertureEnergyProperty.cs" />
     <Compile Include="UI\Dialog_HBModel.cs" />
     <Compile Include="UI\Dialog_FaceEnergyProperty.cs" />

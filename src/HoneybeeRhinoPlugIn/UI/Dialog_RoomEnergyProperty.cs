@@ -22,47 +22,47 @@ namespace HoneybeeRhino.UI
                 MinimumSize = new Size(450, 620);
 
                 //Get constructions
-                var constructionSetDP = MakeDropDown(EnergyProp.ConstructionSet, (v) => EnergyProp.ConstructionSet = v?.Name,
+                var constructionSetDP = DialogHelper.MakeDropDown(EnergyProp.ConstructionSet, (v) => EnergyProp.ConstructionSet = v?.Name,
                     EnergyLibrary.DefaultConstructionSets, "By Global Model ConstructionSet");
 
 
                 //Get programs
-                var programTypesDP = MakeDropDown(EnergyProp.ProgramType, (v) => EnergyProp.ProgramType = v?.Name,
+                var programTypesDP = DialogHelper.MakeDropDown(EnergyProp.ProgramType, (v) => EnergyProp.ProgramType = v?.Name,
                    EnergyLibrary.DefaultProgramTypes, "Unoccupied, NoLoads");
 
                 //Get HVACs
-                var hvacDP = MakeDropDown(EnergyProp.Hvac, (v) => EnergyProp.Hvac = v?.Name,
+                var hvacDP = DialogHelper.MakeDropDown(EnergyProp.Hvac, (v) => EnergyProp.Hvac = v?.Name,
                    EnergyLibrary.DefaultHVACs, "Unconditioned");
 
 
                 var defaultByProgramType = "By Room Program Type";
                 //Get people
-                var peopleDP = MakeDropDown(EnergyProp.People, (v) => EnergyProp.People = v,
+                var peopleDP = DialogHelper.MakeDropDown(EnergyProp.People, (v) => EnergyProp.People = v,
                     EnergyLibrary.DefaultPeopleLoads, defaultByProgramType);
 
                 //Get lighting
-                var lightingDP = MakeDropDown(EnergyProp.Lighting, (v) => EnergyProp.Lighting = v,
+                var lightingDP = DialogHelper.MakeDropDown(EnergyProp.Lighting, (v) => EnergyProp.Lighting = v,
                     EnergyLibrary.DefaultLightingLoads, defaultByProgramType);
 
                 //Get ElecEqp
-                var elecEqpDP = MakeDropDown(EnergyProp.ElectricEquipment, (v) => EnergyProp.ElectricEquipment = v,
+                var elecEqpDP = DialogHelper.MakeDropDown(EnergyProp.ElectricEquipment, (v) => EnergyProp.ElectricEquipment = v,
                     EnergyLibrary.DefaultElectricEquipmentLoads, defaultByProgramType);
 
                 //Get gasEqp
-                var gasEqpDP = MakeDropDown(EnergyProp.GasEquipment, (v) => EnergyProp.GasEquipment = v,
+                var gasEqpDP = DialogHelper.MakeDropDown(EnergyProp.GasEquipment, (v) => EnergyProp.GasEquipment = v,
                     EnergyLibrary.GasEquipmentLoads, defaultByProgramType);
 
                 //Get infiltration
-                var infilDP = MakeDropDown(EnergyProp.Infiltration, (v) => EnergyProp.Infiltration = v,
+                var infilDP = DialogHelper.MakeDropDown(EnergyProp.Infiltration, (v) => EnergyProp.Infiltration = v,
                     EnergyLibrary.DefaultInfiltrationLoads, defaultByProgramType);
 
 
                 //Get ventilation
-                var ventDP = MakeDropDown(EnergyProp.Ventilation, (v) => EnergyProp.Ventilation = v,
+                var ventDP = DialogHelper.MakeDropDown(EnergyProp.Ventilation, (v) => EnergyProp.Ventilation = v,
                     EnergyLibrary.DefaultVentilationLoads, defaultByProgramType);
 
                 //Get setpoint
-                var setPtDP = MakeDropDown(EnergyProp.Setpoint, (v) => EnergyProp.Setpoint = v,
+                var setPtDP = DialogHelper.MakeDropDown(EnergyProp.Setpoint, (v) => EnergyProp.Setpoint = v,
                     EnergyLibrary.DefaultSetpoints, defaultByProgramType);
 
 
@@ -111,74 +111,7 @@ namespace HoneybeeRhino.UI
             
             
         }
-        private DropDown MakeDropDown<T>(string currentObjName, Action<T> setAction, IEnumerable<T> valueLibrary, string defaultItemName = default) where T : HB.INamed
-        {
-            var items = valueLibrary.ToList();
-            var dropdownItems = items.Select(_ => new ListItem() { Text = _.Name, Tag = _ }).ToList();
-            var dp = new DropDown();
-
-            if (!string.IsNullOrEmpty(defaultItemName))
-            {
-                var foundIndex = dropdownItems.FindIndex(_ => _.Text == defaultItemName);
-
-                if (foundIndex > -1)
-                {
-                    //Add exist item from list
-                    dp.SelectedIndex = foundIndex;
-                }
-                else
-                {
-                    //Add a default None item with a name
-                    dp.Items.Add(defaultItemName);
-                    dp.SelectedIndex = 0;
-                }
-
-            }
-
-            dp.Items.AddRange(dropdownItems);
-
-            dp.SelectedIndexBinding.Bind(
-                () => items.FindIndex(_ => _.Name == currentObjName) + 1,
-                (int i) => setAction(i == 0 ? default : items[i - 1])
-                );
-
-            return dp;
-
-        }
-        private DropDown MakeDropDown<T>(T currentValue, Action<T> setAction, IEnumerable<T> valueLibrary, string defaultItemName = default) where T : HB.INamed
-        {
-            return MakeDropDown(currentValue?.Name, setAction, valueLibrary, defaultItemName);
-        }
-
-        //private DropDown MakeDropDown<T>(List<T> Library, string defaultItemName = default) where T : HB.INamed
-        //{
-        //    var items = Library;
-        //    var dropdownItems = items.Select(_ => new ListItem() { Text = _.Name, Tag = _ }).ToList();
-        //    var dp = new DropDown();
-
-        //    if (!string.IsNullOrEmpty(defaultItemName))
-        //    {
-        //        var foundIndex = dropdownItems.FindIndex(_ => _.Text == defaultItemName);
-
-        //        if (foundIndex > -1)
-        //        {
-        //            //Add exist item from list
-        //            dp.SelectedIndex = foundIndex;
-        //        }
-        //        else
-        //        {
-        //            //Add a default None item with a name
-        //            dp.Items.Add(defaultItemName);
-        //            dp.SelectedIndex = 0;
-        //        }
-
-        //    }
-
-        //    dp.Items.AddRange(dropdownItems);
-
-        //    return dp;
-
-
-        //}
+    
+    
     }
 }

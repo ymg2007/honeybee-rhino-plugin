@@ -22,7 +22,7 @@ namespace HoneybeeRhino.UI
                 MinimumSize = new Size(450, 200);
 
                 //Get constructions
-                var constructionSetDP = MakeDropDown(EnergyProp.Construction, (v) => EnergyProp.Construction = v?.Name,
+                var constructionSetDP = DialogHelper.MakeDropDown(EnergyProp.Construction, (v) => EnergyProp.Construction = v?.Name,
                     EnergyLibrary.StandardsOpaqueConstructions, "By Room ConstructionSet---------------------");
 
 
@@ -60,40 +60,7 @@ namespace HoneybeeRhino.UI
             
             
         }
-        private DropDown MakeDropDown<T>(string currentObjName, Action<T> setAction, IEnumerable<T> valueLibrary, string defaultItemName = default) where T : HB.INamed
-        {
-            var items = valueLibrary.ToList();
-            var dropdownItems = items.Select(_ => new ListItem() { Text = _.Name, Tag = _ }).ToList();
-            var dp = new DropDown();
-
-            if (!string.IsNullOrEmpty(defaultItemName))
-            {
-                var foundIndex = dropdownItems.FindIndex(_ => _.Text == defaultItemName);
-
-                if (foundIndex > -1)
-                {
-                    //Add exist item from list
-                    dp.SelectedIndex = foundIndex;
-                }
-                else
-                {
-                    //Add a default None item with a name
-                    dp.Items.Add(defaultItemName);
-                    dp.SelectedIndex = 0;
-                }
-
-            }
-
-            dp.Items.AddRange(dropdownItems);
-
-            dp.SelectedIndexBinding.Bind(
-                () => items.FindIndex(_ => _.Name == currentObjName) + 1,
-                (int i) => setAction(i == 0 ? default : items[i - 1])
-                );
-
-            return dp;
-
-        }
+        
      
 
     }

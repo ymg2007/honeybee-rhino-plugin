@@ -58,8 +58,8 @@ namespace HoneybeeRhino.UI
                 terrainTypeDP.SelectedValueBinding.Bind(Binding.Delegate(() => energyProp.TerrainType.Value, v => energyProp.TerrainType = v));
 
                 //Get constructions
-                var gloConstrSetDP = MakeDropDown(hbModel.Properties.Energy.ConstructionSets, hbModel.Properties.Energy.GlobalConstructionSet);
-                gloConstrSetDP.SelectedKeyBinding.Bind(hbModel, v => v.Properties.Energy.GlobalConstructionSet);
+                var gloConstrSetDP = DialogHelper.MakeDropDown(hbModel.Properties.Energy.GlobalConstructionSet, (v) => hbModel.Properties.Energy.GlobalConstructionSet = v?.Name, 
+                    hbModel.Properties.Energy.ConstructionSets, hbModel.Properties.Energy.GlobalConstructionSet);
 
                 ////Construction Set list
                 //var ConstructionSetsListBox = new ListBox();
@@ -91,7 +91,7 @@ namespace HoneybeeRhino.UI
                         modelNameTextBox,
                         new Label(){ Text = "Terrain Type:"},
                         terrainTypeDP,
-                        new Label(){ Text = "Global ConstructionSet:"},
+                        new Label(){ Text = "Global Construction Set:"},
                         gloConstrSetDP,
                         new Label(){ Text = "North Angle:"},
                         northNum,
@@ -117,34 +117,6 @@ namespace HoneybeeRhino.UI
             return isNum ? numValue : 0;
         }
 
-        private DropDown MakeDropDown<T>(IEnumerable<T> Library, string defaultItemName = default) where T : HB.INamed
-        {
-
-            var dropdownItems = Library.Select(_ => new ListItem() { Text = _.Name, Tag = _ }).OrderBy(_ => _.Text).ToList();
-            var dp = new DropDown();
-
-            if (!string.IsNullOrEmpty(defaultItemName))
-            {
-                var foundIndex = dropdownItems.FindIndex(_ => _.Text == defaultItemName);
-
-                if (foundIndex > -1)
-                {
-                    //Add exist item from list
-                    dp.Items.Add(dropdownItems[foundIndex]);
-                    dropdownItems.RemoveAt(foundIndex);
-                }
-                else
-                {
-                    //Add a default None item with a name
-                    dp.Items.Add(defaultItemName);
-                }
-
-            }
-
-            dp.Items.AddRange(dropdownItems);
-            dp.SelectedIndex = 0;
-
-            return dp;
-        }
+    
     }
 }
