@@ -6,7 +6,7 @@
             "@semantic-release/github",
             {
                 "assets": [{
-                        "path": "./HoneybeeRhinoPlugIn.zip",
+                        "path": "HoneybeeRhinoPlugIn.zip",
                         "name": "HoneybeeRhinoPlugIn",
                         "label": "This is the plugin for Rhino to load"
                     }

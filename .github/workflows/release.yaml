@@ -31,9 +31,9 @@ jobs:
         run: |
           msbuild /p:Configuration=Release
 
-      - uses: montudor/action-zip@v0.1.0
-        with:
-          args: zip -qq -r ./HoneybeeRhinoPlugin.zip ./src/HoneybeeRhinoPlugIn/bin
+      - name: Zip Build Artifact
+        run: |
+          Compress-Archive -U -Path src\HoneybeeRhinoPlugIn\bin\* -DestinationPath HoneybeeRhinoPlugIn
 
       - run: npx semantic-release
         env:
