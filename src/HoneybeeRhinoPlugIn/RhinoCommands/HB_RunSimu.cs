@@ -33,19 +33,14 @@ namespace HoneybeeRhino.RhinoCommands
         protected override Result RunCommand(RhinoDoc doc, RunMode mode)
         {
             var modelEnt = HoneybeeRhinoPlugIn.Instance.ModelEntityTable.First().Value;
-            var model = modelEnt.HBObject;
-            var modelProp = new HB.ModelProperties(energy: HB.ModelEnergyProperties.Default);
-            model.Properties = modelProp;
-            model.Rooms = modelEnt.RoomEntitiesWithoutHistory.Select(_ => _.TryGetRoomEntity().GetHBRoom(true)).ToList();
-  
-            var json = model.ToJson();
+            var model = modelEnt.GetHBModel();
 
             var folder = @"D:\Dev\test\HB";
             folder = Path.Combine(Path.GetTempPath(), "Honeybee", Path.GetRandomFileName());
             Directory.CreateDirectory(folder);
 
             var modelPath = Path.Combine(folder, "model.json");
-            File.WriteAllText(modelPath, json);
+            File.WriteAllText(modelPath, model.ToJson());
 
             try
             {

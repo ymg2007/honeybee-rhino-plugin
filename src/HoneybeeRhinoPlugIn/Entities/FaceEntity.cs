@@ -16,6 +16,10 @@ namespace HoneybeeRhino.Entities
     [Guid("88EC0885-1ACF-4D40-B53E-11D4AE174987")]
     public class FaceEntity : HBObjEntity
     {
+        /// <summary>
+        /// This object doesn't always has the most updated geometry data, this is mainly used for keeping honeybee data. 
+        /// Use GetHBFace to get real recalculated HBModel with all geometry data.
+        /// </summary>
         public HB.Face HBObject { get; private set; }
 
         public List<ObjRef> ApertureObjRefs { get; private set; } = new List<ObjRef>();
@@ -190,6 +194,30 @@ namespace HoneybeeRhino.Entities
             //Find the door belongs to this Face
             var newdoors = this.DoorObjRefs.Select(_ => doorMatches.Where(apt => apt.oldID == _.ObjectId).First().newDoor);
             this.DoorObjRefs = newdoors.ToList();
+        }
+
+        //========================= Helpers ===================================
+        /// <summary>
+        /// Get real recalculated HBModel with all geometry data.
+        /// </summary>
+        public HB.Face GetHBFace(BrepFace brepFace)
+        {
+            //This face is Brep's sub-face, and there is no hostRefObj in this FaceEntity
+            var face = this.HBObject;
+            var face3d = brepFace.ToHBFace3D();
+            face.Geometry = face3d;
+
+            //check apertures
+            var checkedHBApertures = this.ApertureObjRefsWithoutHistory.Select(_ => _.TryGetApertureEntity().GetHBAperture());
+            face.Apertures = checkedHBApertures.ToList();
+
+            //check doors
+            var doors = this.DoorObjRefsWithoutHistory.Select(_ => _.TryGetDoorEntity().GetHBDoor());
+            face.Doors = doors.ToList();
+
+            //TODO: check shades
+
+            return face;
         }
 
     }

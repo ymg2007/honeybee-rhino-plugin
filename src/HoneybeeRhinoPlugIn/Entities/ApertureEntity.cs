@@ -16,6 +16,10 @@ namespace HoneybeeRhino.Entities
     [Guid("FC5517EF-9AFF-4D02-A26D-80E1FEC4B6F1")]
     public class ApertureEntity : HBObjEntity
     {
+        /// <summary>
+        /// This object doesn't always has the most updated geometry data, this is mainly used for keeping honeybee data. 
+        /// Use GetHBAperture to get real recalculated HBModel with all geometry data.
+        /// </summary>
         public HB.Aperture HBObject { get; private set; } 
         public override string Description => this.IsValid ? $"HBApertureEntity: {HBObject.Name}" : base.Description;
 
@@ -96,10 +100,23 @@ namespace HoneybeeRhino.Entities
             return ent == null ? rc : ent;
         }
 
-       
+
 
         #region Helper
-      
+        //========================= Helpers ===================================
+        /// <summary>
+        /// Get real recalculated HBModel with all geometry data.
+        /// </summary>
+        public HB.Aperture GetHBAperture()
+        {
+            var aptFace3D = this.HostObjRef.Brep().ToHBFace3Ds().First();
+            var obj = this.HBObject;
+            obj.Geometry = aptFace3D;
+
+            //TODO: check shades
+            return obj;
+        }
+
         #endregion
     }
 }

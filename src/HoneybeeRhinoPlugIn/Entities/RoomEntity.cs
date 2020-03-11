@@ -16,7 +16,11 @@ namespace HoneybeeRhino.Entities
     [Guid("D0F6A6F9-0CE0-41B7-8029-AB67F6B922AD")]
     public class RoomEntity : HBObjEntity
     {
-        private HB.Room HBObject { get; set; }
+        /// <summary>
+        /// This object doesn't always has the most updated geometry data, this is mainly used for keeping honeybee data. 
+        /// Use GetHBRoom to get real recalculated HBModel with all geometry data.
+        /// </summary>
+        public HB.Room HBObject { get; private set; }
 
         public Brep BrepGeomerty => this.HostObjRef.Brep();
         public string Name => this.HBObject.Name;
@@ -85,45 +89,18 @@ namespace HoneybeeRhino.Entities
 
         }
 
-        public HB.Room GetHBRoom(bool recomputeGeometry = false)
+        public HB.Room GetHBRoom()
         {
-            if (!recomputeGeometry)
-                return this.HBObject;
 
             //recompute all rhino geometries to hbFace3D
-            var roomBrep = Brep.TryConvertBrep(this.BrepGeomerty);
+            var roomBrep = this.BrepGeomerty;
             var room = this.HBObject;
 
             //check all subfaces
-            var brepFaces = roomBrep.Faces;
-            var checkedHBFaces = new List<HB.Face>();
-            foreach (var bFace in brepFaces)
-            {
-                var faceEnt = bFace.UnderlyingSurface().TryGetFaceEntity();
-                var HBFace = faceEnt.HBObject;
-                var face3d = bFace.ToHBFace3D();
-                HBFace.Geometry = face3d;
+            var hbfaces = roomBrep.Faces.Select(_=>_.UnderlyingSurface().TryGetFaceEntity().GetHBFace(_));
+            room.Faces = hbfaces.ToList();
 
-                //check apertures
-                var apertureBreps = faceEnt.ApertureObjRefs;
-                var checkedHBApertures = new List<HB.Aperture>();
-                foreach (var apertureBrep in apertureBreps)
-                {
-                    //update aperture geometry
-                    var aptFace3D = apertureBrep.Brep().ToHBFace3Ds().First();
-                    var HBAperture = apertureBrep.TryGetApertureEntity().HBObject;
-                    HBAperture.Geometry = aptFace3D;
-                    checkedHBApertures.Add(HBAperture);
-                }
-                HBFace.Apertures = checkedHBApertures;
-
-                //TODO: check shades
-
-                //TODO: make sure all other meta data still exists in face.
-                checkedHBFaces.Add(HBFace);
-            }
-
-            room.Faces = checkedHBFaces;
+            //TODO: check shades.
             return room;
         }
 

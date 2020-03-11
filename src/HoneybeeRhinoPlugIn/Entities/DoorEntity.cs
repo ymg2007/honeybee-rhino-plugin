@@ -12,6 +12,10 @@ namespace HoneybeeRhino.Entities
     [Guid("7E348AC8-F8CB-4F83-AFE3-D9C9DFAEC8CB")]
     public class DoorEntity : HBObjEntity
     {
+        /// <summary>
+        /// This object doesn't always has the most updated geometry data, this is mainly used for keeping honeybee data. 
+        /// Use GetHBDoor to get real recalculated HBModel with all geometry data.
+        /// </summary>
         public HB.Door HBObject { get; private set; }
 
         public override string Description => this.IsValid ? $"DoorEntity: {HBObject.Name}" : base.Description;
@@ -91,8 +95,20 @@ namespace HoneybeeRhino.Entities
 
 
         #region Helper
+        //========================= Helpers ===================================
+        /// <summary>
+        /// Get real recalculated HBModel with all geometry data.
+        /// </summary>
+        public HB.Door GetHBDoor()
+        {
+            var face3D = this.HostObjRef.Brep().ToHBFace3Ds().First();
+            var obj = this.HBObject;
+            obj.Geometry = face3D;
 
-      
+            //TODO: check shades
+            return obj;
+        }
+
         #endregion
     }
 }

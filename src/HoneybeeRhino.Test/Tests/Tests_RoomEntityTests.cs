@@ -137,7 +137,7 @@ namespace HoneybeeRhino.Test
          
             var ents = rooms.Select(_=>_.TryGetRoomEntity());
 
-            Assert.IsTrue(ents.All(_ => _.GetHBRoom() != null));
+            Assert.IsTrue(ents.All(_ => _.HBObject != null));
 
         }
 

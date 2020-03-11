@@ -2,6 +2,7 @@
 using Rhino.DocObjects;
 using Rhino.DocObjects.Custom;
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using HB = HoneybeeSchema;
 
@@ -10,6 +11,10 @@ namespace HoneybeeRhino.Entities
     [Guid("E312BB8B-4824-496D-B0E8-13E8D1B7304D")]
     public class ShadeEntity : HBObjEntity
     {
+        /// <summary>
+        /// This object doesn't always has the most updated geometry data, this is mainly used for keeping honeybee data. 
+        /// Use GetHBShade to get real recalculated HBModel with all geometry data.
+        /// </summary>
         public HB.Shade HBObject { get; private set; }
 
         public override string Description => this.IsValid ? $"ShadeEntity: {HBObject.Name}" : base.Description;
@@ -92,5 +97,23 @@ namespace HoneybeeRhino.Entities
 
       
         #endregion
+
+        public IEnumerable<HB.Shade> GetHBShades()
+        {
+            var brep = this.HostObjRef.Brep();
+            var prop = this.HBObject.Properties;
+            var id = this.HostObjRef.ObjectId;
+            var faces = brep.Faces;
+            var shds = new List<HB.Shade>();
+            for (int i = 0; i < faces.Count; i++)
+            {
+                var face = faces[i];
+                var face3D = face.ToHBFace3D();
+                var obj = new HB.Shade($"Shade_{id}_{i}", face3D, prop);
+                obj.DisplayName = $"My Shade {id.ToString().Substring(0, 5)} ({i})";
+                shds.Add(obj);
+            }
+            return shds;
+        }
     }
 }

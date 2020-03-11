@@ -10,6 +10,10 @@ namespace HoneybeeRhino.Entities
     public class ModelEntity
     {
         public string ModelNameID => this.HBObject.Name;
+        /// <summary>
+        /// This object doesn't always has the most updated geometry data, this is mainly used for keeping honeybee data. 
+        /// Use GetHBModel to get real recalculated HBModel with all geometry data.
+        /// </summary>
         public HB.Model HBObject { get; private set; }
 
         public List<ObjRef> Rooms { get; private set; } = new List<ObjRef>();
@@ -101,47 +105,7 @@ namespace HoneybeeRhino.Entities
 
             return newEnt;
         }
-        //protected override void OnDuplicate(UserData source)
-        //{
-        //    var s = source as GroupEntity;
-        //    if (s != null)
-        //    {
-        //        this.RoomID = s.RoomID;
-        //        this.ApertureIDs = s.ApertureIDs.GetRange(0, s.ApertureIDs.Count);
-        //        this.ShadeIDs = s.ShadeIDs.GetRange(0, s.ShadeIDs.Count);
-        //    }
-            
-        //}
-
-        //public int ApertureCount => this.ApertureIDs.Count;
-
-   
-        //public void AddApertures(IEnumerable<Brep> apertureObjs)
-        //{
-        //    foreach (var win in apertureObjs)
-        //    {
-        //        var ent = Entities.ApertureEntity.TryGetFrom(win);
-        //        if (ent.IsValid)
-        //        {
-        //            ent.GroupEntityID = this.RoomID;
-        //            this.ApertureIDs.Add(ent.HostGeoID);
-        //        }
-        //        else
-        //        {
-        //            throw new ArgumentException("Some input geometries are not valid aperture object!");
-        //        }
-        //    }
-
-        //}
-        //public void AddApertures(IEnumerable<ApertureEntity> apertureEntities)
-        //{
-        //    foreach (var ent in apertureEntities)
-        //    {
-        //        ent.GroupEntityID = this.RoomID;
-        //        this.ApertureIDs.Add(ent.HostGeoID);
-        //    }
-
-        //}
+    
 
 
         //=========================== Select and highlight =================================
@@ -228,6 +192,7 @@ namespace HoneybeeRhino.Entities
         {
             var dic = new ArchivableDictionary();
             dic.Set(nameof(HBObject), HBObject.ToJson());
+            dic.Set(nameof(Rooms), RoomEntitiesWithoutHistory);
             dic.Set(nameof(OrphanedApertures), OrphanedAperturesWithoutHistory);
             dic.Set(nameof(OrphanedDoors), OrphanedDoorsWithoutHistory);
             dic.Set(nameof(OrphanedFaces), OrphanedFacesWithoutHistory);
@@ -239,6 +204,7 @@ namespace HoneybeeRhino.Entities
         {
             var dic = dictionary;
             this.HBObject = HB.Model.FromJson(dic[nameof(HBObject)].ToString());
+            this.Rooms = (dic[nameof(Rooms)] as IEnumerable<ObjRef>).ToList();
             this.OrphanedApertures = (dic[nameof(OrphanedApertures)] as IEnumerable<ObjRef>).ToList();
             this.OrphanedDoors = (dic[nameof(OrphanedDoors)] as IEnumerable<ObjRef>).ToList();
             this.OrphanedFaces = (dic[nameof(OrphanedFaces)] as IEnumerable<ObjRef>).ToList();
@@ -247,6 +213,21 @@ namespace HoneybeeRhino.Entities
         }
 
         //========================= Helpers ===================================
+        /// <summary>
+        /// Get real recalculated HBModel with all geometry data.
+        /// </summary>
+        public HB.Model GetHBModel()
+        {
+            var model = this.HBObject; 
+            model.Properties = model.Properties?? new HB.ModelProperties(energy: HB.ModelEnergyProperties.Default);
+            model.Rooms = this.RoomEntitiesWithoutHistory.Select(_ => _.TryGetRoomEntity().GetHBRoom()).ToList();
+            model.OrphanedShades = this.OrphanedShadesWithoutHistory.SelectMany(_ => _.TryGetShadeEntity().GetHBShades()).ToList();
+            //DODO: need to double check
+            model.OrphanedApertures = this.OrphanedAperturesWithoutHistory.Select(_ => _.TryGetApertureEntity().HBObject).ToList();
+            model.OrphanedDoors = this.OrphanedDoorsWithoutHistory.Select(_ => _.TryGetDoorEntity().HBObject).ToList();
+            model.OrphanedFaces = this.OrphanedFacesWithoutHistory.Select(_ => _.TryGetOrphanedFaceEntity().HBObject).ToList();
+            return model;
+        }
 
        
     }

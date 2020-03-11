@@ -76,7 +76,7 @@ namespace HoneybeeRhino.UI
                 roomListBox.Height = 100;
                 foreach (var item in rooms)
                 {
-                    var room = item.TryGetRoomEntity().GetHBRoom();
+                    var room = item.TryGetRoomEntity().HBObject;
                     var displayName = room.DisplayName ?? string.Empty;
                     roomListBox.Items.Add(new ListItem() { Text = displayName });
                 }

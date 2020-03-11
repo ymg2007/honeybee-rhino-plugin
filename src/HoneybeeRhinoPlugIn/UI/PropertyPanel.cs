@@ -345,7 +345,7 @@ namespace HoneybeeRhino.UI
         public void updateRoomPanel(RoomEntity hbObjEntity)
         {
 
-            var room = hbObjEntity.GetHBRoom();
+            var room = hbObjEntity.HBObject;
             var layout = new DynamicLayout { };
             layout.Spacing = new Size(5, 5);
             layout.Padding = new Padding(10);
@@ -436,7 +436,7 @@ namespace HoneybeeRhino.UI
                     var undo = Rhino.RhinoDoc.ActiveDoc.BeginUndoRecord("Set Honeybee room energy properties");
 
                     var dup = roomEnt.HostObjRef.Brep().DuplicateBrep();
-                    dup.TryGetRoomEntity().GetHBRoom().Properties.Energy = dialog_rc;
+                    dup.TryGetRoomEntity().HBObject.Properties.Energy = dialog_rc;
                     Rhino.RhinoDoc.ActiveDoc.Objects.Replace(roomEnt.HostObjRef.ObjectId, dup);
 
                     Rhino.RhinoDoc.ActiveDoc.EndUndoRecord(undo);
