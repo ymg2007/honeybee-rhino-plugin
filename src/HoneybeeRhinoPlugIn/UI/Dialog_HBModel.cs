@@ -71,12 +71,24 @@ namespace HoneybeeRhino.UI
                 //}
 
                 //Room list
-                var rooms = dup.Rooms.Where(_ => _.Geometry().TryGetRoomEntity().IsValid);
+                var rooms = dup.RoomEntitiesWithoutHistory;
                 var roomListBox = new ListBox();
                 roomListBox.Height = 100;
                 foreach (var item in rooms)
                 {
-                    roomListBox.Items.Add(new ListItem() { Text = $"Room_{ item.ObjectId }" });
+                    var room = item.TryGetRoomEntity().GetHBRoom();
+                    var displayName = room.DisplayName ?? string.Empty;
+                    roomListBox.Items.Add(new ListItem() { Text = displayName });
+                }
+
+                //Shade list
+                var shades = dup.OrphanedShadesWithoutHistory;
+                var shadeListBox = new ListBox();
+                shadeListBox.Height = 100;
+                foreach (var item in shades)
+                {
+                    var displayName = item.TryGetShadeEntity().HBObject.DisplayName ?? string.Empty;
+                    shadeListBox.Items.Add(new ListItem() { Text = displayName });
                 }
 
                 //Create layout
@@ -97,6 +109,8 @@ namespace HoneybeeRhino.UI
                         northNum,
                         new Label(){ Text = $"Rooms: [total: {rooms.Count()}]"},
                         roomListBox,
+                        new Label(){ Text = $"Shades:"},
+                        shadeListBox,
                         new TableRow(buttons),
                         null
                     }

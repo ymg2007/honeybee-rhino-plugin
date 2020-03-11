@@ -35,10 +35,8 @@ namespace HoneybeeRhino.RhinoCommands
             using (var go = new GetObject())
             {
                 go.SetCommandPrompt("Please select planer shade surfaces");
-                go.GeometryFilter = ObjectType.Surface;
+                go.GeometryFilter = ObjectType.Surface | ObjectType.Brep;
                 go.GroupSelect = false;
-                go.DisablePreSelect();
-                go.EnableSelPrevious(false);
                 go.SubObjectSelect = false;
                 go.GetMultiple(1, 0);
 
