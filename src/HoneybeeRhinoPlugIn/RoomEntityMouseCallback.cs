@@ -75,26 +75,28 @@ namespace HoneybeeRhino
             if (!this.IsEditingRoom)
                 return;
 
+            //reset
             RhinoApp.EscapeKeyPressed -= RhinoApp_EscapeKeyPressed;
-           
+            AppearanceSettings.ViewportBackgroundColor = this._defaultColor;
+            EditingObj = Guid.Empty;
+
+            //in case document is closed, doc is null
+            if (doc == null)
+                return;
+
             foreach (var item in greiedOutObjs)
             {
                 doc.Objects.Unlock(item, true);
             }
-            EditingObj = Guid.Empty;
+           
             greiedOutObjs.Clear();
 
-            AppearanceSettings.ViewportBackgroundColor = this._defaultColor;
             doc.Views.Redraw();
             return;
         }
 
         private void RhinoApp_EscapeKeyPressed(object sender, EventArgs e)
         {
-            RhinoApp.EscapeKeyPressed -= RhinoApp_EscapeKeyPressed;
-            if (EditingObj == Guid.Empty)
-                return;
-
             ExitEditing();
 
         }

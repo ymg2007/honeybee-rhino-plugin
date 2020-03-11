@@ -34,7 +34,7 @@ namespace HoneybeeRhino
             Rhino.RhinoDoc.BeforeTransformObjects += RhinoDoc_BeforeTransformObjects; //deal with Alt + Gumball drag duplicate action
             Rhino.RhinoDoc.BeginOpenDocument += RhinoDoc_BeginOpenDocument;
             Rhino.RhinoDoc.BeginSaveDocument += RhinoDoc_BeginSaveDocument;
-
+            Rhino.RhinoDoc.CloseDocument += RhinoDoc_CloseDocument;
             if (m_mc == null)
             {
                 m_mc = new RoomEntityMouseCallback();
@@ -43,7 +43,8 @@ namespace HoneybeeRhino
 
         }
 
-        
+      
+
         private bool _isObjectCopied = false;
         private int _mergedCounts = 0;
         private void RhinoDoc_BeforeTransformObjects(object sender, RhinoTransformObjectsEventArgs e)
@@ -96,13 +97,17 @@ namespace HoneybeeRhino
             
         }
 
-        //private void RhinoDoc_OnCloseDocument(object sender, DocumentEventArgs e)
-        //{
-        //    // When the document is closed, clear our 
-        //    // document user data containers.
-        //    GroupEntityTable.Clear();
-        //}
 
+
+        private void RhinoDoc_CloseDocument(object sender, DocumentEventArgs e)
+        {
+            //currently there is one object is double clicked,
+            //it is under editing, exit editing model before closing document.
+            if (this.m_mc.IsEditingRoom)
+            {
+                this.m_mc.ExitEditing();
+            }
+        }
 
         //this is only being used for temporary container when geometries are copy pasted in.
         private List<RhinoObject> _rhinoObjectsMergedIn = new List<RhinoObject>();
