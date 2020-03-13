@@ -8,7 +8,7 @@ using HB = HoneybeeSchema;
 
 namespace HoneybeeRhino
 {
-    public static class EnergyLibrary
+    public static partial class EnergyLibrary
     {
         //private const string _defaultConstructionSetUrl = @"https://raw.githubusercontent.com/ladybug-tools/honeybee-schema/master/samples/construction_set/constructionset_complete.json";
         //private const string _defaultProgramTypesUrl = @"https://raw.githubusercontent.com/ladybug-tools/honeybee-schema/master/samples/program_type/program_type_office.json";
@@ -350,6 +350,8 @@ namespace HoneybeeRhino
                 return materials;
             }
         }
+
+        
 
 
 

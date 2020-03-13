@@ -101,6 +101,17 @@ namespace HoneybeeRhino.Entities
         /// </summary>
         public HB.Door GetHBDoor()
         {
+            //check Resource object
+            if (this.HBObject.IsGlass)
+            {
+                CheckResourceForWindowConstruction(this.HBObject.Properties.Energy?.Construction);
+            }
+            else
+            {
+                CheckResourceForOpaqueConstruction(this.HBObject.Properties.Energy?.Construction);
+            }
+           
+
             var face3D = this.HostObjRef.Brep().ToHBFace3Ds().First();
             var obj = this.HBObject;
             obj.Geometry = face3D;

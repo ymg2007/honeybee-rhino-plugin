@@ -109,6 +109,9 @@ namespace HoneybeeRhino.Entities
         /// </summary>
         public HB.Aperture GetHBAperture()
         {
+            //check Resource object
+            CheckResourceForWindowConstruction(this.HBObject.Properties.Energy?.Construction);
+
             var aptFace3D = this.HostObjRef.Brep().ToHBFace3Ds().First();
             var obj = this.HBObject;
             obj.Geometry = aptFace3D;

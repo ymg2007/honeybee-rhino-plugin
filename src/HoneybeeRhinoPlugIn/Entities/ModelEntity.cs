@@ -22,39 +22,23 @@ namespace HoneybeeRhino.Entities
         public List<ObjRef> OrphanedApertures { get; private set; } = new List<ObjRef>();
         public List<ObjRef> OrphanedDoors { get; private set; } = new List<ObjRef>();
 
-        public List<ObjRef> RoomEntitiesWithoutHistory
-        {
-            get 
-            {
-                return this.Rooms.Where(_ => _.TryGetRoomEntity().IsValid).ToList();
-            }
-        }
-        public List<ObjRef> OrphanedFacesWithoutHistory
-        {
-            get 
-            { 
-                return this.OrphanedFaces.Where(_ => _.TryGetOrphanedFaceEntity().IsValid).ToList();
-            }
-        }
-        public List<ObjRef> OrphanedShadesWithoutHistory
-        {
-            //TODO: add validation later
-            get { return this.OrphanedShades; }
-        }
-        public List<ObjRef> OrphanedAperturesWithoutHistory
-        {
-            get 
-            {
-                return this.OrphanedApertures.Where(_ => _.TryGetApertureEntity().IsValid).ToList();
-            }
-        }
-        public List<ObjRef> OrphanedDoorsWithoutHistory
-        {
-            //TODO: add validation later
-            get { return this.OrphanedDoors; }
-        }
+
+        public List<ObjRef> RoomEntitiesWithoutHistory => this.Rooms.Where(_ => _.TryGetRoomEntity().IsValid).ToList();
+        public List<ObjRef> OrphanedFacesWithoutHistory => this.OrphanedFaces.Where(_ => _.TryGetOrphanedFaceEntity().IsValid).ToList();
+        public List<ObjRef> OrphanedShadesWithoutHistory => this.OrphanedShades.Where(_ => _.TryGetShadeEntity().IsValid).ToList();
+        public List<ObjRef> OrphanedAperturesWithoutHistory => this.OrphanedApertures.Where(_ => _.TryGetApertureEntity().IsValid).ToList();
+        public List<ObjRef> OrphanedDoorsWithoutHistory => this.OrphanedDoors.Where(_ => _.TryGetDoorEntity().IsValid).ToList();
 
 
+        /// <summary>
+        /// This is only used for model based central location for temporary save all EnergyMaterials used in this model
+        /// </summary>
+        public static List<HB.IEnergyMaterial> EnergyMaterials { get; private set; } 
+        public static List<HB.IEnergyWindowMaterial> EnergyWindowMaterials { get; private set; }
+        public static List<HB.OpaqueConstructionAbridged> OpaqueConstructions { get; private set; } 
+        public static List<HB.WindowConstructionAbridged> WindowConstructions { get; private set; } 
+        public static List<HB.AirBoundaryConstructionAbridged> AirBoundaryConstructions { get; private set; }
+        public static List<HB.ShadeConstruction> ShadeConstructions { get; private set; }
 
         public ModelEntity() 
         {
@@ -218,6 +202,9 @@ namespace HoneybeeRhino.Entities
         /// </summary>
         public HB.Model GetHBModel()
         {
+            //set up all temp locations for resources objects
+            InitTemp();
+
             var model = this.HBObject; 
             model.Properties = model.Properties?? new HB.ModelProperties(energy: HB.ModelEnergyProperties.Default);
             model.Rooms = this.RoomEntitiesWithoutHistory.Select(_ => _.TryGetRoomEntity().GetHBRoom()).ToList();
@@ -226,9 +213,29 @@ namespace HoneybeeRhino.Entities
             model.OrphanedApertures = this.OrphanedAperturesWithoutHistory.Select(_ => _.TryGetApertureEntity().HBObject).ToList();
             model.OrphanedDoors = this.OrphanedDoorsWithoutHistory.Select(_ => _.TryGetDoorEntity().HBObject).ToList();
             model.OrphanedFaces = this.OrphanedFacesWithoutHistory.Select(_ => _.TryGetOrphanedFaceEntity().HBObject).ToList();
+
+            EnergyLibrary.AddEnergyMaterial(model, EnergyMaterials);
+            EnergyLibrary.AddEnergyWindowMaterial(model, EnergyWindowMaterials);
+
+            EnergyLibrary.AddConstructions(model, OpaqueConstructions);
+            EnergyLibrary.AddConstructions(model, WindowConstructions);
+            EnergyLibrary.AddConstructions(model, AirBoundaryConstructions);
+            EnergyLibrary.AddConstructions(model, ShadeConstructions);
+      
             return model;
         }
 
+        private void InitTemp()
+        {
+            EnergyMaterials = new List<HB.IEnergyMaterial>();
+            EnergyWindowMaterials = new List<HB.IEnergyWindowMaterial>();
+            OpaqueConstructions = new List<HB.OpaqueConstructionAbridged>();
+            WindowConstructions = new List<HB.WindowConstructionAbridged>();
+            AirBoundaryConstructions = new List<HB.AirBoundaryConstructionAbridged>();
+            ShadeConstructions = new List<HB.ShadeConstruction>();
+
+        }
        
+
     }
 }

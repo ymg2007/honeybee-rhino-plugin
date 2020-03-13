@@ -104,6 +104,62 @@ namespace HoneybeeRhino.Entities
             return roomEnt.SelectAndHighlight();
         }
 
+        protected static void CheckResourceForOpaqueConstruction(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+                return;
+
+            var cLib = ModelEntity.OpaqueConstructions;
+            if (cLib == null)
+                return;
+
+            //check Resource object
+            var cName = name;
+            if (cLib.Any(_ => _.Name == cName))
+                return;
+
+            var c = EnergyLibrary.GetOpaqueConstructionByName(cName);
+            cLib.Add(c);
+
+            var materials = EnergyLibrary.GetConstructionMaterials(c);
+            var mLib = ModelEntity.EnergyMaterials;
+            foreach (var m in materials)
+            {
+                if (mLib.Any(_ => _ == m))
+                    continue;
+                mLib.Add(m);
+            }
+
+        }
+        protected static void CheckResourceForWindowConstruction(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+                return;
+
+            var cLib = ModelEntity.WindowConstructions;
+            if (cLib == null)
+                return;
+
+            //check Resource object
+            var cName = name;
+            if (cLib.Any(_ => _.Name == cName))
+                return;
+
+            var c = EnergyLibrary.GetWindowConstructionByName(cName);
+            cLib.Add(c);
+
+            var materials = EnergyLibrary.GetConstructionMaterials(c);
+            var mLib = ModelEntity.EnergyWindowMaterials;
+            foreach (var m in materials)
+            {
+                if (mLib.Any(_ => _ == m))
+                    continue;
+                mLib.Add(m);
+            }
+
+        }
+
+
     }
 
 }

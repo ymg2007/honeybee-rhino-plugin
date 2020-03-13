@@ -202,6 +202,9 @@ namespace HoneybeeRhino.Entities
         /// </summary>
         public HB.Face GetHBFace(BrepFace brepFace)
         {
+            //check Resource object
+            CheckResourceForOpaqueConstruction(this.HBObject.Properties.Energy?.Construction);
+
             //This face is Brep's sub-face, and there is no hostRefObj in this FaceEntity
             var face = this.HBObject;
             var face3d = brepFace.ToHBFace3D();
@@ -217,8 +220,12 @@ namespace HoneybeeRhino.Entities
 
             //TODO: check shades
 
+
             return face;
         }
+
+       
+
 
     }
 }
